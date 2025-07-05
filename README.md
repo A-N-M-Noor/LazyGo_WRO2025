@@ -19,7 +19,7 @@
 
 
 ## 🎉 Project Overview
-<img align="right" alt="SMOKI" width="350" src="#">
+<img align="right" alt="Lazy_bot" width="350" src="#">
 
 This repository includes all files, designs, and code for **Lazy_Bot**, our WRO 2025 robot. Below is the folder structure:
 
