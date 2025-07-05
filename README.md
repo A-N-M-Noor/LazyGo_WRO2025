@@ -1,16 +1,16 @@
 # 🤖 **LazyGo_BD - WRO 2025 Project** 🤖
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/b69b15b8-69d2-439a-aac6-5dcfc8eba67c"/>
+  <img src="#"/>
 </div>
 
 ---
 
 ## 👥 **Team MAYERDOA - "Mothers' Prayers"**
 
-- **Iqbal Samin Prithul**  – Electronics Developer | [anas.azim.71@gmail.com](mailto:anas.azim.71@gmail.com)
+- **Iqbal Samin Prithul**  – Electronics Developer | [prithul0218@gmail.com](mailto:prithul0218@gmail.com)
 - **A.N.M Noor**  – Team Leader, Software Developer | [rakibul.rir06@gmail.com](mailto:rakibul.rir06@gmail.com)
-- **Rakibul Islam** – Hardware Developer | [rakibul.rir06@gmail.com](mailto:rakibul.rir06@gmail.com)
+- **Rakibul Islam** – Hardware Developer | [nafis.noor.202012@gmail.com](mailto:nafis.noor.202012@gmail.com)
 
 **Team Origin**: Bangladesh
 
@@ -19,7 +19,7 @@
 
 
 ## 🎉 Project Overview
-<img align="right" alt="SMOKI" width="350" src="https://github.com/user-attachments/assets/46c38599-e416-42cb-93ba-6f83ff142c18">
+<img align="right" alt="SMOKI" width="350" src="#">
 
 This repository includes all files, designs, and code for **Lazy_Bot**, our WRO 2025 robot. Below is the folder structure:
 
@@ -46,12 +46,8 @@ Here’s a breakdown of the project folders:
 
 - <span style="color:green;">Mission Overview for WRO Future Engineers Rounds</span>
 - <span style="color:orange;">Components and Hardware</span>
-- <span style="color:purple;">Assembly Instructions</span>
-- <span style="color:red;">Project Objective</span>
 - <span style="color:teal;">Mobility Management</span>
 - <span style="color:navy;">Power and Sense Management</span>
-- <span style="color:brown;">Program Infrastructure and Explanation of Algorithm</span>
-- <span style="color:darkgreen;">Software Setup</span>
 
 
 
@@ -139,102 +135,6 @@ Our bot is equipped with various components that support its autonomous function
 
 
 
-## 🔧 Assembly Instructions
-
-### 🏗️ Chassis Assembly - LEGO 45560 Expansion Set
-
-Our robot’s chassis is built using components from the **LEGO Technic Expansion Set 45560**. This set provides modular, robust, and flexible building parts that are ideal for constructing a stable and durable chassis foundation. The combination of LEGO’s high-quality materials and custom components ensures that our robot is adaptable, allowing for quick adjustments and additions.
-
-#### 📘 LEGO 45560 Expansion Set Manual
-For a step-by-step guide on using the LEGO 45560 parts, refer to the official **LEGO 45560 Expansion Set Manual**:
-- **[LEGO 45560 Expansion Set Manual (PDF Download)](https://www.lego.com/cdn/manuals/45560.pdf)**
-
-
----
-
-#### 🛠️ Chassis Assembly Process
-
-Here’s a step-by-step overview of the chassis assembly process using the LEGO 45560 Expansion Set:
-
-1. **Base Frame Construction**: Start by assembling the base frame using 5x11 and 5x7 beams for structural stability. These beams provide a strong foundation for mounting additional components.
-2. **Motor and Axle Integration**: Utilize the LEGO Technic beams and axle connectors to securely attach the motors. Ensure proper alignment to enable smooth and controlled movement.
-3. **Reinforcing with Angular Beams**: Use the 4x6 and 3x5 angular beams to reinforce corners and support areas where weight and stress are concentrated.
-4. **Mounting Sensors and Electronics**: Attach sensor mounts and electronic components using cross blocks and bushings, making sure they are aligned for efficient data capture and processing.
-5. **Gear Assembly for Differential Drive**: Assemble gears (8, 16, and 24-tooth gears) to create a differential drive system, allowing independent rotation of wheels for smooth turns.
-
----
-
-#### 🔍 Benefits of Using LEGO Technic Parts
-
-- **Modularity**: The LEGO Technic beams and connectors allow for quick modifications, so adjustments can be made without disrupting the entire structure.
-- **Durability**: High-quality materials ensure the chassis remains stable even during rigorous testing.
-- **Precision**: Technic gears, axles, and connectors provide precise alignment, which is critical for movement control and sensor accuracy.
-
----
-
-By leveraging the flexibility and durability of the LEGO 45560 Expansion Set, our chassis design achieves a balance between robustness and adaptability. The manual and parts list serve as valuable resources for replicating or modifying the design as needed.
-
-
----
-
-
-The following images showcase the detailed assembly process of our WRO Bot's chassis, utilizing the LEGO 45560 expansion set.
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
-  <table style = "width:100%; border-collapse:collapse">
-    <caption><strong>Framed Images</strong></caption>
-    <tr>
-      <td><img src="https://github.com/user-attachments/assets/0994a988-1f73-43db-b7f9-34c5243a842a" alt="Image 1"></td>
-      <td><img src="https://github.com/user-attachments/assets/39b389db-0038-425f-bcd5-740f748e3cc9" alt="Image 2"></td>
-    </tr>
-    <tr>
-      <td><img src="https://github.com/user-attachments/assets/339eaf97-91a8-4987-8af9-c86c2d4fe360" alt="Image 3"></td>
-      <td><img src="https://github.com/user-attachments/assets/30eae1ee-b442-4caf-86c3-7d5bbb12c6c3" alt="Image 4"></td>
-    </tr>
-    <tr>
-      <td><img src="https://github.com/user-attachments/assets/e95b4755-0067-4639-bd6b-58631e9da91e" alt="Image 5"></td>
-      <td><img src="https://github.com/user-attachments/assets/cb176c4d-0af5-4f80-ae3b-d7a9033592d0" alt="Image 6"></td>
-    </tr>
-    <tr>
-      <td colspan="2"><img src="https://github.com/user-attachments/assets/14527900-366e-4555-8aac-33a8163e1e19" alt="Image 7" style="width: 100%; height: auto;"></td>
-    </tr>
-  </table>
-</body>
-</html>
-
-
-### 🚗 Drive System
-
-The drive system includes DC motors, which provide reliable propulsion and control.
-
-
-<p align="center">
-  <table>
-    <tr>
-      <td>
-        <img src="https://github.com/user-attachments/assets/297d61d9-bef9-49eb-92bd-bed3f49f170d" width="350" height="200" />
-      </td>
-      <td>
-        <img src="https://github.com/user-attachments/assets/3731a99c-2025-4ecf-bbbc-6adab70886ab" width="350" height="200" />
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="https://github.com/user-attachments/assets/e5054dfd-4277-47fe-9986-4acdd1ff4e14" width="350" height="200" />
-      </td>
-      <td>
-        <img src="https://github.com/user-attachments/assets/f5ab2184-7332-4fab-bb6f-050e5189baf2" width="350" height="200" />
-      </td>
-    </tr>
-  </table>
-</p>
-
 
 
 ----
@@ -267,7 +167,7 @@ Our robot utilizes a differential drive system powered by two **20GA DC gear mot
 </td>
 <td width="50%">
 <div align="center">
-  <img src="#" alt="Differential Drive Setup" width="300"/>
+  <img src="https://github.com/user-attachments/assets/7a50709c-d077-462a-b6b7-bfc616fd4920" alt="Differential Drive Setup" width="300"/>
 </div>
 </td>
 </tr>
@@ -286,17 +186,18 @@ To control the high-current 20GA motors, we use the **VNH2SP30 full-bridge motor
 
 ---
 
-### **Steering System - LEGO Technic**
+### **Steering System - 3D Printed Ackermann Mechanism**
 
-Steering is managed using a simple yet effective **LEGO rack-and-pinion mechanism** actuated by a **servo motor**. This provides reliable and adjustable steering without overcomplicating the design.
+The robot features a **3D printed Ackermann steering system** controlled by a **servo motor**. This configuration allows the front wheels to turn at appropriate angles during a corner, minimizing tire slippage and improving real-world steering accuracy.
 
-##### 🧩 Advantages:
-1. **Modular Build**: Easily replaceable and modifiable LEGO parts.
-2. **Precise Control**: Achieves accurate turning angles through servo input.
-3. **Lightweight & Compact**: Ideal for size- and weight-constrained builds.
+##### 🛠️ Advantages:
+1. **Realistic Geometry**: Replicates automotive-grade steering for smoother and more stable turns.
+2. **Customizable Design**: 3D printed components allow fine-tuning and easy iteration.
+3. **Precise Control**: Servo-driven mechanism ensures consistent and accurate angle adjustments.
+4. **Mechanical Efficiency**: Reduces energy loss and component wear during turning.
 
 <div align="center">
-  <img src="#" alt="LEGO Steering Mechanism" width="300"/>
+  <img src="https://github.com/user-attachments/assets/6fde062d-c3a9-425e-8087-3d79e93b38eb" alt="3D Printed Ackermann Steering System" width="300"/>
 </div>
 
 ---
@@ -306,7 +207,6 @@ Steering is managed using a simple yet effective **LEGO rack-and-pinion mechanis
 The first version of Lazy_bot features a simple yet effective mobility system combining:
 - **Differential drive** with encoder feedback for stable movement.
 - **VNH2SP30 motor driver** for high-efficiency control.
-- **LEGO-based steering** for modular and accurate direction control.
 
 This configuration allowed us to build a robust platform capable of handling the dynamic challenges of autonomous navigation in the WRO Future Engineers category.
 
@@ -447,7 +347,7 @@ The camera feeds data to the **Raspberry Pi 5**, which processes image recogniti
 
 | **Top View of PCB**                 | **Bottom View of PCB**             |
 |-------------------------------------|-------------------------------------|
-| <img src="https://github.com/user-attachments/assets/be051834-2c23-495e-9aa1-83d9620e1524" width="800"/> | <img src="https://imgur.com/a/oEGepr7" width="800"/> |
+| <img src="https://github.com/user-attachments/assets/b1cfbc71-9583-4432-a8bf-8053735f607d" width="800"/> | <img src="https://github.com/user-attachments/assets/fe572fad-c348-459d-ab76-1f389a12ebcd" width="800"/> |
 
 
 
