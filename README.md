@@ -6,11 +6,11 @@
 
 ---
 
-## 👥 **Team LazyGo_BD **
+## 👥 **Team LazyGo_BD**
 
 - **Iqbal Samin Prithul**  – Electronics Developer | [prithul0218@gmail.com](mailto:prithul0218@gmail.com)
-- **A.N.M Noor**  – Team Leader, Software Developer | [rakibul.rir06@gmail.com](mailto:rakibul.rir06@gmail.com)
-- **Rakibul Islam** – Hardware Developer | [nafis.noor.202012@gmail.com](mailto:nafis.noor.202012@gmail.com)
+- **A.N.M Noor**  – Team Leader, Software Developer | [rakibul.rir06@gmail.com](mailto:nafis.noor.202012@gmail.com)
+- **Rakibul Islam** – Hardware Developer | [nafis.noor.202012@gmail.com](mailto:rakibul.rir06@gmail.com)
 
 **Team Origin**: Bangladesh
 
