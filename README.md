@@ -1,23 +1,54 @@
-<h1 align="center">
-  <strong>🤖 LazyGo - WRO 2025 Project 🤖</strong>
-</h1>
-
-
-
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/c0e433fe-d95b-4530-a700-eb69986861f4" style="height: 550px; width: 1000px;" />
+  <img alt="image" src="https://github.com/user-attachments/assets/7d07546e-424a-4d2b-ba96-8149f166cd7d" />
 </div>
-
 
 ---
 
-## 👥 **Team LazyGo_BD**
+## 👥 Team Introduction
+<table width="100%" cellspacing="0" cellpadding="10" border="0">
+  <tr>
+    <td width="25%" align="center">
+      <img src="https://github.com/user-attachments/assets/5c2665d3-2c25-455c-9a63-0e6dbe2a04a4" width="180" height="180"/>
+    </td>
+    <td width="75%" valign="middle">
+      <strong>Iqbal Samin Prithul</strong><br>
+      Electronics Developer<br>
+      WRO 2022 International Bronze Medalist (Future Engineers Category)<br>
+      <a href="mailto:prithul0218@gmail.com">prithul0218@gmail.com</a>
+    </td>
+  </tr>
+</table>
 
-- **Iqbal Samin Prithul**  – Electronics Developer | [prithul0218@gmail.com](mailto:prithul0218@gmail.com)
-- **A.N.M Noor**  – Team Leader, Software Developer | [rakibul.rir06@gmail.com](mailto:nafis.noor.202012@gmail.com)
-- **Rakibul Islam** – Hardware Developer | [nafis.noor.202012@gmail.com](mailto:rakibul.rir06@gmail.com)
+<table width="100%">
+  <tr>
+    <td width="75%" align="right">
+      <strong>Iqbal Samin Prithul</strong><br>
+      Electronics Developer<br>
+      WRO 2022 International Bronze Medalist (Future Engineers Category)<br>
+      <a href="mailto:prithul0218@gmail.com">prithul0218@gmail.com</a>
+    </td>
+    <td width="25%" align="center">
+      <img src="https://github.com/user-attachments/assets/5c2665d3-2c25-455c-9a63-0e6dbe2a04a4" width="180" height="180"/>
+    </td>
+    
+  </tr>
+</table>
 
-**Team Origin**: Bangladesh
+
+<table width="100%">
+  <tr>
+    <td width="25%" align="center">
+      <img src="https://github.com/user-attachments/assets/5c2665d3-2c25-455c-9a63-0e6dbe2a04a4" width="180" height="180"/>
+    </td>
+    <td width="75%" valign="middle">
+      <strong>Iqbal Samin Prithul</strong><br>
+      Electronics Developer<br>
+      WRO 2022 International Bronze Medalist (Future Engineers Category)<br>
+      <a href="mailto:prithul0218@gmail.com">prithul0218@gmail.com</a>
+    </td>
+  </tr>
+</table>
+
 
 ---
 
