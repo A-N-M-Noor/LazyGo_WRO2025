@@ -1,8 +1,13 @@
-# 🤖 **LazyGo_BD - WRO 2025 Project** 🤖
+<h1 align="center">
+  <strong>🤖 LazyGo - WRO 2025 Project 🤖</strong>
+</h1>
+
+
 
 <div align="center">
-  <img src="#"/>
+  <img src="https://github.com/user-attachments/assets/c0e433fe-d95b-4530-a700-eb69986861f4" style="height: 550px; width: 1000px;" />
 </div>
+
 
 ---
 
