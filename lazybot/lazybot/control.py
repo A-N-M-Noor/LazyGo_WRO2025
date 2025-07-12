@@ -243,7 +243,7 @@ class ControlNode(Node):
         
         for i in range(len(self.datass)):
             targetPnts.points.append(Point32(x=self.datass[i][0], y=self.datass[i][1], z=0.0))
-            targetPnts.channels[0].values.append(datass[i][2])
+            targetPnts.channels[0].values.append(self.datass[i][2])
 
         self.pubDebug.publish(targetPnts)
 
