@@ -18,7 +18,6 @@
     </td>
   </tr>
 </table>
-
 <table width="100%">
   <tr>
     <td width="75%" align="right">
@@ -33,8 +32,6 @@
     
   </tr>
 </table>
-
-
 <table width="100%">
   <tr>
     <td width="25%" align="center">
@@ -48,7 +45,17 @@
     </td>
   </tr>
 </table>
+<br>
 
+---
+
+<div>
+  <img src="https://github.com/user-attachments/assets/5c2665d3-2c25-455c-9a63-0e6dbe2a04a4" width="180" height="180" align="left"/><br>
+  <strong>Iqbal Samin Prithul</strong><br>
+  Electronics Developer<br>
+  WRO 2022 International Bronze Medalist (Future Engineers Category)<br>
+  <a href="mailto:prithul0218@gmail.com">prithul0218@gmail.com</a>
+</div><br>
 
 ---
 
