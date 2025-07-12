@@ -24,9 +24,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # 'camera_node = lazybot.camera:main',
-            # 'camera_test = lazybot.cam_test:main',
-            # 'server_node = lazybot.server:main',
             'control = lazybot.control:main',
             'serial = lazybot.ser:main',
             'avoid = lazybot.avoid:main',
