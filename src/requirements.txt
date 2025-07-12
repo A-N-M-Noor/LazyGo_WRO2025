@@ -1,5 +1,0 @@
-opencv-contrib-python>4
-numpy>2
-pyserial
-customtkinter>5
-ruamel-yaml
