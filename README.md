@@ -1,9 +1,7 @@
 <div align="center">
   <img alt="image" src="https://github.com/user-attachments/assets/7d07546e-424a-4d2b-ba96-8149f166cd7d" />
 </div>
-<p>
   <strong>Team LazyGo</strong> is a robotics team from <strong>Bangladesh</strong>. Originally formed in 2022, LazyGo won <strong>Bronze</strong> at the WRO international round in the Future Engineers category. Now returns again with three experienced international      participants.
-</p>
 
 
 ---
