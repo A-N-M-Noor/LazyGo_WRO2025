@@ -1,0 +1,33 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ROS2 + FastAPI Live Stream</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+    <h1>ROS 2 → FastAPI Live Stream & Controls</h1>
+
+    <div class="container">
+        <!-- Left column: live MJPEG stream -->
+        <div class="video-area">
+            <img id="video_stream" src="/video_feed" alt="Live Stream" />
+        </div>
+
+        <!-- Right column: float updates -->
+        <div class="data-panel">
+            <h2>Live Float32 Values</h2>
+            <ul id="float_list">
+                <!-- Will be populated dynamically by main.js -->
+            </ul>
+        </div>
+    </div>
+
+    <script src="/static/main.js"></script>
+</body>
+
+</html>

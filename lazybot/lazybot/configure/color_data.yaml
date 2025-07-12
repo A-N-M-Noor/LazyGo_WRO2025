@@ -1,0 +1,22 @@
+# blur on the main feed
+main_blur: 13
+# blur on the mask to smooth it out
+mask_blur: 13
+
+# color ranges
+colors:
+    red:
+        min: [164, 109, 10]
+        max: [15, 249, 150]
+    green:
+        min: [164, 109, 10]
+        max: [15, 249, 150]
+    blue:
+        min: [164, 109, 10]
+        max: [15, 249, 150]
+    orange:
+        min: [164, 109, 10]
+        max: [15, 249, 150]
+    purple:
+        min: [164, 109, 10]
+        max: [15, 249, 150]
