@@ -37,14 +37,52 @@
 
 ---
 
-<img align="right" alt="Lazy_bot" width="350" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
+<h1 align="center">Mission Overview for WRO Future Engineers Rounds</h1>
 
+<table>
+  <tr>
+    <td width="50%" valign="top" align="center"><h3>🏁 Round 1: Lap Completion</h3></td>
+    <td width="50%" valign="top" align="center"><h3>🏆 Round 2: Lap Completion with Obstacle Avoidance and Parking</h3></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top" align="left">
+      <p>In <strong>Round 1</strong>, the robot must autonomously complete <strong>three laps</strong> on a pre-defined track. The goal of this round is for the bot to demonstrate stable navigation and precise lap tracking without any obstacle avoidance requirements.</p>
+      <ul>
+        <li><strong>Objective</strong>: Complete three laps on the track within the allotted time.</li>
+        <li><strong>Key Tasks</strong>: Accurate path-following, speed control, and lap counting.</li>
+      </ul>
+      <div align="center" valign="bottom">
+        <br><br><br><br>
+        <img src="https://github.com/user-attachments/assets/823b29fa-8c92-479e-a78a-9fc96c407858" alt="Round 1 WRO Track" width="250" height="180" />
+      </div>
+    </td>
+    <td width="50%" valign="top" align="left">
+      <p>In <strong>Round 2</strong>, the bot must complete <strong>three laps</strong> while avoiding green and red obstacles:</p>
+      <ul>
+        <li><strong>Green Obstacles</strong>: The bot should move <strong>left</strong> to avoid.</li>
+        <li><strong>Red Obstacles</strong>: The bot should move <strong>right</strong> to avoid.</li>
+      </ul>
+      <p>After completing the laps, the bot must accurately park within a designated zone.</p>
+      <ul>
+        <li><strong>Objective</strong>: Complete three laps, avoid obstacles, and park in the designated area.</li>
+        <li><strong>Tasks</strong>: Obstacle detection, color-based avoidance, and precision parking.</li>
+      </ul>
+      <div align="center">
+        <img src="https://github.com/user-attachments/assets/b578392d-b443-4315-8fe3-f03af828c39a" alt="Round 2 WRO Track" width="250" height="180" />
+      </div>
+    </td>
+  </tr>
+</table>
+
+---
 ## 🎉 Project Overview
 
 This repository includes all files, designs, and code for **Lazy_Bot**, our WRO 2025 robot. Below is the folder structure:
 
 ## 📂 Structure
 
+
+<img align="right" alt="Lazy_bot" width="300" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
 Here’s a breakdown of the project folders:
 
 - **[`models`](./models/)**: Contains 3D models and CAD designs.
@@ -74,42 +112,6 @@ Here’s a breakdown of the project folders:
 
 Our bot, **Lazy_bot**, is built for excellence in the **World Robot Olympiad 2025** in the Future Engineers category. From its custom 3D-printed chassis and LEGO differential drive system to its powerful computing duo of the **Raspberry Pi 5** and **ESP32 microcontroller**, Lazy_bot is engineered to tackle the complex challenges of autonomous navigation, real-time sensing, and dynamic obstacle avoidance.
 
----
-
-### Mission Overview for WRO Future Engineers Rounds
-
-<table>
-  <tr>
-    <td width="50%" valign="top" align="left">
-      <h3>🏁 Round 1: Lap Completion</h3>
-      <p>In <strong>Round 1</strong>, the robot must autonomously complete <strong>three laps</strong> on a pre-defined track. The goal of this round is for the bot to demonstrate stable navigation and precise lap tracking without any obstacle avoidance requirements.</p>
-      <ul>
-        <li><strong>Objective</strong>: Complete three laps on the track within the allotted time.</li>
-        <li><strong>Key Tasks</strong>: Accurate path-following, speed control, and lap counting.</li>
-      </ul>
-      <div align="center">
-        <br><br><br><br><br>
-        <img src="https://github.com/user-attachments/assets/823b29fa-8c92-479e-a78a-9fc96c407858" alt="Round 1 WRO Track" width="250" height="180" />
-      </div>
-    </td>
-    <td width="50%" valign="top" align="left">
-      <h3>🏆 Round 2: Lap Completion with Obstacle Avoidance and Parking</h3>
-      <p>In <strong>Round 2</strong>, the bot must complete <strong>three laps</strong> while avoiding green and red obstacles:</p>
-      <ul>
-        <li><strong>Green Obstacles</strong>: The bot should move <strong>left</strong> to avoid.</li>
-        <li><strong>Red Obstacles</strong>: The bot should move <strong>right</strong> to avoid.</li>
-      </ul>
-      <p>After completing the laps, the bot must accurately park within a designated zone.</p>
-      <ul>
-        <li><strong>Objective</strong>: Complete three laps, avoid obstacles, and park in the designated area.</li>
-        <li><strong>Tasks</strong>: Obstacle detection, color-based avoidance, and precision parking.</li>
-      </ul>
-      <div align="center">
-        <img src="https://github.com/user-attachments/assets/b578392d-b443-4315-8fe3-f03af828c39a" alt="Round 2 WRO Track" width="250" height="180" />
-      </div>
-    </td>
-  </tr>
-</table>
 
 ---
 >[!IMPORTANT]
