@@ -82,7 +82,7 @@ This repository includes all files, designs, and code for **Lazy_Bot**, our WRO 
 ## 📂 Structure
 
 
-<img align="right" alt="Lazy_bot" width="300" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
+<img align="right" alt="Lazy_bot" width="270" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
 Here’s a breakdown of the project folders:
 
 - **[`models`](./models/)**: Contains 3D models and CAD designs.
