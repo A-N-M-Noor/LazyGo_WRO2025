@@ -1,0 +1,20 @@
+material CustomGround/Track
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.7 0.7 0.7 1.0
+      diffuse 0.9 0.9 0.9 1.0
+      specular 0.1 0.1 0.1 1.0
+      
+      texture_unit
+      {
+        texture track.png
+        tex_coord_set 0
+        tex_address_mode wrap
+        filtering cubic cubic cubic
+      }
+    }
+  }
+}

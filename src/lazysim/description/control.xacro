@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="lazyBot">
+    <ros2_control name="GazeboSystem" type="system">
+        <hardware>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+
+        <joint name="base_to_back_left_wheel">
+            <command_interface name="velocity" />
+            <state_interface name="velocity" />
+        </joint>
+
+        <joint name="base_to_back_right_wheel">
+            <command_interface name="velocity" />
+            <state_interface name="velocity" />
+        </joint>
+
+        <joint name="base_to_front_left_hinge">
+            <command_interface name="position" />
+            <state_interface name="position" />
+        </joint>
+
+        <joint name="base_to_front_right_hinge">
+            <command_interface name="position" />
+            <state_interface name="position" />
+        </joint>
+    </ros2_control>
+
+    <transmission name="left_wheel_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="left_wheel_motor">
+            <mechanicalReduction>1.0</mechanicalReduction>
+        </actuator>
+        <joint name="base_to_back_left_wheel">
+            <!-- <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface> -->
+            <hardwareInterface>velocity</hardwareInterface>
+        </joint>
+    </transmission>
+
+    <transmission name="right_wheel_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="right_wheel_motor">
+            <mechanicalReduction>1.0</mechanicalReduction>
+        </actuator>
+        <joint name="base_to_back_right_wheel">
+            <!-- <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface> -->
+            <hardwareInterface>velocity</hardwareInterface>
+
+        </joint>
+    </transmission>
+
+    <transmission name="front_left_steering_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="front_left_steer">
+            <mechanicalReduction>1.0</mechanicalReduction>
+        </actuator>
+        <joint name="base_to_front_left_hinge">
+            <!-- <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface> -->
+            <hardwareInterface>position</hardwareInterface>
+        </joint>
+    </transmission>
+
+    <transmission name="front_right_steering_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="front_right_steer">
+            <mechanicalReduction>1.0</mechanicalReduction>
+        </actuator>
+        <joint name="base_to_front_right_hinge">
+            <!-- <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface> -->
+            <hardwareInterface>position</hardwareInterface>
+        </joint>
+    </transmission>
+
+    <gazebo>
+        <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+            <parameters>$(find lazysim)/config/controller_config.yaml</parameters>
+        </plugin>
+    </gazebo>
+</robot>
