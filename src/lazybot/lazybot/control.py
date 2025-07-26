@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan, PointCloud, ChannelFloat32
 from geometry_msgs.msg import Point32
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Float32MultiArray
 from math import pi, radians, degrees, sin, cos
 import time
 
@@ -10,7 +10,8 @@ class ControlNode(Node):
     def __init__(self):
         super().__init__('control')
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
-
+        
+        self.objPub = self.create_publisher(Float32MultiArray, '/obj_data', 1)
         self.throttle_pub = self.create_publisher(Float32, '/throttle', 1)
         self.steer_pub = self.create_publisher(Float32, '/steer', 1)
 
@@ -25,26 +26,27 @@ class ControlNode(Node):
         self.str_ang_thresh = 90.0
         self.strSpd = 0.65
         
-        self.prec = 61
+        self.prec = 81
         self.skip1 = 2
         self.skip2 = 1
 
         self.dangerDist = 0.3
         self.dangerAng = [25.0, 90.0]
 
-        self.castRange = [0.25, 0.28]
+        self.castRange = [0.20, 0.25]
         self.castR = 0.25
-        self.lookRng = radians(90.0)
-        self.lookRngS = radians(110.0)
+        self.lookRng = radians(80.0)
+        self.lookRngS = radians(90.0)
         self.targetAng = 0.0
         self.targetD = 0.0
+        
+        self.objs = []
+        self.cont_stack = []
 
         self.get_logger().info('Control node has been started.')
         self.lastTime = time.time()
 
     def lidar_callback(self, msg: LaserScan):
-        # self.get_logger().info(f'LIDAR data received: {degrees(msg.angle_min)} to {degrees(msg.angle_max)}, with {degrees(msg.angle_increment)} increment.')
-
         self.dt = time.time() - self.lastTime
         self.lastTime = time.time()
 
@@ -54,6 +56,11 @@ class ControlNode(Node):
 
         angDats = msg.ranges
         angInts = msg.intensities
+        
+        self.getObjInds(angMin, angInc, angDats, angInts)
+        
+        self.pubObjData()
+        
         self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
 
         maxD, tA = self.getMaxD(angMin, angInc, angDats, angInts)
@@ -68,7 +75,7 @@ class ControlNode(Node):
         self.targetAng = degrees(self.targetAng)
         self.targetD = maxD
 
-        self.get_logger().info(f"Target Angle: {self.targetAng}, Max Dst: {maxD}")
+        # self.get_logger().info(f"Target Angle: {self.targetAng}, Max Dst: {maxD}")
         self.strAngle = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
 
         mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
@@ -85,6 +92,33 @@ class ControlNode(Node):
         except Exception as e:
             self.get_logger().error(f"Error publishing debug point: {e}")
 
+    
+    def getObjInds(self, angMin, _inc, _dats, _ints):
+        self.objs = []
+        for i in range(self.a2i(-self.lookRng, angMin, _inc), self.a2i(self.lookRng, angMin, _inc), self.skip1):
+            _ints[i] = 1.0
+            if(i < 1 or i >= len(_dats) or _ints[i] <= 0.05 or _dats[i] > 3.0):
+                continue
+            
+            slope = (_dats[i] - _dats[i-self.skip1]) / self.skip1
+            
+            if(slope < -0.15):
+                self.cont_stack.append(i)
+            elif(slope > 0.15):
+                if(len(self.cont_stack) > 0):
+                    pop = self.cont_stack.pop()
+                    mid = (i + pop) // 2
+                    if(_ints[mid] <= 0.1 or _dats[mid] > 3.0):
+                        _dats[mid] = self.fix_missing(_dats, _ints, mid)
+                    self.objs.append({
+                        "index": mid,
+                        "ang": self.i2a(mid, angMin, _inc),
+                        "dst": _dats[mid],
+                        "x": _dats[mid] * cos(self.i2a(mid, angMin, _inc)),
+                        "y": _dats[mid] * sin(self.i2a(mid, angMin, _inc)),
+                        "intensity": _ints[mid]
+                    })
+    
     def getMaxD(self, angMin, _inc, _dats, _ints):
         _max = {"dst": 0, "ang": 0}
         chkRng = self.indRng(-self.lookRng, self.lookRng, angMin, _inc)
@@ -93,10 +127,10 @@ class ControlNode(Node):
         for i in range(0, mid - chkRng[0], self.skip1):
             if(_ints[mid-i] <= 0.1 or _dats[mid-i] > 3.0):
                 _dats[mid-i] = self.fix_missing(_dats, _ints, mid-i)
-                _ints[mid-i] = 1.0  # Mark as fixed
+                _ints[mid-i] = 1.0
             if(_ints[mid+i] <= 0.1 or _dats[mid+i] > 3.0):
                 _dats[mid+i] = self.fix_missing(_dats, _ints, mid+i)
-                _ints[mid+i] = 1.0  # Mark as fixed
+                _ints[mid+i] = 1.0
 
             if(mid - i < 0 or mid + i >= len(_dats) or _ints[mid - i] == 0.0 or _ints[mid + i] == 0.0):
                 continue
@@ -107,17 +141,12 @@ class ControlNode(Node):
             dt = self.marching(mid + i, _dats, _ints, angMin,_inc)
             if(dt["dst"] > _max["dst"]):
                 _max = dt
-            # print(dt)
             if(mid+i < chkRng[1]-10 and _max["dst"] < 15):
                 chkRng = self.indRng(-self.lookRngS, self.lookRngS, angMin, _inc)
         return _max["dst"], _max["ang"]
 
     def marching(self, indx, _dats, _ints, angMin, _inc):
         rng = [indx-self.prec*self.skip2, indx+self.prec*self.skip2]
-        # if(rng[0] < self.a2i(-self.lookRng, angMin, _inc)):
-        #     rng[0] = self.a2i(-self.lookRng, angMin, _inc)
-        # if(rng[1] > self.a2i(self.lookRng, angMin, _inc)):
-        #     rng[1] = self.a2i(self.lookRng, angMin, _inc)
 
         self.datass.append([_dats[indx]*cos(self.i2a(indx, angMin, _inc)), _ints[indx]*sin(self.i2a(indx, angMin, _inc)), _ints[indx] ])
 
@@ -143,10 +172,8 @@ class ControlNode(Node):
                             "ang": targetRay["ang"]
                         }
         if _min["dst"] >= 1000:
-            # No obstacles found, return the target ray distance
             return {"dst": targetRay["dst"], "ang": targetRay["ang"]}
         else:
-            # Obstacle found, return the closest one
             return {"dst": _min["dst"], "ang": _min["ang"]}
     
     def fix_missing(self, _dats, _ints, i):
@@ -202,8 +229,16 @@ class ControlNode(Node):
         steer_msg.data = self.strAngle
         self.steer_pub.publish(steer_msg)
 
-        self.get_logger().info(f'Speed: {self.speed}, Steering: {self.strAngle}')
+        # self.get_logger().info(f'Speed: {self.speed}, Steering: {self.strAngle}')
 
+    def pubObjData(self):
+        obj_data = Float32MultiArray()
+        obj_data.data = []
+        for obj in self.objs:
+            obj_data.data.append(obj["ang"])
+        
+        self.objPub.publish(obj_data)
+            
     def pubDebugPoint(self):
         targetPnts = PointCloud()
         targetPnts.channels.append(ChannelFloat32(name="intensity", values=[]))
@@ -239,6 +274,19 @@ class ControlNode(Node):
             elif(ang > -self.dangerAng[1] and ang < -self.dangerAng[0]):
                 targetPnts.channels[0].values.append(1.0)
             else:
+                targetPnts.channels[0].values.append(0.5)
+        
+        # Draw a circle for each object in self.objs at its x and y position
+        circle_points = 20  # Number of points to approximate the circle
+        circle_radius = 0.07  # Radius of the circle
+
+        for obj in self.objs:
+            cx, cy = obj["x"], obj["y"]
+            for j in range(circle_points):
+                theta = 2 * pi * j / circle_points
+                x = cx + circle_radius * cos(theta)
+                y = cy + circle_radius * sin(theta)
+                targetPnts.points.append(Point32(x=x, y=y, z=0.0))
                 targetPnts.channels[0].values.append(0.5)
         
         for i in range(len(self.datass)):

@@ -80,7 +80,7 @@ def generate_launch_description():
         gazebo,
         spawn_entity,
         bridge,
-        # rviz,
+        rviz,
         TimerAction(period=5.0, actions=[
             track_creator
         ]),

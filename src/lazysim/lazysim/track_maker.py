@@ -64,8 +64,8 @@ class TrackMaker(Node):
         for tower in self.settings['towers']:
             self.get_logger().info(f"Spawning tower: {tower}")
             self.spawn_tower(tower)
-        
-        self.set_pose('lazyBot', 0.0, 1.0, 0.0, 90.0)
+
+        self.set_pose('lazyBot', self.settings['start']['pos']['x'], self.settings['start']['pos']['y'], 0.0, self.settings['start']['angle'])
 
     def set_pose(self, target, x: float, y: float, z: float, yaw_deg: float):
         yaw_rad = math.radians(yaw_deg)
@@ -74,8 +74,8 @@ class TrackMaker(Node):
         req = SetEntityState.Request()
         req.state = EntityState()
         req.state.name = target
-        req.state.pose.position.x = x
-        req.state.pose.position.y = y
+        req.state.pose.position.x = x - 0.0825 * math.cos(yaw_rad)
+        req.state.pose.position.y = y - 0.0825 * math.sin(yaw_rad)
         req.state.pose.position.z = z
         req.state.pose.orientation = quaternion
         req.state.twist = Twist()
@@ -90,7 +90,7 @@ class TrackMaker(Node):
 
     
     def spawn_tower(self, tower):
-        position = (1.0, 2.0, 0.5)  # (x, y, z)
+        position = (tower['pos']['x'], tower['pos']['y'], 0.5)
 
         # SDF XML for a red cube
         sdf = self.template.format(

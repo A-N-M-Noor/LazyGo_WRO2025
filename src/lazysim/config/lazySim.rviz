@@ -279,7 +279,7 @@ Visualization Manager:
       Visibility:
         Grid: false
         LaserScan: false
-        PointCloud: true
+        PointCloud: false
         RobotModel: false
         TF: false
         Value: true
@@ -329,27 +329,37 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz_default_plugins/Orbit
-      Distance: 1.8260743618011475
+      Angle: -1.5707999467849731
+      Class: rviz_default_plugins/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0.03494744002819061
-        Y: -0.00787280686199665
-        Z: -0.0336301252245903
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0102025270462036
+      Scale: 131.53578186035156
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 3.07041335105896
-    Saved: ~
+      Value: TopDownOrtho (rviz_default_plugins)
+      X: 0
+      Y: 0
+    Saved:
+      - Angle: -1.5707999467849731
+        Class: rviz_default_plugins/TopDownOrtho
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Invert Z Axis: false
+        Name: TopDownOrtho
+        Near Clip Distance: 0.009999999776482582
+        Scale: 131.53578186035156
+        Target Frame: <Fixed Frame>
+        Value: TopDownOrtho (rviz_default_plugins)
+        X: 0
+        Y: 0
 Window Geometry:
   Camera:
     collapsed: false

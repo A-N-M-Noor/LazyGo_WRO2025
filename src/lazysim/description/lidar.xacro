@@ -55,6 +55,9 @@
                 </ros>
                 <output_type>sensor_msgs/LaserScan</output_type>
                 <frame_name>laser</frame_name>
+                <laserRetro>1.0</laserRetro>
+                <min_intensity>0.2</min_intensity>
+                <max_intensity>1.0</max_intensity>
             </plugin>
         </sensor>
     </gazebo>
