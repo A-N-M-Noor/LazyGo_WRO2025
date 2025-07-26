@@ -27,6 +27,7 @@ setup(
             'control = lazybot.control:main',
             'serial = lazybot.ser:main',
             'avoid = lazybot.avoid:main',
+            'camera_node = lazybot.camera:main',
         ],
     },
 )

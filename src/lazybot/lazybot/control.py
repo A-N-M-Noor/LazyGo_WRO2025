@@ -17,6 +17,8 @@ class ControlNode(Node):
 
         self.pubDebug = self.create_publisher(PointCloud, "/target_point", 10)
 
+        self.IS_SIM = True
+        
         self.datass = []
 
         self.maxSpeed : float = 0.65
@@ -96,7 +98,7 @@ class ControlNode(Node):
     def getObjInds(self, angMin, _inc, _dats, _ints):
         self.objs = []
         for i in range(self.a2i(-self.lookRng, angMin, _inc), self.a2i(self.lookRng, angMin, _inc), self.skip1):
-            _ints[i] = 1.0
+            if(self.IS_SIM): _ints[i] = 1.0
             if(i < 1 or i >= len(_dats) or _ints[i] <= 0.05 or _dats[i] > 3.0):
                 continue
             
@@ -125,6 +127,7 @@ class ControlNode(Node):
 
         mid = (chkRng[0] + chkRng[1]) // 2
         for i in range(0, mid - chkRng[0], self.skip1):
+            if(self.IS_SIM): _ints[i] = 1.0
             if(_ints[mid-i] <= 0.1 or _dats[mid-i] > 3.0):
                 _dats[mid-i] = self.fix_missing(_dats, _ints, mid-i)
                 _ints[mid-i] = 1.0
@@ -158,6 +161,7 @@ class ControlNode(Node):
         
         _min = {"dst": 1000, "ang": 0}
         for i in range(rng[0], rng[1], self.skip2):
+            if(self.IS_SIM): _ints[i] = 1.0
             if(i >= 0 and i < len(_dats)):
                 ray = {
                     "dst": _dats[i],
