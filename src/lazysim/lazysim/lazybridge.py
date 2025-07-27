@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, Float64MultiArray
-from math import radians, degrees, tan, atan, pi
+from math import radians, degrees, cos, tan, atan, pi
 
 class LazyBridge(Node):
     def __init__(self):
@@ -28,7 +28,7 @@ class LazyBridge(Node):
             10
         )
         
-        self.back_pub = self.create_publisher(Float64MultiArray, '/velocity_controller/commands', 10)
+        self.motor_pub = self.create_publisher(Float64MultiArray, '/velocity_controller/commands', 10)
         self.steer_pub= self.create_publisher(Float64MultiArray, '/position_controller/commands', 10)
         
         self.get_logger().info("LazyBridge Node has been started.")
@@ -43,15 +43,16 @@ class LazyBridge(Node):
         str_ang = self.steer * self.max_steer
         
         if (abs(str_ang) < 0.17):
-            self.back_pub.publish(Float64MultiArray(data=[whl_spd, whl_spd]))
+            self.motor_pub.publish(Float64MultiArray(data=[whl_spd, whl_spd, whl_spd, whl_spd]))
             self.steer_pub.publish(Float64MultiArray(data=[str_ang, str_ang]))
             return
         
         ang = abs(str_ang)
         r = self.wheelbase / tan(ang)
+        hinge_l = self.axle_length / 2 - self.hinge_d
         
-        ras = r - (self.axle_length / 2 - self.hinge_d)
-        rbs = r + (self.axle_length / 2 - self.hinge_d)
+        ras = r - hinge_l
+        rbs = r + hinge_l
         
         strL = atan(self.wheelbase / ras)
         strR = atan(self.wheelbase / rbs)
@@ -59,14 +60,19 @@ class LazyBridge(Node):
         ra = r - self.axle_length / 2
         rb = r + self.axle_length / 2
         
-        spdL = whl_spd * (ra / r)
-        spdR = whl_spd * (rb / r)
+        raf = ras / cos(strL)
+        rbf = rbs / cos(strR)
+        
+        spdBL = whl_spd * (ra / r)
+        spdBR = whl_spd * (rb / r)
+        spdFL = whl_spd * (raf / r)
+        spdFR = whl_spd * (rbf / r)
         
         if str_ang < 0:
-            strL, strR = strR, strL
-            spdL, spdR = spdR, spdL
+            strL, strR = -strR, -strL
+            spdBL, spdBR = spdBR, spdBL
 
-        self.back_pub.publish(Float64MultiArray(data=[spdL, spdR]))
+        self.motor_pub.publish(Float64MultiArray(data=[spdBL, spdBR, spdFL, spdFR]))
         self.steer_pub.publish(Float64MultiArray(data=[strL, strR]))
 
 def main(args=None):

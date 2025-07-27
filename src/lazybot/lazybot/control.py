@@ -32,10 +32,10 @@ class ControlNode(Node):
         self.skip1 = 2
         self.skip2 = 1
 
-        self.dangerDist = 0.3
+        self.dangerDist = 0.25
         self.dangerAng = [25.0, 90.0]
 
-        self.castRange = [0.20, 0.25]
+        self.castRange = [0.15, 0.18]
         self.castR = 0.25
         self.lookRng = radians(80.0)
         self.lookRngS = radians(90.0)
@@ -59,17 +59,17 @@ class ControlNode(Node):
         angDats = msg.ranges
         angInts = msg.intensities
         
-        self.getObjInds(angMin, angInc, angDats, angInts)
-        
-        self.pubObjData()
+        # self.getObjInds(angMin, angInc, angDats, angInts)
         
         self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
 
-        maxD, tA = self.getMaxD(angMin, angInc, angDats, angInts)
+        self.pubObjData()
+
+        maxD, tA = self.getMaxDOBJ(angMin, angInc, angDats, angInts)
         dS = self.dangerSense(angDats, angMin, angInc)
 
-        # if(dS):
-        #     tA -= dS * self.strRange * 1.0
+        if(dS):
+            tA -= dS * self.strRange * 1.0
 
         delta = abs(tA-self.targetAng)
         self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)
@@ -95,58 +95,111 @@ class ControlNode(Node):
             self.get_logger().error(f"Error publishing debug point: {e}")
 
     
-    def getObjInds(self, angMin, _inc, _dats, _ints):
+    # def getObjInds(self, angMin, _inc, _dats, _ints):
+    #     self.objs = []
+    #     for i in range(self.a2i(-self.lookRng, angMin, _inc), self.a2i(self.lookRng, angMin, _inc), self.skip1):
+    #         if(self.IS_SIM): _ints[i] = 1.0
+    #         if(i < 1 or i >= len(_dats) or _ints[i] <= 0.05 or _dats[i] > 3.0):
+    #             continue
+            
+    #         slope = (_dats[i] - _dats[i-self.skip1]) / self.skip1
+            
+    #         if(slope < -0.15):
+    #             self.cont_stack.append(i)
+    #         elif(slope > 0.15):
+    #             if(len(self.cont_stack) > 0):
+    #                 pop = self.cont_stack.pop()
+    #                 mid = (i + pop) // 2
+    #                 if(_ints[mid] <= 0.1 or _dats[mid] > 3.0):
+    #                     _dats[mid] = self.fix_missing(_dats, _ints, mid)
+    #                 self.objs.append({
+    #                     "index": mid,
+    #                     "ang": self.i2a(mid, angMin, _inc),
+    #                     "dst": _dats[mid],
+    #                     "x": _dats[mid] * cos(self.i2a(mid, angMin, _inc)),
+    #                     "y": _dats[mid] * sin(self.i2a(mid, angMin, _inc)),
+    #                     "intensity": _ints[mid]
+    #                 })
+    
+    def getMaxDOBJ(self, angMin, _inc, _dats, _ints):
+        _max = {"dst": 0, "ang": 0}
+        chkRng = self.indRng(-self.lookRng, self.lookRng, angMin, _inc)
+        
         self.objs = []
-        for i in range(self.a2i(-self.lookRng, angMin, _inc), self.a2i(self.lookRng, angMin, _inc), self.skip1):
+        self.cont_stack = []
+
+        remove = "Left"
+        
+        for i in range(chkRng[0], chkRng[1], self.skip1):
             if(self.IS_SIM): _ints[i] = 1.0
+            if(_ints[i] <= 0.1 or _dats[i] > 3.0):
+                _dats[i] = self.fix_missing(_dats, _ints, i)
+                _ints[i] = 1.0
+
             if(i < 1 or i >= len(_dats) or _ints[i] <= 0.05 or _dats[i] > 3.0):
                 continue
             
-            slope = (_dats[i] - _dats[i-self.skip1]) / self.skip1
-            
-            if(slope < -0.15):
-                self.cont_stack.append(i)
-            elif(slope > 0.15):
-                if(len(self.cont_stack) > 0):
-                    pop = self.cont_stack.pop()
-                    mid = (i + pop) // 2
-                    if(_ints[mid] <= 0.1 or _dats[mid] > 3.0):
-                        _dats[mid] = self.fix_missing(_dats, _ints, mid)
-                    self.objs.append({
-                        "index": mid,
-                        "ang": self.i2a(mid, angMin, _inc),
-                        "dst": _dats[mid],
-                        "x": _dats[mid] * cos(self.i2a(mid, angMin, _inc)),
-                        "y": _dats[mid] * sin(self.i2a(mid, angMin, _inc)),
-                        "intensity": _ints[mid]
-                    })
-    
-    def getMaxD(self, angMin, _inc, _dats, _ints):
-        _max = {"dst": 0, "ang": 0}
-        chkRng = self.indRng(-self.lookRng, self.lookRng, angMin, _inc)
-
-        mid = (chkRng[0] + chkRng[1]) // 2
-        for i in range(0, mid - chkRng[0], self.skip1):
-            if(self.IS_SIM): _ints[i] = 1.0
-            if(_ints[mid-i] <= 0.1 or _dats[mid-i] > 3.0):
-                _dats[mid-i] = self.fix_missing(_dats, _ints, mid-i)
-                _ints[mid-i] = 1.0
-            if(_ints[mid+i] <= 0.1 or _dats[mid+i] > 3.0):
-                _dats[mid+i] = self.fix_missing(_dats, _ints, mid+i)
-                _ints[mid+i] = 1.0
-
-            if(mid - i < 0 or mid + i >= len(_dats) or _ints[mid - i] == 0.0 or _ints[mid + i] == 0.0):
-                continue
-            dt = self.marching(mid - i, _dats, _ints, angMin,_inc)
+            dt = self.marching(i, _dats, _ints, angMin,_inc)
             if(dt["dst"] > _max["dst"]):
                 _max = dt
+
+            objectFound = self.detectContrast(i, _dats, angMin, _inc, _ints)
             
-            dt = self.marching(mid + i, _dats, _ints, angMin,_inc)
-            if(dt["dst"] > _max["dst"]):
-                _max = dt
-            if(mid+i < chkRng[1]-10 and _max["dst"] < 15):
-                chkRng = self.indRng(-self.lookRngS, self.lookRngS, angMin, _inc)
+            if objectFound:
+                if remove == "Left":
+                    _max = dt
+                if remove == "Right":
+                    return _max["dst"], _max["ang"]
+                
         return _max["dst"], _max["ang"]
+    
+    
+    def detectContrast(self, i, _dats, angMin, _inc, _ints):
+        slope = (_dats[i] - _dats[i-self.skip1]) / self.skip1
+        if(slope < -0.15):
+            self.cont_stack.append(i)
+        elif(slope > 0.15):
+            if(len(self.cont_stack) > 0):
+                pop = self.cont_stack.pop()
+                mid = (i + pop) // 2
+                # if(_ints[mid] <= 0.1 or _dats[mid] > 3.0):
+                #     _dats[mid] = self.fix_missing(_dats, _ints, mid)
+                self.objs.append({
+                    "index": mid,
+                    "ang": self.i2a(mid, angMin, _inc),
+                    "dst": _dats[mid],
+                    "x": _dats[mid] * cos(self.i2a(mid, angMin, _inc)),
+                    "y": _dats[mid] * sin(self.i2a(mid, angMin, _inc)),
+                    "intensity": _ints[mid]
+                })
+            return True
+        return False
+    # def getMaxD(self, angMin, _inc, _dats, _ints):
+    #     _max = {"dst": 0, "ang": 0}
+    #     chkRng = self.indRng(-self.lookRng, self.lookRng, angMin, _inc)
+
+    #     mid = (chkRng[0] + chkRng[1]) // 2
+    #     for i in range(0, mid - chkRng[0], self.skip1):
+    #         if(self.IS_SIM): _ints[i] = 1.0
+    #         if(_ints[mid-i] <= 0.1 or _dats[mid-i] > 3.0):
+    #             _dats[mid-i] = self.fix_missing(_dats, _ints, mid-i)
+    #             _ints[mid-i] = 1.0
+    #         if(_ints[mid+i] <= 0.1 or _dats[mid+i] > 3.0):
+    #             _dats[mid+i] = self.fix_missing(_dats, _ints, mid+i)
+    #             _ints[mid+i] = 1.0
+
+    #         if(mid - i < 0 or mid + i >= len(_dats) or _ints[mid - i] == 0.0 or _ints[mid + i] == 0.0):
+    #             continue
+    #         dt = self.marching(mid - i, _dats, _ints, angMin,_inc)
+    #         if(dt["dst"] > _max["dst"]):
+    #             _max = dt
+            
+    #         dt = self.marching(mid + i, _dats, _ints, angMin,_inc)
+    #         if(dt["dst"] > _max["dst"]):
+    #             _max = dt
+    #         if(mid+i < chkRng[1]-10 and _max["dst"] < 15):
+    #             chkRng = self.indRng(-self.lookRngS, self.lookRngS, angMin, _inc)
+    #     return _max["dst"], _max["ang"]
 
     def marching(self, indx, _dats, _ints, angMin, _inc):
         rng = [indx-self.prec*self.skip2, indx+self.prec*self.skip2]
@@ -266,8 +319,9 @@ class ControlNode(Node):
             targetPnts.points.append(Point32(x=x, y=y, z=0.0))
             targetPnts.channels[0].values.append(0.4)
 
-        for i in range(-int(pi*25), int(pi*25), 1):
-            ang = i/25.0
+        circle_points = 50
+        for i in range(circle_points):
+            ang = 2 * pi * i / circle_points
             x = self.dangerDist*cos(ang)
             y = self.dangerDist*sin(ang)
             targetPnts.points.append(Point32(x=x, y=y, z=0.0))
@@ -280,9 +334,17 @@ class ControlNode(Node):
             else:
                 targetPnts.channels[0].values.append(0.5)
         
-        # Draw a circle for each object in self.objs at its x and y position
-        circle_points = 20  # Number of points to approximate the circle
-        circle_radius = 0.07  # Radius of the circle
+        circle_points = 50
+        
+        for i in range(circle_points):
+            theta = 2 * pi * i / circle_points
+            x = self.castR * cos(theta)
+            y = self.castR * sin(theta)
+            targetPnts.points.append(Point32(x=x, y=y, z=0.0))
+            targetPnts.channels[0].values.append(0.2)
+        
+        circle_points = 20
+        circle_radius = 0.07
 
         for obj in self.objs:
             cx, cy = obj["x"], obj["y"]

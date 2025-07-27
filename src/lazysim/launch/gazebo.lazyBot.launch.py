@@ -2,17 +2,34 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 
-
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.actions import TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.conditions import IfCondition, UnlessCondition
+from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument
 
 
 
 def generate_launch_description():
+    disable_rviz_arg = DeclareLaunchArgument(
+        'disable_rviz',
+        default_value='false',
+        description='Disable RViz launch'
+    )
+    disable_rviz = LaunchConfiguration('disable_rviz')
+    
+    disable_bridge_arg = DeclareLaunchArgument(
+        'disable_bridge',
+        default_value='false',
+        description='Disable Bridge launch'
+    )
+    disable_rviz = LaunchConfiguration('disable_rviz')
+    disable_bridge = LaunchConfiguration('disable_bridge')
+
     package_directory = get_package_share_directory('lazysim')
 
     rsp = IncludeLaunchDescription(
@@ -51,12 +68,14 @@ def generate_launch_description():
                 executable='lazybridge',
                 name='lazybridge',
                 output='screen',
+                condition=UnlessCondition(disable_bridge),
             )
     
     rviz = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
                     package_directory, 'launch', 'rviz_lazySim.launch.py')]),
                 launch_arguments={'use_sim_time': 'true'}.items(),
+                condition=UnlessCondition(disable_rviz)
             )
     
     control = IncludeLaunchDescription(
@@ -67,22 +86,25 @@ def generate_launch_description():
     track_creator = Node(
                 package="lazysim",
                 executable="track_maker",
-                # parameters=[{"template_path": os.path.join(package_directory, "templates", "track_template.xml")}],
                 parameters=[{
                     "template_path": "/home/duronto/WRO_25_ws/src/lazysim/config/object_template.sdf",
                     "settings_path": "/home/duronto/WRO_25_ws/src/lazysim/config/track.json"
                     }],
                 output="screen",
             )
-
-    return LaunchDescription([
+    
+    ld = LaunchDescription([
+        disable_rviz_arg,
+        disable_bridge_arg,
         rsp,
         gazebo,
         spawn_entity,
         bridge,
-        rviz,
         TimerAction(period=5.0, actions=[
             track_creator
         ]),
         control,
+        rviz,
     ])
+
+    return ld
