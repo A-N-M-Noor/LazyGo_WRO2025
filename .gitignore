@@ -1,5 +1,6 @@
 **/test/
 .vscode/
+*.sh
 **/__pycache__/
 **/resource/
 **/**.BAK
