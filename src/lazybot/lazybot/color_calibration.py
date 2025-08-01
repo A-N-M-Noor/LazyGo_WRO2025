@@ -1,15 +1,21 @@
-import cv2
-import customtkinter as ctk
-from helper.camera_capture import Camera
-from threading import Thread
-import helper.util as util
+import rclpy
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
+from rclpy.node import Node
+from sensor_msgs.msg import Image, CompressedImage
+from std_msgs.msg import Float32MultiArray
 
-# Create a window
+import cv2, math, sys, time
+import numpy as np
+import customtkinter as ctk
+from threading import Thread
+import lazybot.helper.util as util
+
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
 window = ctk.CTk()
 window.title("HSV Calibration Tool")
-window.attributes('-topmost',True)
+# window.attributes('-topmost',True)
 
 # Configuring the grid system
 window.grid_columnconfigure(0, weight=1)
@@ -109,12 +115,6 @@ V_max_lbl, V_max = createSlider(frmRngs, "Value Max", (0, 255), _row = 2, _colum
 # Just started the program or not
 first = True
 
-# Start capturing the camera
-cam = Camera(0)
-cam.start()
-
-running = True
-
 def setSliders(rng, thr):
     H_min.set(util.clamp(rng[0][0] - thr, 0, 179))
     setLabel(H_min_lbl, "HUE Min", H_min.get())
@@ -129,30 +129,106 @@ def setSliders(rng, thr):
     V_max.set(util.clamp(rng[1][2] + thr, 0, 255))
     setLabel(V_max_lbl, "Value Max", V_max.get())
 
-def on_mouse_click(event, x, y, flags, param):
-    global first
-    if event == cv2.EVENT_LBUTTONUP:
-        # Get pixel value at (x, y)
-        frame = cam.getFrame()
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        h, s, v = hsv[y, x, :]
-        
-        _min = [min(h, H_min.get()), min(s, S_min.get()), min(v, V_min.get())]
-        _max = [max(h, H_max.get()), max(s, S_max.get()), max(v, V_max.get())]
-        
-        threshold = threshSlider.get()
-        
-        if first:
-            _min = [h, s - threshold*6, v - threshold*6]
-            _max = [h, s + threshold*6, v + threshold*6]
-            first = False
-        setSliders([_min,_max], threshold)
 
-def viewing():
-    while(running):
-        frame = cam.getFrame(blr=blurSlider.get())
-        if(frame is not None):
-            cv2.imshow("cap", frame)
+class CameraNode(Node):
+    def __init__(self):
+        super().__init__('color_calibration_node')
+        self.compressed = True
+        
+        qos_profile = QoSProfile(
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=3
+        )
+        
+        self.create_subscription(
+            CompressedImage if self.compressed else Image,
+            'camera/image_raw'+ ("/compressed" if self.compressed else ""),
+            self.camera_callback,
+            qos_profile)
+        self.create_subscription(
+            Float32MultiArray,
+            'obj_data',
+            self.obj_callback,
+            10)
+        
+        # self.create_timer(1/60, self.show_view)        
+        self.lastImgTime = None
+        self.image = np.zeros((480, 640, 3), dtype=np.uint8)
+        self.image.fill(255)
+        
+        self.imsg = None
+        self.fps = 0.0
+        
+        self.objs = []
+
+        cv2.namedWindow('Camera Image', cv2.WINDOW_GUI_NORMAL)
+        cv2.resizeWindow('Camera Image', 640, 480)
+        cv2.setMouseCallback('Camera Image', self.mouseClick)
+        self.get_logger().info('CameraNode started, waiting for images...')
+
+    def mouseClick(self, event, x, y, flags, param):
+        global first
+        if event == cv2.EVENT_LBUTTONUP:
+            
+            hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
+            h, s, v = hsv[y, x, :]
+            
+            _min = [min(h, H_min.get()), min(s, S_min.get()), min(v, V_min.get())]
+            _max = [max(h, H_max.get()), max(s, S_max.get()), max(v, V_max.get())]
+            
+            threshold = threshSlider.get()
+            
+            if first:
+                _min = [h, s - threshold*6, v - threshold*6]
+                _max = [h, s + threshold*6, v + threshold*6]
+                first = False
+            setSliders([_min,_max], threshold)
+
+    def camera_callback(self, msg):
+        self.imsg = msg
+        self.image = None
+        if(self.lastImgTime is None):
+            self.lastImgTime = time.time()
+        else:
+            dt = time.time() - self.lastImgTime
+            self.lastImgTime = time.time()
+            if(dt > 0):
+                fps = 1 / dt
+                self.fps = self.fps + (fps - self.fps) * 0.1
+    
+    def obj_callback(self, msg: Float32MultiArray):
+        if len(msg.data) > 0:
+            self.objs = msg.data
+    
+    def decode(self, msg):
+        try:
+            if isinstance(msg, CompressedImage):
+                np_arr = np.frombuffer(msg.data, np.uint8)
+                self.image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                return True
+            elif isinstance(msg, Image):
+                image = None
+                if msg.encoding == 'rgb8':
+                    image = np.frombuffer(msg.data, dtype=np.uint8).reshape((msg.height, msg.width, 3))
+                    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                elif msg.encoding == 'bgr8':
+                    image = np.frombuffer(msg.data, dtype=np.uint8).reshape((msg.height, msg.width, 3))
+                elif msg.encoding == 'mono8':
+                    image = np.frombuffer(msg.data, dtype=np.uint8).reshape((msg.height, msg.width))
+                    image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+                self.image = image
+                return True
+        except Exception as e:
+            self.get_logger().error(f'Camera error: {str(e)}')
+        return False
+            
+    def show_view(self):
+        if not running:
+            return
+        frame = self.image
+        if frame is not None:
+            cv2.imshow("Camera Image", frame)
             hsv, mask, thresh = util.process_mask(
                 frame, 
                 [
@@ -171,22 +247,63 @@ def viewing():
                 cv2.imshow("Processed Mask", thresh)
             elif(cv2.getWindowProperty("Processed Mask", cv2.WND_PROP_VISIBLE) == 1):
                 cv2.destroyWindow("Processed Mask")
-                
-            cv2.setMouseCallback("cap", on_mouse_click)
-            
-        key = cv2.waitKey(1)
-        if key==ord('q'):
-            cam.stop()
-            cv2.destroyAllWindows()
-            window.destroy()
-            exit(1)
-            break
+            self.imsg = None
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
+                cv2.destroyAllWindows()
+                rclpy.shutdown()
+                exit()
+            return
+        
+        if self.imsg is not None:
+            msg = self.imsg
+        else:
+            self.get_logger().warn('No image message received yet.')
+            return
+        if self.decode(msg):
+            self.show_view()
 
-viewThread=Thread(target=viewing,args=())
-viewThread.daemon=True
-viewThread.start()
+running = True
+def startTk(window: ctk.CTk, node: CameraNode):
+    global running
+    running = True
+    window.protocol("WM_DELETE_WINDOW", lambda: (cv2.destroyAllWindows(), rclpy.shutdown(), window.destroy()))
+    
+    def keep_running():
+        if running:
+            node.show_view()
+            window.after(int(1000/60), keep_running)
+    window.after(100, lambda: keep_running())
+    window.mainloop()
+    running = False
+    
+def start_view(node):
+    while running:
+        node.show_view()
+        time.sleep(1/60)
 
-# Run the mainloop for CTk
-window.mainloop()
-running = False
-cam.stop()
+def startNode(node):
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+    
+def main(args=None):
+    rclpy.init(args=args)
+    node = CameraNode()
+    node_thr = Thread(target=startNode, args=(node,))
+    node_thr.daemon = True
+    node_thr.start()
+    
+    # tkinter_thr = Thread(target=startTk, args=(window,))
+    # tkinter_thr.daemon = True
+    # tkinter_thr.start()
+
+    # view_thr = Thread(target=start_view, args=(node,))
+    # view_thr.daemon = True
+    # view_thr.start()
+    
+    startTk(window, node)
+    # start_view(node)
+
+if __name__ == '__main__':
+    main()

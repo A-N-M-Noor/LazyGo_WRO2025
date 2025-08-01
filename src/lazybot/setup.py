@@ -25,9 +25,11 @@ setup(
     entry_points={
         'console_scripts': [
             'control = lazybot.control:main',
+            'detect = lazybot.detection:main',
             'serial = lazybot.ser:main',
             'avoid = lazybot.avoid:main',
             'camera_node = lazybot.camera:main',
+            'color_calibration_node = lazybot.color_calibration:main',
         ],
     },
 )

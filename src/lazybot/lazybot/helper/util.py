@@ -14,15 +14,15 @@ yaml.default_flow_style = None
 color_calib_data = None
 
 def get_color_calib_file():
-    with open(filePath, 'r') as file:
+    with open(color_calib_file, 'r') as file:
         return file.read()
 
 def getConfig():
     global yaml_str
 
-    yaml_str = getConfigFile()
+    yaml_str = get_color_calib_file()
 
-    with open(filePath) as file:
+    with open(color_calib_file) as file:
         config = yaml.load(yaml_str)
         return config
     return None
@@ -61,7 +61,6 @@ def save_range_data(color, rng, blr, mskBlr):
     color_calib_data['mask_blur'] = int(mskBlr)
     
     save_color_calib(color_calib_data)
-    
 
 def make_mask(_hsv, rngMin, rngMax):
     lower_range = np.array(rngMin)
@@ -78,9 +77,14 @@ def make_mask(_hsv, rngMin, rngMax):
 
     return mask
 
-def process_mask(frame, rng, maskBlr=0):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            
+def process_mask(frame, rng, maskBlr=0, crop = None, hsv = None):
+    frm = frame.copy()
+    if(crop is not None):
+        frm = frm[crop[0]:crop[1], :]
+    if hsv is None:
+        hsv = cv2.cvtColor(frm, cv2.COLOR_BGR2HSV)
+        
+
     mask = make_mask(hsv, rng[0], rng[1])
     blrMask = blur(mask, maskBlr)
     _, thresh = cv2.threshold(blrMask, 127, 255, cv2.THRESH_BINARY)

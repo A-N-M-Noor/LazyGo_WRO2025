@@ -3,3 +3,4 @@ numpy>2
 pyserial
 customtkinter>5
 ruamel-yaml
+onshape-to-robot

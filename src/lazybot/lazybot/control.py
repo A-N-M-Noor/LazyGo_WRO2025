@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan, PointCloud, ChannelFloat32
 from geometry_msgs.msg import Point32
-from std_msgs.msg import Float32, Float32MultiArray
+from std_msgs.msg import Float32, Float32MultiArray, String
 from math import pi, radians, degrees, sin, cos
 import time
 
@@ -10,6 +10,7 @@ class ControlNode(Node):
     def __init__(self):
         super().__init__('control')
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
+        self.obj_sub = self.create_subscription(String, '/closest_obj', self.obj_callback, 1)
         
         self.objPub = self.create_publisher(Float32MultiArray, '/obj_data', 1)
         self.throttle_pub = self.create_publisher(Float32, '/throttle', 1)
@@ -21,11 +22,11 @@ class ControlNode(Node):
         
         self.datass = []
 
-        self.maxSpeed : float = 0.65
+        self.maxSpeed : float = 0.45
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0
-        self.str_ang_thresh = 90.0
+        self.str_ang_thresh = 60.0
         self.strSpd = 0.65
         
         self.prec = 81
@@ -44,10 +45,15 @@ class ControlNode(Node):
         
         self.objs = []
         self.cont_stack = []
+        
+        self.closest = "N"
 
         self.get_logger().info('Control node has been started.')
         self.lastTime = time.time()
 
+    def obj_callback(self, msg: String):
+        self.closest = msg.data
+        
     def lidar_callback(self, msg: LaserScan):
         self.dt = time.time() - self.lastTime
         self.lastTime = time.time()
@@ -128,7 +134,11 @@ class ControlNode(Node):
         self.objs = []
         self.cont_stack = []
 
-        remove = "Left"
+        remove = "None" 
+        if self.closest == "G":
+            remove = "Left"
+        elif self.closest == "R":
+            remove = "Right"
         
         for i in range(chkRng[0], chkRng[1], self.skip1):
             if(self.IS_SIM): _ints[i] = 1.0
@@ -162,17 +172,21 @@ class ControlNode(Node):
             if(len(self.cont_stack) > 0):
                 pop = self.cont_stack.pop()
                 mid = (i + pop) // 2
+                sz = _dats[mid] * abs(i-pop)*_inc
+                # print(sz)
                 # if(_ints[mid] <= 0.1 or _dats[mid] > 3.0):
                 #     _dats[mid] = self.fix_missing(_dats, _ints, mid)
-                self.objs.append({
-                    "index": mid,
-                    "ang": self.i2a(mid, angMin, _inc),
-                    "dst": _dats[mid],
-                    "x": _dats[mid] * cos(self.i2a(mid, angMin, _inc)),
-                    "y": _dats[mid] * sin(self.i2a(mid, angMin, _inc)),
-                    "intensity": _ints[mid]
-                })
-            return True
+                if( sz > 0.035 and sz < 0.1):
+                    self.objs.append({
+                        "index": mid,
+                        "ang": self.i2a(mid, angMin, _inc),
+                        "dst": _dats[mid],
+                        "x": _dats[mid] * cos(self.i2a(mid, angMin, _inc)),
+                        "y": _dats[mid] * sin(self.i2a(mid, angMin, _inc)),
+                        "intensity": _ints[mid]
+                    })
+                if(_dats[mid] < 1.0):
+                    return True
         return False
     # def getMaxD(self, angMin, _inc, _dats, _ints):
     #     _max = {"dst": 0, "ang": 0}
@@ -277,7 +291,10 @@ class ControlNode(Node):
                     return -self.remap(_dats[i], 0, self.dangerDist, 1.0, 0.0)
         return False
 
-    def pubDrive(self):
+    def pubDrive(self, disable = False):
+        if disable:
+            self.speed = 0.0
+            self.strAngle = 0.0
         throttle_msg = Float32()
         throttle_msg.data = self.speed
         self.throttle_pub.publish(throttle_msg)
@@ -291,6 +308,7 @@ class ControlNode(Node):
     def pubObjData(self):
         obj_data = Float32MultiArray()
         obj_data.data = []
+        self.objs.sort(key=lambda x: x["dst"], reverse=True)
         for obj in self.objs:
             obj_data.data.append(obj["ang"])
         
@@ -353,8 +371,13 @@ class ControlNode(Node):
                 x = cx + circle_radius * cos(theta)
                 y = cy + circle_radius * sin(theta)
                 targetPnts.points.append(Point32(x=x, y=y, z=0.0))
-                targetPnts.channels[0].values.append(0.5)
-        
+                if(self.closest == "R"):
+                    targetPnts.channels[0].values.append(0.0)
+                elif(self.closest == "G"):
+                    targetPnts.channels[0].values.append(0.2)
+                else:
+                    targetPnts.channels[0].values.append(0.6)
+
         for i in range(len(self.datass)):
             targetPnts.points.append(Point32(x=self.datass[i][0], y=self.datass[i][1], z=0.0))
             targetPnts.channels[0].values.append(self.datass[i][2])

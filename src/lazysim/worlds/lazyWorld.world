@@ -1,8 +1,8 @@
 <sdf version='1.7'>
   <world name='default'>
-    <plugin name="gazebo_ros_init" filename="libgazebo_ros_init.so"/>
-    <plugin name="gazebo_ros_factory" filename="libgazebo_ros_factory.so"/>
-    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so"/>
+    <plugin name="gazebo_ros_init" filename="libgazebo_ros_init.so" />
+    <plugin name="gazebo_ros_factory" filename="libgazebo_ros_factory.so" />
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so" />
 
 
     <light name='sun' type='directional'>
@@ -84,7 +84,7 @@
       <real_time_update_rate>1000</real_time_update_rate>
     </physics>
     <scene>
-      <ambient>0.4 0.4 0.4 1</ambient>
+      <ambient>0.55 0.55 0.55 1</ambient>
       <background>0.7 0.7 0.7 1</background>
       <shadows>0</shadows>
     </scene>
@@ -137,7 +137,10 @@
               <torsional>
                 <ode />
               </torsional>
-              <ode />
+              <ode>
+                <mu>0.01</mu>
+                <mu2>0.01</mu2>
+              </ode>
             </friction>
           </surface>
         </collision>

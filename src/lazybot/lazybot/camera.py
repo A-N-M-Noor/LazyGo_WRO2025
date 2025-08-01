@@ -65,7 +65,7 @@ class CameraNode(Node):
             if(dt > 0):
                 fps = 1 / dt
                 self.fps = self.fps + (fps - self.fps) * 0.1
-                self.get_logger().info(f"Camera FPS: {self.fps:.2f}")
+                # self.get_logger().info(f"Camera FPS: {self.fps:.2f}")
     
     def obj_callback(self, msg: Float32MultiArray):
         if len(msg.data) > 0:
@@ -73,6 +73,7 @@ class CameraNode(Node):
             
     def show_view(self):
         if self.image is not None:
+            cv2.putText(self.image, f'FPS: {self.fps:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
             cv2.imshow('Camera Image', self.image)
             self.imsg = None
             key = cv2.waitKey(1) & 0xFF

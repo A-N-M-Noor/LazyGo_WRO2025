@@ -10,10 +10,10 @@ material CustomGround/Track
       
       texture_unit
       {
-        texture track.png
+        texture track_m.png
         tex_coord_set 0
         tex_address_mode wrap
-        filtering cubic cubic cubic
+        filtering linear linear linear
       }
     }
   }
