@@ -12,7 +12,9 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz',
         arguments=['-d', os.path.join(package_directory, 'config', 'lazySim.rviz')],
-        parameters=[{'use_sim_time': True}]
+        parameters=[{'use_sim_time': True}],
+        output='log',
+        emulate_tty=False
     )
 
     robot_publisher_node = Node(

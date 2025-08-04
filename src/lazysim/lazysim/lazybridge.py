@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, Float64MultiArray
+from sensor_msgs.msg import JointState
 from math import radians, degrees, cos, tan, atan, pi
 
 class LazyBridge(Node):
@@ -19,13 +20,20 @@ class LazyBridge(Node):
             Float32,
             '/throttle',
             self.throttle_callback,
-            10
+            1
         )
         self.steer_sub = self.create_subscription(
             Float32,
             '/steer',
             self.steer_callback,
-            10
+            1
+        )
+        
+        self.create_subscription(
+            JointState,
+            '/joint_states',
+            self.state_callback,
+            1
         )
         
         self.motor_pub = self.create_publisher(Float64MultiArray, '/velocity_controller/commands', 10)
@@ -75,6 +83,11 @@ class LazyBridge(Node):
         self.motor_pub.publish(Float64MultiArray(data=[spdBL, spdBR, spdFL, spdFR]))
         self.steer_pub.publish(Float64MultiArray(data=[strL, strR]))
 
+    def state_callback(self, msg):
+        pos = dict(zip(msg.name, msg.position))
+        self.get_logger().info(f"{pos['base_to_back_left_wheel']} - {pos['base_to_back_right_wheel']}")
+
+    
 def main(args=None):
     rclpy.init(args=args)
     node = LazyBridge()

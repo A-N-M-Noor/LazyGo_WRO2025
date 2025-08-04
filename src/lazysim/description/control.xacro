@@ -20,21 +20,25 @@
         <joint name="front_left_hinge_to_wheel">
             <command_interface name="velocity" />
             <state_interface name="velocity" />
+            <state_interface name="position" />
         </joint>
 
         <joint name="front_right_hinge_to_wheel">
             <command_interface name="velocity" />
             <state_interface name="velocity" />
+            <state_interface name="position" />
         </joint>
 
         <joint name="base_to_back_left_wheel">
             <command_interface name="velocity" />
             <state_interface name="velocity" />
+            <state_interface name="position" />
         </joint>
 
         <joint name="base_to_back_right_wheel">
             <command_interface name="velocity" />
             <state_interface name="velocity" />
+            <state_interface name="position" />
         </joint>
     </ros2_control>
 
