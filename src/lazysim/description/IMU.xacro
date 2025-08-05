@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="lazyBot">
+    <joint name="base_to_imu" type="fixed">
+        <parent link="chassis" />
+        <child link="imu" />
+        <origin xyz="${imu_distance_from_base} 0 ${ground_offset+height+(imu_size/2)}" />
+    </joint>
+
+    <link name="imu">
+        <visual>
+            <geometry>
+                <box size="${imu_size} ${imu_size} ${imu_size}" />
+            </geometry>
+            <material name="black" />
+        </visual>
+        <collision self_collide="false">
+            <geometry>
+                <box size="${imu_size} ${imu_size} ${imu_size}" />
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="${imu_mass}" />
+            <inertia
+                ixx="${imu_mass/12 * (imu_size*imu_size + imu_size*imu_size)}"
+                iyy="${imu_mass/12 * (imu_size*imu_size + imu_size*imu_size)}"
+                izz="${imu_mass/12 * (imu_size*imu_size + imu_size*imu_size)}"
+                ixy="0" ixz="0" iyz="0" />
+        </inertial>
+    </link>
+
+    <gazebo reference="imu">
+        <material>Gazebo/Black</material>
+        <sensor name="imu_sensor" type="imu">
+            <always_on>1</always_on>
+            <update_rate>50</update_rate>
+            <visualize>true</visualize>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <ros>
+                    <namespace></namespace>
+                    <remapping>~/out:=imu</remapping>
+                </ros>
+                <initial_orientation_as_reference>true</initial_orientation_as_reference>
+            </plugin>
+        </sensor>
+    </gazebo>
+</robot>

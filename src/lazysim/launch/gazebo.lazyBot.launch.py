@@ -99,7 +99,7 @@ def generate_launch_description():
         rsp,
         gazebo,
         spawn_entity,
-        # bridge,
+        bridge,
         TimerAction(period=4.0, actions=[
             track_creator
         ]),

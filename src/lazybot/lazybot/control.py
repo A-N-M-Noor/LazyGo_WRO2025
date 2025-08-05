@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan, PointCloud, ChannelFloat32
-from geometry_msgs.msg import Point32
+from geometry_msgs.msg import Point32, Vector3
 from std_msgs.msg import Float32, Float32MultiArray, String
 from math import pi, radians, degrees, sin, cos
 import time
@@ -11,13 +11,16 @@ class ControlNode(Node):
         super().__init__('control')
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
         self.obj_sub = self.create_subscription(String, '/closest_obj', self.obj_callback, 1)
-        
+        self.pos_sub = self.create_subscription(Vector3, '/lazypos', self.pos_callback, 10)
+
         self.objPub = self.create_publisher(Float32MultiArray, '/obj_data', 1)
         self.throttle_pub = self.create_publisher(Float32, '/throttle', 1)
         self.steer_pub = self.create_publisher(Float32, '/steer', 1)
 
         self.pubDebug = self.create_publisher(PointCloud, "/target_point", 10)
 
+        self.create_timer(0.05, self.looping)
+        
         self.IS_SIM = True
         
         self.datass = []
@@ -43,6 +46,11 @@ class ControlNode(Node):
         self.targetAng = 0.0
         self.targetD = 0.0
         
+        self.pos = Vector3()
+        self.reached = True
+        self.lapCount = 0
+        self.running = True
+
         self.objs = []
         self.cont_stack = []
         
@@ -51,10 +59,33 @@ class ControlNode(Node):
         self.get_logger().info('Control node has been started.')
         self.lastTime = time.time()
 
+    def looping(self):
+        if not self.running:
+            self.pubDrive(disable=True)
+            return
+
+        if not self.reached:
+            if abs(self.pos.x) < 0.5 and abs(self.pos.y) < 0.1:
+                self.reached = True
+                self.lapCount += 1
+                self.get_logger().info(f"Lap {self.lapCount} completed!")
+        
+        if abs(self.pos.x) > 0.5 or abs(self.pos.y) > 0.1:
+            self.reached = False
+        
+        if self.lapCount >= 3:
+            self.running = False
+            self.get_logger().info("Reached the destination, stopping the robot.")
+            self.pubDrive(disable=True)
+            return
+    
     def obj_callback(self, msg: String):
         self.closest = msg.data
         
     def lidar_callback(self, msg: LaserScan):
+        if not self.running:
+            return
+        
         self.dt = time.time() - self.lastTime
         self.lastTime = time.time()
 
@@ -101,31 +132,10 @@ class ControlNode(Node):
             self.get_logger().error(f"Error publishing debug point: {e}")
 
     
-    # def getObjInds(self, angMin, _inc, _dats, _ints):
-    #     self.objs = []
-    #     for i in range(self.a2i(-self.lookRng, angMin, _inc), self.a2i(self.lookRng, angMin, _inc), self.skip1):
-    #         if(self.IS_SIM): _ints[i] = 1.0
-    #         if(i < 1 or i >= len(_dats) or _ints[i] <= 0.05 or _dats[i] > 3.0):
-    #             continue
-            
-    #         slope = (_dats[i] - _dats[i-self.skip1]) / self.skip1
-            
-    #         if(slope < -0.15):
-    #             self.cont_stack.append(i)
-    #         elif(slope > 0.15):
-    #             if(len(self.cont_stack) > 0):
-    #                 pop = self.cont_stack.pop()
-    #                 mid = (i + pop) // 2
-    #                 if(_ints[mid] <= 0.1 or _dats[mid] > 3.0):
-    #                     _dats[mid] = self.fix_missing(_dats, _ints, mid)
-    #                 self.objs.append({
-    #                     "index": mid,
-    #                     "ang": self.i2a(mid, angMin, _inc),
-    #                     "dst": _dats[mid],
-    #                     "x": _dats[mid] * cos(self.i2a(mid, angMin, _inc)),
-    #                     "y": _dats[mid] * sin(self.i2a(mid, angMin, _inc)),
-    #                     "intensity": _ints[mid]
-    #                 })
+    def pos_callback(self, msg: Vector3):
+        self.pos.x = msg.x
+        self.pos.y = msg.y
+        self.pos.z = msg.z
     
     def getMaxDOBJ(self, angMin, _inc, _dats, _ints):
         _max = {"dst": 0, "ang": 0}
@@ -173,10 +183,7 @@ class ControlNode(Node):
                 pop = self.cont_stack.pop()
                 mid = (i + pop) // 2
                 sz = _dats[mid] * abs(i-pop)*_inc
-                # print(sz)
-                # if(_ints[mid] <= 0.1 or _dats[mid] > 3.0):
-                #     _dats[mid] = self.fix_missing(_dats, _ints, mid)
-                if( sz > 0.035 and sz < 0.1):
+                if( sz > 0.03 and sz < 0.1):
                     self.objs.append({
                         "index": mid,
                         "ang": self.i2a(mid, angMin, _inc),
