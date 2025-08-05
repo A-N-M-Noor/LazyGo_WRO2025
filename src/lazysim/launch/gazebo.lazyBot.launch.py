@@ -74,7 +74,10 @@ def generate_launch_description():
     rviz = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
                     package_directory, 'launch', 'rviz_lazySim.launch.py')]),
-                launch_arguments={'use_sim_time': 'true'}.items(),
+                launch_arguments={
+                    'use_sim_time': 'true',
+                    'tf_buffer_duration': '30.0'
+                }.items(),
                 condition=UnlessCondition(disable_rviz)
             )
     
@@ -87,8 +90,8 @@ def generate_launch_description():
                 package="lazysim",
                 executable="track_maker",
                 parameters=[{
-                    "template_path": "/home/duronto/WRO_25_ws/src/lazysim/config/object_template.sdf",
-                    "settings_path": "/home/duronto/WRO_25_ws/src/lazysim/config/track.json"
+                    "tower_template_path": "/home/duronto/WRO_25_ws/src/lazysim/config/object_template.sdf",
+                    "settings_path": "/home/duronto/WRO_25_ws/src/lazysim/config/track.yaml"
                     }],
                 output="screen",
             )
@@ -104,7 +107,9 @@ def generate_launch_description():
             track_creator
         ]),
         control,
-        rviz,
+        TimerAction(period=2.0, actions=[
+            rviz
+        ]),
     ])
 
     return ld

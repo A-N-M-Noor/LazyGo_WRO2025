@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="lazyBot">
+    <xacro:macro name="proximity" params="name position angle">
+        <joint name="base_to_proximity_${name}" type="fixed">
+            <parent link="chassis" />
+            <child link="proximity_${name}" />
+            <origin xyz="${position}" rpy="0 0 ${angle}" />
+        </joint>
+
+        <link name="proximity_${name}">
+            <visual>
+                <geometry>
+                    <box size="${proximity_size} ${proximity_size} ${proximity_size}" />
+                </geometry>
+                <material name="black" />
+            </visual>
+        </link>
+
+        <gazebo reference="proximity_${name}">
+            <material>Gazebo/Yellow</material>
+
+            <sensor name="proximity_${name}" type="ray">
+                <pose> 0 0 0 0 0 0 </pose>
+                <visualize>true</visualize>
+                <update_rate>50</update_rate>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>8</samples>
+                            <min_angle>${-pi/4}</min_angle>
+                            <max_angle>${pi/4}</max_angle>
+                        </horizontal>
+                    </scan>
+                    <range>
+                        <min>0.001</min>
+                        <max>0.03</max>
+                    </range>
+                </ray>
+                <plugin name="proxy_${name}" filename="libgazebo_ros_ray_sensor.so">
+                    <ros>
+                        <argument>~/out:=proximity_${name}</argument>
+                    </ros>
+                    <output_type>sensor_msgs/LaserScan</output_type>
+                    <frame_name>proximity_${name}</frame_name>
+                </plugin>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:proximity name="front_right" position="${length-len_offs} -${width/2} ${ground_offset + proximity_size/2}" angle="-${pi/4}" />
+    <xacro:proximity name="front_left" position="${length-len_offs} ${width/2} ${ground_offset + proximity_size/2}" angle="${pi/4}" />
+    <xacro:proximity name="rear_right" position="-${len_offs} -${width/2} ${ground_offset + proximity_size/2}" angle="${pi+pi/4}" />
+    <xacro:proximity name="rear_left" position="-${len_offs} ${width/2} ${ground_offset + proximity_size/2}" angle="${pi-pi/4}" />
+</robot>

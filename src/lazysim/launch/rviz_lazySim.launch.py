@@ -11,7 +11,7 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz',
-        arguments=['-d', os.path.join(package_directory, 'config', 'lazySim.rviz')],
+        arguments=['-d', os.path.join(package_directory, 'config', 'lazySim.rviz'), '--ros-args', '--log-level', 'ERROR'],
         parameters=[{'use_sim_time': True}],
         output='log',
         emulate_tty=False

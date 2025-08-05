@@ -1,0 +1,31 @@
+objects: true
+parking_space: true
+parking_space_size: 0.3
+
+start:
+    pos:
+        x: 0.25
+        y: 0.3
+    angle: 0
+
+towers:
+    -   color: "Green"
+        pos:
+            x: 0.5
+            y: -0.1
+    -   color: "Red"
+        pos:
+            x: 0.9
+            y: 1.0
+    -   color: "Green"
+        pos:
+            x: 0.5
+            y: 2.1
+    -   color: "Red"
+        pos:
+            x: -0.5
+            y: 1.9
+    -   color: "Green"
+        pos:
+            x: -1.1
+            y: 1.0

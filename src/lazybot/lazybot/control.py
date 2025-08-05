@@ -47,9 +47,11 @@ class ControlNode(Node):
         self.targetD = 0.0
         
         self.pos = Vector3()
+        self.gotWallD = False
         self.reached = True
         self.lapCount = 0
         self.running = True
+        self.endOffset = [0.0, 0.0]
 
         self.objs = []
         self.cont_stack = []
@@ -60,17 +62,18 @@ class ControlNode(Node):
         self.lastTime = time.time()
 
     def looping(self):
-        if not self.running:
+        if not self.running or not self.gotWallD:
             self.pubDrive(disable=True)
             return
-
+        isInside = abs(self.pos.x) < 0.5 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
         if not self.reached:
-            if abs(self.pos.x) < 0.5 and abs(self.pos.y) < 0.1:
+            if isInside:
                 self.reached = True
                 self.lapCount += 1
                 self.get_logger().info(f"Lap {self.lapCount} completed!")
         
-        if abs(self.pos.x) > 0.5 or abs(self.pos.y) > 0.1:
+        if not isInside and self.reached:
+            self.get_logger().info("Moving on...")
             self.reached = False
         
         if self.lapCount >= 3:
@@ -78,6 +81,8 @@ class ControlNode(Node):
             self.get_logger().info("Reached the destination, stopping the robot.")
             self.pubDrive(disable=True)
             return
+        
+        self.pubDrive()
     
     def obj_callback(self, msg: String):
         self.closest = msg.data
@@ -97,6 +102,21 @@ class ControlNode(Node):
         angInts = msg.intensities
         
         # self.getObjInds(angMin, angInc, angDats, angInts)
+        
+        if(not self.gotWallD):
+            wi = self.a2i(0.0, angMin, angInc)
+            if(self.IS_SIM): angInts[wi] = 1.0
+            
+            if(angInts[wi] <= 0.1 or angDats[wi] > 3.0):
+                angDats[wi] = self.fix_missing(angDats, angInts, wi)
+                angInts[wi] = 1.0
+            
+            self.endOffset[0] = angDats[wi] - 1.5
+            self.endOffset[1] = angDats[wi] - 1.0
+            
+            self.get_logger().info(f"Wall Distance: {angDats[wi]:.2f}, End Offset: {self.endOffset}")
+            
+            self.gotWallD = True
         
         self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
 
@@ -125,7 +145,7 @@ class ControlNode(Node):
         else:
             self.speed = self.lerp(self.speed, trgSpd, 6*self.dt)
         self.datass = []
-        self.pubDrive()
+        
         try:
             self.pubDebugPoint()
         except Exception as e:

@@ -3,7 +3,8 @@ from rclpy.node import Node
 from gazebo_msgs.srv import SpawnEntity, SetEntityState
 from gazebo_msgs.msg import EntityState
 from geometry_msgs.msg import Pose, Quaternion, Twist
-import os, json, math
+import os, math
+from ruamel.yaml import YAML
 
 
 def euler_to_quaternion(roll: float, pitch: float, yaw: float) -> Quaternion:
@@ -23,17 +24,18 @@ def euler_to_quaternion(roll: float, pitch: float, yaw: float) -> Quaternion:
 class TrackMaker(Node):
     def __init__(self):
         super().__init__('track_maker')
-        self.declare_parameter('template_path', '')
+        self.declare_parameter('tower_template_path', '')
         self.declare_parameter('settings_path', '')
-        
-        self.template_path = self.get_parameter('template_path').get_parameter_value().string_value
+
+        self.tower_template_path = self.get_parameter('tower_template_path').get_parameter_value().string_value
         self.settings_path = self.get_parameter('settings_path').get_parameter_value().string_value
         self.template = ""
         self.settings = {}
 
+        yaml = YAML()
         if os.path.isfile(self.settings_path):
             with open(self.settings_path, 'r') as f:
-                self.settings = json.load(f)
+                self.settings = yaml.load(f)
         else:
             self.get_logger().warn(f"Settings file '{self.settings_path}' does not exist.")
 
@@ -51,12 +53,12 @@ class TrackMaker(Node):
         self.get_logger().info('SetEntityState service is available.')
         
         
-        if os.path.isfile(self.template_path):
-            with open(self.template_path, 'r') as f:
+        if os.path.isfile(self.tower_template_path):
+            with open(self.tower_template_path, 'r') as f:
                 self.template = f.read()
-                self.get_logger().info(f"Template loaded from {self.template_path}")
+                self.get_logger().info(f"Template loaded from {self.tower_template_path}")
         else:
-            self.get_logger().warn(f"Template file '{self.template_path}' does not exist.")
+            self.get_logger().warn(f"Template file '{self.tower_template_path}' does not exist.")
 
 
         self.count = 1
