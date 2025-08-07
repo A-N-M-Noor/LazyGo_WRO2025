@@ -6,7 +6,7 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.actions import TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.conditions import IfCondition, UnlessCondition
+from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
@@ -27,7 +27,6 @@ def generate_launch_description():
         default_value='false',
         description='Disable Bridge launch'
     )
-    disable_rviz = LaunchConfiguration('disable_rviz')
     disable_bridge = LaunchConfiguration('disable_bridge')
 
     package_directory = get_package_share_directory('lazysim')
@@ -76,10 +75,18 @@ def generate_launch_description():
                     package_directory, 'launch', 'rviz_lazySim.launch.py')]),
                 launch_arguments={
                     'use_sim_time': 'true',
-                    'tf_buffer_duration': '30.0'
+                    'tf_buffer_duration': '30.0',
+                    'disable_state_publisher': 'true',
+                    'disable_robot_publisher': 'true',
                 }.items(),
                 condition=UnlessCondition(disable_rviz)
             )
+    static_tf = Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            arguments=['0', '0', '0', '0', '0', '0', 'base_footprint', 'base_link'],
+            output='screen'
+        )
     
     control = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
@@ -99,6 +106,7 @@ def generate_launch_description():
     ld = LaunchDescription([
         disable_rviz_arg,
         disable_bridge_arg,
+        static_tf,
         rsp,
         gazebo,
         spawn_entity,

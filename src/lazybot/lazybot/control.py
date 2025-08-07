@@ -1,10 +1,19 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan, PointCloud, ChannelFloat32
-from geometry_msgs.msg import Point32, Vector3
+from geometry_msgs.msg import Point32, Vector3, TransformStamped, Quaternion, Vector3
+from tf2_ros import TransformBroadcaster
+from nav_msgs.msg import Odometry
+
 from std_msgs.msg import Float32, Float32MultiArray, String
 from math import pi, radians, degrees, sin, cos
 import time
+
+def yaw_to_quaternion(yaw):
+    q = Quaternion()
+    q.z = sin(yaw / 2.0)
+    q.w = cos(yaw / 2.0)
+    return q
 
 class ControlNode(Node):
     def __init__(self):
@@ -18,6 +27,8 @@ class ControlNode(Node):
         self.steer_pub = self.create_publisher(Float32, '/steer', 1)
 
         self.pubDebug = self.create_publisher(PointCloud, "/target_point", 10)
+        self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
+        self.tf_broadcaster = TransformBroadcaster(self)
 
         self.create_timer(0.05, self.looping)
         
@@ -62,6 +73,8 @@ class ControlNode(Node):
         self.lastTime = time.time()
 
     def looping(self):
+        self.pubOdom()
+        
         if not self.running or not self.gotWallD:
             self.pubDrive(disable=True)
             return
@@ -135,8 +148,8 @@ class ControlNode(Node):
         self.targetD = maxD
 
         # self.get_logger().info(f"Target Angle: {self.targetAng}, Max Dst: {maxD}")
-        self.strAngle = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
-
+        sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
+        self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
         mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
 
         trgSpd = self.maxSpeed * mult2
@@ -215,32 +228,6 @@ class ControlNode(Node):
                 if(_dats[mid] < 1.0):
                     return True
         return False
-    # def getMaxD(self, angMin, _inc, _dats, _ints):
-    #     _max = {"dst": 0, "ang": 0}
-    #     chkRng = self.indRng(-self.lookRng, self.lookRng, angMin, _inc)
-
-    #     mid = (chkRng[0] + chkRng[1]) // 2
-    #     for i in range(0, mid - chkRng[0], self.skip1):
-    #         if(self.IS_SIM): _ints[i] = 1.0
-    #         if(_ints[mid-i] <= 0.1 or _dats[mid-i] > 3.0):
-    #             _dats[mid-i] = self.fix_missing(_dats, _ints, mid-i)
-    #             _ints[mid-i] = 1.0
-    #         if(_ints[mid+i] <= 0.1 or _dats[mid+i] > 3.0):
-    #             _dats[mid+i] = self.fix_missing(_dats, _ints, mid+i)
-    #             _ints[mid+i] = 1.0
-
-    #         if(mid - i < 0 or mid + i >= len(_dats) or _ints[mid - i] == 0.0 or _ints[mid + i] == 0.0):
-    #             continue
-    #         dt = self.marching(mid - i, _dats, _ints, angMin,_inc)
-    #         if(dt["dst"] > _max["dst"]):
-    #             _max = dt
-            
-    #         dt = self.marching(mid + i, _dats, _ints, angMin,_inc)
-    #         if(dt["dst"] > _max["dst"]):
-    #             _max = dt
-    #         if(mid+i < chkRng[1]-10 and _max["dst"] < 15):
-    #             chkRng = self.indRng(-self.lookRngS, self.lookRngS, angMin, _inc)
-    #     return _max["dst"], _max["ang"]
 
     def marching(self, indx, _dats, _ints, angMin, _inc):
         rng = [indx-self.prec*self.skip2, indx+self.prec*self.skip2]
@@ -340,7 +327,34 @@ class ControlNode(Node):
             obj_data.data.append(obj["ang"])
         
         self.objPub.publish(obj_data)
-            
+
+    def pubOdom(self):
+        current_time = self.get_clock().now().to_msg()
+        
+        q = yaw_to_quaternion(self.pos.z - pi/2)
+        x, y, z = self.pos.x, -self.pos.y, 0.0
+        
+        t = TransformStamped()
+        t.header.stamp = current_time
+        t.header.frame_id = 'odom'
+        t.child_frame_id = 'base_link'
+        t.transform.translation.x = x
+        t.transform.translation.y = y
+        t.transform.translation.z = z
+        t.transform.rotation = q
+        self.tf_broadcaster.sendTransform(t)
+        
+        odom = Odometry()
+        odom.header.stamp = current_time
+        odom.header.frame_id = 'odom'
+        odom.child_frame_id = 'base_link'
+        odom.pose.pose.position.x = x
+        odom.pose.pose.position.y = y
+        odom.pose.pose.position.z = 0.0
+        odom.pose.pose.orientation = q
+        
+        self.odom_pub.publish(odom)
+
     def pubDebugPoint(self):
         targetPnts = PointCloud()
         targetPnts.channels.append(ChannelFloat32(name="intensity", values=[]))
