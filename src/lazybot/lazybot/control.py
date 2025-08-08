@@ -1,23 +1,18 @@
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import LaserScan, PointCloud, ChannelFloat32
-from geometry_msgs.msg import Point32, Vector3, TransformStamped, Quaternion, Vector3
-from tf2_ros import TransformBroadcaster
-from nav_msgs.msg import Odometry
+from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Vector3
 
 from std_msgs.msg import Float32, Float32MultiArray, String
+from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 from math import pi, radians, degrees, sin, cos
 import time
-
-def yaw_to_quaternion(yaw):
-    q = Quaternion()
-    q.z = sin(yaw / 2.0)
-    q.w = cos(yaw / 2.0)
-    return q
 
 class ControlNode(Node):
     def __init__(self):
         super().__init__('control')
+        self.cmd_sub = self.create_subscription(String, '/cmd', self.cmd_callback, 10)
+        
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
         self.obj_sub = self.create_subscription(String, '/closest_obj', self.obj_callback, 1)
         self.pos_sub = self.create_subscription(Vector3, '/lazypos', self.pos_callback, 10)
@@ -26,11 +21,9 @@ class ControlNode(Node):
         self.throttle_pub = self.create_publisher(Float32, '/throttle', 1)
         self.steer_pub = self.create_publisher(Float32, '/steer', 1)
 
-        self.pubDebug = self.create_publisher(PointCloud, "/target_point", 10)
-        self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
-        self.tf_broadcaster = TransformBroadcaster(self)
+        self.pubDebug = self.create_publisher(BotDebugInfo, '/lazybot/debug', 10)
 
-        self.create_timer(0.05, self.looping)
+        self.create_timer(0.05, self.odom_loop)
         
         self.IS_SIM = True
         
@@ -61,7 +54,7 @@ class ControlNode(Node):
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
-        self.running = True
+        self.running = False
         self.endOffset = [0.0, 0.0]
 
         self.objs = []
@@ -72,8 +65,7 @@ class ControlNode(Node):
         self.get_logger().info('Control node has been started.')
         self.lastTime = time.time()
 
-    def looping(self):
-        self.pubOdom()
+    def odom_loop(self):
         
         if not self.running or not self.gotWallD:
             self.pubDrive(disable=True)
@@ -96,6 +88,18 @@ class ControlNode(Node):
             return
         
         self.pubDrive()
+    
+    def cmd_callback(self, msg: String):
+        command = msg.data.strip().lower()
+        if command == "start":
+            self.lapCount = 0
+            self.reached = True
+            self.running = True
+            self.gotWallD = False
+            self.get_logger().info("Starting the robot.")
+        elif command == "stop":
+            self.running = False
+            self.get_logger().info("Stopping the robot.")
     
     def obj_callback(self, msg: String):
         self.closest = msg.data
@@ -328,102 +332,25 @@ class ControlNode(Node):
         
         self.objPub.publish(obj_data)
 
-    def pubOdom(self):
-        current_time = self.get_clock().now().to_msg()
-        
-        q = yaw_to_quaternion(self.pos.z - pi/2)
-        x, y, z = self.pos.x, -self.pos.y, 0.0
-        
-        t = TransformStamped()
-        t.header.stamp = current_time
-        t.header.frame_id = 'odom'
-        t.child_frame_id = 'base_link'
-        t.transform.translation.x = x
-        t.transform.translation.y = y
-        t.transform.translation.z = z
-        t.transform.rotation = q
-        self.tf_broadcaster.sendTransform(t)
-        
-        odom = Odometry()
-        odom.header.stamp = current_time
-        odom.header.frame_id = 'odom'
-        odom.child_frame_id = 'base_link'
-        odom.pose.pose.position.x = x
-        odom.pose.pose.position.y = y
-        odom.pose.pose.position.z = 0.0
-        odom.pose.pose.orientation = q
-        
-        self.odom_pub.publish(odom)
-
     def pubDebugPoint(self):
-        targetPnts = PointCloud()
-        targetPnts.channels.append(ChannelFloat32(name="intensity", values=[]))
-        targetPnts.header.stamp = self.get_clock().now().to_msg()
-        targetPnts.header.frame_id = "laser"
-
-        ang = radians(self.targetAng)
-        offX = self.castR*cos(ang + pi/2)
-        offY = self.castR*sin(ang + pi/2)
-
-        for i in range(0, int(self.targetD/0.1)):
-            x = (i*0.1)*cos(ang) + offX
-            y = (i*0.1)*sin(ang) + offY
-            targetPnts.points.append(Point32(x=x, y=y, z=0.0))
-            targetPnts.channels[0].values.append(0.2)
-        offX = self.castR*cos(ang - pi/2)
-        offY = self.castR*sin(ang - pi/2)
-        for i in range(0, int(self.targetD/0.1)):
-            x = (i*0.1)*cos(ang) + offX
-            y = (i*0.1)*sin(ang) + offY
-            targetPnts.points.append(Point32(x=x, y=y, z=0.0))
-            targetPnts.channels[0].values.append(0.4)
-
-        circle_points = 50
-        for i in range(circle_points):
-            ang = 2 * pi * i / circle_points
-            x = self.dangerDist*cos(ang)
-            y = self.dangerDist*sin(ang)
-            targetPnts.points.append(Point32(x=x, y=y, z=0.0))
-
-            ang = degrees(ang)
-            if(ang > self.dangerAng[0] and ang < self.dangerAng[1]):
-                targetPnts.channels[0].values.append(0.0)
-            elif(ang > -self.dangerAng[1] and ang < -self.dangerAng[0]):
-                targetPnts.channels[0].values.append(1.0)
-            else:
-                targetPnts.channels[0].values.append(0.5)
+        msg = BotDebugInfo()
+        msg.target_angle = self.targetAng
+        msg.target_distance = self.targetD
+        msg.cast_radius = self.castR
+        msg.danger_distance = self.dangerDist
+        msg.danger_angles = self.dangerAng
         
-        circle_points = 50
-        
-        for i in range(circle_points):
-            theta = 2 * pi * i / circle_points
-            x = self.castR * cos(theta)
-            y = self.castR * sin(theta)
-            targetPnts.points.append(Point32(x=x, y=y, z=0.0))
-            targetPnts.channels[0].values.append(0.2)
-        
-        circle_points = 20
-        circle_radius = 0.07
-
+        msg.towers = []
         for obj in self.objs:
-            cx, cy = obj["x"], obj["y"]
-            for j in range(circle_points):
-                theta = 2 * pi * j / circle_points
-                x = cx + circle_radius * cos(theta)
-                y = cy + circle_radius * sin(theta)
-                targetPnts.points.append(Point32(x=x, y=y, z=0.0))
-                if(self.closest == "R"):
-                    targetPnts.channels[0].values.append(0.0)
-                elif(self.closest == "G"):
-                    targetPnts.channels[0].values.append(0.2)
-                else:
-                    targetPnts.channels[0].values.append(0.6)
-
-        for i in range(len(self.datass)):
-            targetPnts.points.append(Point32(x=self.datass[i][0], y=self.datass[i][1], z=0.0))
-            targetPnts.channels[0].values.append(self.datass[i][2])
-
-        self.pubDebug.publish(targetPnts)
+            tower = LidarTowerInfo()
+            tower.color = self.closest
+            tower.index = obj["index"]
+            tower.ang = obj["ang"]
+            tower.dst = obj["dst"]
+            tower.x = obj["x"]
+            tower.y = obj["y"]
+            msg.towers.append(tower)
+        self.pubDebug.publish(msg)
 
     def i2a(self, i, angMin, angInc):
         """Get angle value from the index value"""
@@ -458,13 +385,9 @@ class ControlNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ControlNode()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

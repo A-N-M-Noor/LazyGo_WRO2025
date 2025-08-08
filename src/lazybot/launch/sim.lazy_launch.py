@@ -22,7 +22,15 @@ def generate_launch_description():
         name='detect',
         parameters=[{'use_sim_time': True}]
     )
+    
+    debug = Node(
+        package='lazybot',
+        executable='debug',
+        name='debug',
+        parameters=[{'use_sim_time': True}]
+    )
 
     ld.add_action(control)
     ld.add_action(detect)
+    ld.add_action(debug)
     return ld
