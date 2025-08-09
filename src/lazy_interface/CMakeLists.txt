@@ -15,6 +15,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/LidarTowerInfo.msg"
   "msg/LidarTowerList.msg"
   "msg/BotDebugInfo.msg"
+  "msg/BotLidarInfo.msg"
 )
 
 ament_export_dependencies(rosidl_default_runtime)

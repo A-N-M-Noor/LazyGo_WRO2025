@@ -19,6 +19,8 @@ class DebugNode(Node):
         
         self.debug_sub = self.create_subscription(BotDebugInfo, '/lazybot/debug', self.debug_callback, 10)
         self.pos_sub = self.create_subscription(Vector3, '/lazypos', self.pos_callback, 10)
+        
+        self.pubDebug = self.create_publisher(PointCloud, '/target_point', 10)
         self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
         self.tf_broadcaster = TransformBroadcaster(self)
         

@@ -2,11 +2,13 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Vector3
+import numpy as np
 
 from std_msgs.msg import Float32, Float32MultiArray, String
 from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 from math import pi, radians, degrees, sin, cos
 import time
+from std_msgs.msg import Header
 
 class ControlNode(Node):
     def __init__(self):
@@ -22,12 +24,16 @@ class ControlNode(Node):
         self.steer_pub = self.create_publisher(Float32, '/steer', 1)
 
         self.pubDebug = self.create_publisher(BotDebugInfo, '/lazybot/debug', 10)
-
-        self.create_timer(0.05, self.odom_loop)
+        
+        self.create_timer(0.025, self.odom_loop)
         
         self.IS_SIM = True
         
-        self.datass = []
+        self.angMin = -pi
+        self.angMax = pi
+        self.angInc = radians(0.5)
+        self.ranges = []
+        self.ints = []
 
         self.maxSpeed : float = 0.45
         self.speed : float = 0.0
@@ -66,7 +72,6 @@ class ControlNode(Node):
         self.lastTime = time.time()
 
     def odom_loop(self):
-        
         if not self.running or not self.gotWallD:
             self.pubDrive(disable=True)
             return
@@ -100,7 +105,7 @@ class ControlNode(Node):
         elif command == "stop":
             self.running = False
             self.get_logger().info("Stopping the robot.")
-    
+            
     def obj_callback(self, msg: String):
         self.closest = msg.data
         
@@ -111,27 +116,25 @@ class ControlNode(Node):
         self.dt = time.time() - self.lastTime
         self.lastTime = time.time()
 
-        angMin = msg.angle_min
-        angMax = msg.angle_max
-        angInc = msg.angle_increment
+        self.angMin = msg.angle_min
+        self.angMax = msg.angle_max
+        self.angInc = msg.angle_increment
 
-        angDats = msg.ranges
-        angInts = msg.intensities
-        
-        # self.getObjInds(angMin, angInc, angDats, angInts)
+        self.ranges = msg.ranges
+        self.ints = msg.intensities
         
         if(not self.gotWallD):
-            wi = self.a2i(0.0, angMin, angInc)
-            if(self.IS_SIM): angInts[wi] = 1.0
+            wi = self.a2i(0.0)
+            if(self.IS_SIM): self.ints[wi] = 1.0
             
-            if(angInts[wi] <= 0.1 or angDats[wi] > 3.0):
-                angDats[wi] = self.fix_missing(angDats, angInts, wi)
-                angInts[wi] = 1.0
+            if(self.ints[wi] <= 0.1 or self.ranges[wi] > 3.0):
+                self.ranges[wi] = self.fix_missing(wi)
+                self.ints[wi] = 1.0
             
-            self.endOffset[0] = angDats[wi] - 1.5
-            self.endOffset[1] = angDats[wi] - 1.0
+            self.endOffset[0] = self.ranges[wi] - 1.5
+            self.endOffset[1] = self.ranges[wi] - 1.0
             
-            self.get_logger().info(f"Wall Distance: {angDats[wi]:.2f}, End Offset: {self.endOffset}")
+            self.get_logger().info(f"Wall Distance: {self.ranges[wi]:.2f}, End Offset: {self.endOffset}")
             
             self.gotWallD = True
         
@@ -139,8 +142,8 @@ class ControlNode(Node):
 
         self.pubObjData()
 
-        maxD, tA = self.getMaxDOBJ(angMin, angInc, angDats, angInts)
-        dS = self.dangerSense(angDats, angMin, angInc)
+        maxD, tA = self.getMaxDOBJ()
+        dS = self.dangerSense()
 
         if(dS):
             tA -= dS * self.strRange * 1.0
@@ -151,32 +154,22 @@ class ControlNode(Node):
         self.targetAng = degrees(self.targetAng)
         self.targetD = maxD
 
-        # self.get_logger().info(f"Target Angle: {self.targetAng}, Max Dst: {maxD}")
         sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
         self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
         mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
 
-        trgSpd = self.maxSpeed * mult2
-        if(trgSpd < self.speed):
-            self.speed = self.lerp(self.speed, trgSpd, 30*self.dt)
-        else:
-            self.speed = self.lerp(self.speed, trgSpd, 6*self.dt)
-        self.datass = []
-        
-        try:
-            self.pubDebugPoint()
-        except Exception as e:
-            self.get_logger().error(f"Error publishing debug point: {e}")
+        self.speed = self.maxSpeed * mult2
 
+        self.pubDebugPoint()
     
     def pos_callback(self, msg: Vector3):
         self.pos.x = msg.x
         self.pos.y = msg.y
         self.pos.z = msg.z
     
-    def getMaxDOBJ(self, angMin, _inc, _dats, _ints):
+    def getMaxDOBJ(self):
         _max = {"dst": 0, "ang": 0}
-        chkRng = self.indRng(-self.lookRng, self.lookRng, angMin, _inc)
+        chkRng = self.indRng(-self.lookRng, self.lookRng)
         
         self.objs = []
         self.cont_stack = []
@@ -188,19 +181,19 @@ class ControlNode(Node):
             remove = "Right"
         
         for i in range(chkRng[0], chkRng[1], self.skip1):
-            if(self.IS_SIM): _ints[i] = 1.0
-            if(_ints[i] <= 0.1 or _dats[i] > 3.0):
-                _dats[i] = self.fix_missing(_dats, _ints, i)
-                _ints[i] = 1.0
+            if(self.IS_SIM): self.ints[i] = 1.0
+            if(self.ints[i] <= 0.1 or self.ranges[i] > 3.0):
+                self.ranges[i] = self.fix_missing(i)
+                self.ints[i] = 1.0
 
-            if(i < 1 or i >= len(_dats) or _ints[i] <= 0.05 or _dats[i] > 3.0):
+            if(i < 1 or i >= len(self.ranges) or self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
                 continue
             
-            dt = self.marching(i, _dats, _ints, angMin,_inc)
+            dt = self.marching(i)
             if(dt["dst"] > _max["dst"]):
                 _max = dt
 
-            objectFound = self.detectContrast(i, _dats, angMin, _inc, _ints)
+            objectFound = self.detectContrast(i)
             
             if objectFound:
                 if remove == "Left":
@@ -211,46 +204,44 @@ class ControlNode(Node):
         return _max["dst"], _max["ang"]
     
     
-    def detectContrast(self, i, _dats, angMin, _inc, _ints):
-        slope = (_dats[i] - _dats[i-self.skip1]) / self.skip1
+    def detectContrast(self, i):
+        slope = (self.ranges[i] - self.ranges[i-self.skip1]) / self.skip1
         if(slope < -0.15):
             self.cont_stack.append(i)
         elif(slope > 0.15):
             if(len(self.cont_stack) > 0):
                 pop = self.cont_stack.pop()
                 mid = (i + pop) // 2
-                sz = _dats[mid] * abs(i-pop)*_inc
+                sz = self.ranges[mid] * abs(i-pop)*self.angInc
                 if( sz > 0.03 and sz < 0.1):
+                    ang = self.i2a(mid)
                     self.objs.append({
                         "index": mid,
-                        "ang": self.i2a(mid, angMin, _inc),
-                        "dst": _dats[mid],
-                        "x": _dats[mid] * cos(self.i2a(mid, angMin, _inc)),
-                        "y": _dats[mid] * sin(self.i2a(mid, angMin, _inc)),
-                        "intensity": _ints[mid]
+                        "ang": ang,
+                        "dst": self.ranges[mid],
+                        "x": self.ranges[mid] * cos(ang),
+                        "y": self.ranges[mid] * sin(ang),
+                        "intensity": self.ints[mid]
                     })
-                if(_dats[mid] < 1.0):
+                if(self.ranges[mid] < 1.0):
                     return True
         return False
 
-    def marching(self, indx, _dats, _ints, angMin, _inc):
+    def marching(self, indx):
         rng = [indx-self.prec*self.skip2, indx+self.prec*self.skip2]
 
-        self.datass.append([_dats[indx]*cos(self.i2a(indx, angMin, _inc)), _ints[indx]*sin(self.i2a(indx, angMin, _inc)), _ints[indx] ])
-
-
         targetRay = {
-            "dst": _dats[indx],
-            "ang": self.i2a(indx, angMin, _inc)
+            "dst": self.ranges[indx],
+            "ang": self.i2a(indx)
         }
         
         _min = {"dst": 1000, "ang": 0}
         for i in range(rng[0], rng[1], self.skip2):
-            if(self.IS_SIM): _ints[i] = 1.0
-            if(i >= 0 and i < len(_dats)):
+            if(self.IS_SIM): self.ints[i] = 1.0
+            if(i >= 0 and i < len(self.ranges)):
                 ray = {
-                    "dst": _dats[i],
-                    "ang": self.i2a(i, angMin, _inc)
+                    "dst": self.ranges[i],
+                    "ang": self.i2a(i)
                 }
 
                 hit = self.hitC(targetRay, ray, self.castR)
@@ -265,27 +256,26 @@ class ControlNode(Node):
         else:
             return {"dst": _min["dst"], "ang": _min["ang"]}
     
-    def fix_missing(self, _dats, _ints, i):
-
+    def fix_missing(self, i):
         first = i
         last = i
-        while(first > 0 and (_ints[first] == 0.0 or _dats[first] > 3.0)):
+        while(first > 0 and (self.ints[first] == 0.0 or self.ranges[first] > 3.0)):
             first -= 1
             if(first < 0):
                 first = 0
                 break
-        while(last < len(_ints) and (_ints[last] == 0.0 or _dats[last] > 3.0)):
+        while(last < len(self.ints) and (self.ints[last] == 0.0 or self.ranges[last] > 3.0)):
             last += 1
-            if(last >= len(_ints)):
-                last = len(_ints) - 1
+            if(last >= len(self.ints)):
+                last = len(self.ints) - 1
                 break
         
-        if(_ints[first] == 0.0 or _ints[last] == 0.0):
+        if(self.ints[first] == 0.0 or self.ints[last] == 0.0):
             return 0
         if(first == last):
-            return _dats[first]
+            return self.ranges[first]
         
-        return self.lerp(_dats[first], _dats[last], (i-first)/(last-first))
+        return self.lerp(self.ranges[first], self.ranges[last], (i-first)/(last-first))
 
     def hitC(self, rayPnt, checkPnt, R):
         dTheta = abs(rayPnt["ang"] - checkPnt["ang"])     
@@ -297,16 +287,14 @@ class ControlNode(Node):
         
         return False
     
-    def dangerSense(self, _dats, angMin, _inc):
-        # print(len(_dats))
-        for i in range(len(_dats)):
-            if(_dats[i] < self.dangerDist):
-                ang = degrees(self.i2a(i, angMin, _inc))
-                # print(ang)
+    def dangerSense(self):
+        for i in range(len(self.ranges)):
+            if(self.ranges[i] < self.dangerDist):
+                ang = degrees(self.i2a(i))
                 if(ang > self.dangerAng[0] and ang < self.dangerAng[1]):
-                    return self.remap(_dats[i], 0, self.dangerDist, 1.0, 0.0)
+                    return self.remap(self.ranges[i], 0, self.dangerDist, 1.0, 0.0)
                 if(ang > -self.dangerAng[1] and ang < -self.dangerAng[0]):
-                    return -self.remap(_dats[i], 0, self.dangerDist, 1.0, 0.0)
+                    return -self.remap(self.ranges[i], 0, self.dangerDist, 1.0, 0.0)
         return False
 
     def pubDrive(self, disable = False):
@@ -320,8 +308,6 @@ class ControlNode(Node):
         steer_msg = Float32()
         steer_msg.data = self.strAngle
         self.steer_pub.publish(steer_msg)
-
-        # self.get_logger().info(f'Speed: {self.speed}, Steering: {self.strAngle}')
 
     def pubObjData(self):
         obj_data = Float32MultiArray()
@@ -352,16 +338,14 @@ class ControlNode(Node):
             msg.towers.append(tower)
         self.pubDebug.publish(msg)
 
-    def i2a(self, i, angMin, angInc):
-        """Get angle value from the index value"""
-        return angMin + angInc*i
+    def i2a(self, i):
+        return self.angMin + self.angInc*i
     
-    def indRng(self, Min, Max, angMin, angInc):
-        return [self.a2i(Min, angMin, angInc), self.a2i(Max, angMin, angInc)]
+    def indRng(self, Min, Max):
+        return [self.a2i(Min), self.a2i(Max)]
 
-    def a2i(self, ang, angMin, angInc):
-        """Get index value from the angle value"""
-        return round((ang - angMin) / angInc)
+    def a2i(self, ang):
+        return round((ang -self.angMin) / self.angInc)
 
     def clamp(self, val, mini, maxi):
         tMin = mini

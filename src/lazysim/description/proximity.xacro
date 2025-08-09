@@ -27,7 +27,7 @@
                 <ray>
                     <scan>
                         <horizontal>
-                            <samples>8</samples>
+                            <samples>3</samples>
                             <min_angle>${-pi/4}</min_angle>
                             <max_angle>${pi/4}</max_angle>
                         </horizontal>

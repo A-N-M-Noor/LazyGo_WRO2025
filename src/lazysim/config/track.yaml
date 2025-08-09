@@ -6,7 +6,7 @@ start:
     pos:
         x: 0.25
         y: 0.3
-    angle: 0
+    angle: 180
 
 towers:
     -   color: "Green"

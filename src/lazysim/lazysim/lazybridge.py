@@ -2,7 +2,8 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, Float64MultiArray
 from geometry_msgs.msg import Vector3
-from sensor_msgs.msg import JointState, Imu
+from sensor_msgs.msg import JointState, Imu, LaserScan
+from std_msgs.msg import Int8, Int8MultiArray
 from math import radians, degrees, sin, cos, tan, atan, atan2, asin, pi
 
 def quaternion_to_euler(x, y, z, w):
@@ -34,38 +35,25 @@ class LazyBridge(Node):
         self.hinge_d = 0.035
         
         self.wheelD = 0.04
+        self.create_subscription(JointState, '/joint_states', self.state_callback, 1)
+        
+        self.create_subscription(Imu, '/imu', self.imu_callback, 1)
+        self.create_subscription(LaserScan, '/proximity_front_left', self.sens1_callback, 1)
+        self.create_subscription(LaserScan, '/proximity_front_right', self.sens2_callback, 1)
+        self.create_subscription(LaserScan, '/proximity_rear_left', self.sens3_callback, 1)
+        self.create_subscription(LaserScan, '/proximity_rear_right', self.sens4_callback, 1)
 
-        self.throttle_sub = self.create_subscription(
-            Float32,
-            '/throttle',
-            self.throttle_callback,
-            1
-        )
-        self.steer_sub = self.create_subscription(
-            Float32,
-            '/steer',
-            self.steer_callback,
-            1
-        )
-        
-        self.create_subscription(
-            JointState,
-            '/joint_states',
-            self.state_callback,
-            1
-        )
-        
-        self.create_subscription(
-            Imu,
-            '/imu',
-            self.imu_callback,
-            1
-        )
+        self.create_subscription(Float32, '/throttle', self.throttle_callback, 1)
+        self.create_subscription(Float32, '/steer', self.steer_callback, 1)
 
         self.motor_pub = self.create_publisher(Float64MultiArray, '/velocity_controller/commands', 10)
         self.steer_pub= self.create_publisher(Float64MultiArray, '/position_controller/commands', 10)
 
         self.pos_pub = self.create_publisher(Vector3, '/lazypos', 10)
+        
+        self.sensor_pub = self.create_publisher(Int8MultiArray, '/lazybot/sensors', 10)
+        
+        self.sensor_values = [0]*4
         
         self.yaw = 0.0
         self.prevYaw = 0.0
@@ -146,6 +134,22 @@ class LazyBridge(Node):
         
         self.heading = self.yaw
 
+    def sens1_callback(self, msg: LaserScan):
+        self.sensor_values[0] = int(any(val != float('inf') for val in msg.ranges))
+
+    def sens2_callback(self, msg: LaserScan):
+        self.sensor_values[1] = int(any(val != float('inf') for val in msg.ranges))
+
+    def sens3_callback(self, msg: LaserScan):
+        self.sensor_values[2] = int(any(val != float('inf') for val in msg.ranges))
+
+    def sens4_callback(self, msg: LaserScan):
+        self.sensor_values[3] = int(any(val != float('inf') for val in msg.ranges))
+
+        msg = Int8MultiArray()
+        msg.data = self.sensor_values
+        self.sensor_pub.publish(msg)
+
     def odom(self):
         dS = ( (self.encoder[0] - self.encoderPrev[0]) + (self.encoder[1] - self.encoderPrev[1]) ) / 2
         H = (self.heading + self.headingPrev) / 2
@@ -165,8 +169,6 @@ class LazyBridge(Node):
         attitude.z = self.heading
         self.pos_pub.publish(attitude)
         
-        # self.get_logger().info(f"{self.pos[0]:.2f}, {self.pos[1]:.2f} | {degrees(self.heading):.2f}°")
-    
 def main(args=None):
     rclpy.init(args=args)
     node = LazyBridge()
