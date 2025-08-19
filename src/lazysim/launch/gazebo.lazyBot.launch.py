@@ -98,6 +98,7 @@ def generate_launch_description():
                 executable="track_maker",
                 parameters=[{
                     "tower_template_path": "/home/duronto/WRO_25_ws/src/lazysim/config/object_template.sdf",
+                    "wall_template_path": "/home/duronto/WRO_25_ws/src/lazysim/config/wall_template.sdf",
                     "settings_path": "/home/duronto/WRO_25_ws/src/lazysim/config/track.yaml"
                     }],
                 output="screen",
@@ -110,11 +111,11 @@ def generate_launch_description():
         rsp,
         gazebo,
         spawn_entity,
-        bridge,
         TimerAction(period=4.0, actions=[
             track_creator
         ]),
         control,
+        bridge,
         TimerAction(period=2.0, actions=[
             rviz
         ]),

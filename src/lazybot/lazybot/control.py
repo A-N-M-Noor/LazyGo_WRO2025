@@ -1,10 +1,11 @@
 import rclpy
+from threading import Thread
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Vector3
 import numpy as np
 
-from std_msgs.msg import Float32, Float32MultiArray, String
+from std_msgs.msg import Float32, Float32MultiArray, String, Int8MultiArray
 from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 from math import pi, radians, degrees, sin, cos
 import time
@@ -15,6 +16,7 @@ class ControlNode(Node):
         super().__init__('control')
         self.cmd_sub = self.create_subscription(String, '/cmd', self.cmd_callback, 10)
         
+        self.sensor_sub = self.create_subscription(Int8MultiArray, '/lazybot/sensors', self.sensor_callback, 10)
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
         self.obj_sub = self.create_subscription(String, '/closest_obj', self.obj_callback, 1)
         self.pos_sub = self.create_subscription(Vector3, '/lazypos', self.pos_callback, 10)
@@ -26,8 +28,11 @@ class ControlNode(Node):
         self.pubDebug = self.create_publisher(BotDebugInfo, '/lazybot/debug', 10)
         
         self.create_timer(0.025, self.odom_loop)
-        
+        self.create_timer(0.025, self.control_loop)
+
         self.IS_SIM = True
+        
+        self.dir = 1 #CCW
         
         self.angMin = -pi
         self.angMax = pi
@@ -49,14 +54,20 @@ class ControlNode(Node):
         self.dangerDist = 0.25
         self.dangerAng = [25.0, 90.0]
 
+        self.new_lidar_val = False
         self.castRange = [0.15, 0.18]
         self.castR = 0.25
         self.lookRng = radians(80.0)
-        self.lookRngS = radians(90.0)
+        self.lookRngS = radians(130.0)
         self.targetAng = 0.0
         self.targetD = 0.0
         
+        self.calc_thr = Thread(target=self.calc_lidar)
+        self.calc_thr.daemon = True
+        self.calc_thr.start()
+
         self.pos = Vector3()
+        self.sectionAngle = 0.0
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
@@ -71,6 +82,23 @@ class ControlNode(Node):
         self.get_logger().info('Control node has been started.')
         self.lastTime = time.time()
 
+    
+    def sensor_callback(self, msg: Int8MultiArray):
+        if len(msg.data) < 4:
+            self.get_logger().warn("Received sensor data with insufficient length.")
+            return
+        
+        if msg.data[0] == 1:
+            self.strAngle = -self.strRange
+        if msg.data[1] == 1:
+            self.strAngle = self.strRange
+
+    def control_loop(self):
+        if not self.running:
+            return
+        
+        self.pubDrive()
+        
     def odom_loop(self):
         if not self.running or not self.gotWallD:
             self.pubDrive(disable=True)
@@ -92,7 +120,12 @@ class ControlNode(Node):
             self.pubDrive(disable=True)
             return
         
-        self.pubDrive()
+        if abs(self.pos.z - self.sectionAngle) > radians(80):
+            if(self.pos.z > self.sectionAngle):
+                self.sectionAngle = self.sectionAngle + pi/2
+            else:
+                self.sectionAngle = self.sectionAngle - pi/2
+            self.get_logger().info(f"Section angle changed: {degrees(self.sectionAngle)}")
     
     def cmd_callback(self, msg: String):
         command = msg.data.strip().lower()
@@ -112,6 +145,8 @@ class ControlNode(Node):
     def lidar_callback(self, msg: LaserScan):
         if not self.running:
             return
+        
+        self.new_lidar_val = True
         
         self.dt = time.time() - self.lastTime
         self.lastTime = time.time()
@@ -137,31 +172,108 @@ class ControlNode(Node):
             self.get_logger().info(f"Wall Distance: {self.ranges[wi]:.2f}, End Offset: {self.endOffset}")
             
             self.gotWallD = True
-        
-        self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
 
-        self.pubObjData()
+    def calc_lidar(self):
+        while True:
+            if(not self.new_lidar_val):
+                time.sleep(0.01)
+                continue
 
-        maxD, tA = self.getMaxDOBJ()
-        dS = self.dangerSense()
+            self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
 
-        if(dS):
-            tA -= dS * self.strRange * 1.0
+            self.pubObjData()
 
-        delta = abs(tA-self.targetAng)
-        self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)
-        self.targetAng = self.lerp(self.targetAng, tA, 0.1)
-        self.targetAng = degrees(self.targetAng)
-        self.targetD = maxD
+            maxD, tA = self.getMaxDOBJ()
+            self.objs.sort(key=lambda x: x["dst"], reverse=True)
+            
+            dS = self.dangerSense()
 
-        sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
-        self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
-        mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
+            if(dS):
+                tA -= dS * self.strRange * 1.0
 
-        self.speed = self.maxSpeed * mult2
+            delta = abs(tA-self.targetAng)
+            self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)
+            self.targetAng = self.lerp(self.targetAng, tA, 0.1)
+            self.targetAng = degrees(self.targetAng)
+            self.targetD = maxD
 
-        self.pubDebugPoint()
+            corner = self.prevent_corner(self.objs[0] if self.objs else None)
+            
+            sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
+            self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
+            if(corner):
+                self.strAngle = corner * self.strRange
+            mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
+
+            self.speed = self.maxSpeed * mult2
+
+            self.pubDebugPoint()
+            self.new_lidar_val = False
     
+    # def prevent_corner(self, obj):
+    #     targetI = self.a2i(radians(self.targetAng))
+    #     frontI = self.a2i(0.0)
+        
+    #     if(targetI < 0 or targetI >= len(self.ranges)):
+    #         return False
+        
+    #     self.ranges[targetI] = self.fix_missing(targetI)
+    #     self.ranges[frontI] = self.fix_missing(frontI)
+
+    #     if(self.ranges[targetI] > 1.3 and self.ranges[frontI] > 0.30):
+    #         return False
+        
+    #     self.get_logger().info(f"Dsts: {self.ranges[frontI]}, {self.ranges[targetI]}")
+        
+    #     # self.get_logger().info("Going to a wall")
+    #     bot_ang = self.norm_ang(self.pos.z)
+        
+    #     relative_sec_ang = self.sectionAngle - self.pos.z
+    #     targ_ang = bot_ang + self.targetAng
+        
+    #     obj_ang = obj['ang'] if obj is not None else 0.0
+    #     clearance_ang = 0.60 * (self.castR / obj['dst']) if obj is not None else 0.0
+    #     str_dir = 1.0
+    #     is_out = relative_sec_ang > 0 and obj_ang + clearance_ang <= 0
+    #     self.get_logger().info(f"Angs: {relative_sec_ang}, {max(relative_sec_ang, obj_ang + clearance_ang)}")
+
+    #     if(self.dir == -1):
+    #         is_out = min(relative_sec_ang, obj_ang - clearance_ang) < 0
+    #         str_dir = -1.0
+        
+    #     if(self.ranges[frontI] < 0.30):
+    #         self.get_logger().info(">>> Too close")
+    #         return str_dir
+    #     if(is_out):
+    #         self.get_logger().error(">>> Out of Bound")
+    #         return str_dir
+        
+    #     return False
+        
+    #     # if(len(self.objs) == 0 and abs(self.pos.z - self.sectionAngle) > radians(30)):
+    #     #     if self.dir == 1 and self.pos.z < self.sectionAngle:
+    #     #         tA = self.lookRng
+    #     #         self.get_logger().info(f"Turning left, target angle: {degrees(tA)}")
+    #     #     elif self.dir == -1 and self.pos.z > self.sectionAngle:
+    #     #         tA = -self.lookRng
+    #     #         self.get_logger().info(f"Turning right, target angle: {degrees(tA)}")
+    
+    def prevent_corner(self, obj):
+        targetI = self.a2i(radians(self.targetAng))
+        frontI = self.a2i(0.0)
+        
+        if(targetI < 0 or targetI >= len(self.ranges)):
+            return False
+        
+        self.ranges[targetI] = self.fix_missing(targetI)
+        self.ranges[frontI] = self.fix_missing(frontI)
+
+        if(self.ranges[targetI] > 0.8 and self.ranges[frontI] > 0.30):
+            return False
+        
+        if obj is None or abs(obj['ang']) > radians(60):
+            return self.dir
+        
     def pos_callback(self, msg: Vector3):
         self.pos.x = msg.x
         self.pos.y = msg.y
@@ -169,16 +281,19 @@ class ControlNode(Node):
     
     def getMaxDOBJ(self):
         _max = {"dst": 0, "ang": 0}
-        chkRng = self.indRng(-self.lookRng, self.lookRng)
         
+        chkRng = self.indRng(-self.lookRng, self.lookRng)
+        # if(self.dir == 1):
+        #     chkRng = self.indRng(-self.lookRng, self.lookRngS)
+
         self.objs = []
         self.cont_stack = []
 
         remove = "None" 
         if self.closest == "G":
-            remove = "Left"
-        elif self.closest == "R":
             remove = "Right"
+        elif self.closest == "R":
+            remove = "Left"
         
         for i in range(chkRng[0], chkRng[1], self.skip1):
             if(self.IS_SIM): self.ints[i] = 1.0
@@ -193,14 +308,16 @@ class ControlNode(Node):
             if(dt["dst"] > _max["dst"]):
                 _max = dt
 
+            if(abs(self.i2a(i, True)) < 60):
+                pass
+            
             objectFound = self.detectContrast(i)
             
             if objectFound:
-                if remove == "Left":
-                    _max = dt
                 if remove == "Right":
+                    _max = dt
+                if remove == "Left":
                     return _max["dst"], _max["ang"]
-                
         return _max["dst"], _max["ang"]
     
     
@@ -215,16 +332,16 @@ class ControlNode(Node):
                 sz = self.ranges[mid] * abs(i-pop)*self.angInc
                 if( sz > 0.03 and sz < 0.1):
                     ang = self.i2a(mid)
-                    self.objs.append({
+                    obj = {
                         "index": mid,
                         "ang": ang,
                         "dst": self.ranges[mid],
                         "x": self.ranges[mid] * cos(ang),
                         "y": self.ranges[mid] * sin(ang),
                         "intensity": self.ints[mid]
-                    })
-                if(self.ranges[mid] < 1.0):
-                    return True
+                    }
+                    self.objs.append(obj)
+                    return obj
         return False
 
     def marching(self, indx):
@@ -257,6 +374,10 @@ class ControlNode(Node):
             return {"dst": _min["dst"], "ang": _min["ang"]}
     
     def fix_missing(self, i):
+        if(i < 0 or i >= len(self.ints)):
+            return 0
+        if(self.ints[i] > 0.05 and self.ranges[i] <= 3.0):
+            return self.ranges[i]
         first = i
         last = i
         while(first > 0 and (self.ints[first] == 0.0 or self.ranges[first] > 3.0)):
@@ -312,7 +433,6 @@ class ControlNode(Node):
     def pubObjData(self):
         obj_data = Float32MultiArray()
         obj_data.data = []
-        self.objs.sort(key=lambda x: x["dst"], reverse=True)
         for obj in self.objs:
             obj_data.data.append(obj["ang"])
         
@@ -338,7 +458,9 @@ class ControlNode(Node):
             msg.towers.append(tower)
         self.pubDebug.publish(msg)
 
-    def i2a(self, i):
+    def i2a(self, i, deg = False):
+        if deg:
+            return degrees(self.angMin + self.angInc*i)
         return self.angMin + self.angInc*i
     
     def indRng(self, Min, Max):
@@ -365,6 +487,9 @@ class ControlNode(Node):
 
     def lerp(self, a, b, t):
         return self.clamp(a + (b - a) * t, a, b)
+    
+    def norm_ang(self, a):
+        return (a + pi) % (2 * pi) - pi
 
 def main(args=None):
     rclpy.init(args=args)

@@ -73,20 +73,24 @@ class CameraNode(Node):
             
     def show_view(self):
         if self.image is not None:
-            cv2.putText(self.image, f'FPS: {self.fps:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-            cv2.imshow('Camera Image', self.image)
-            self.imsg = None
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
-                cv2.destroyAllWindows()
-                rclpy.shutdown()
-                exit()
-            return
-        
+            try:
+                cv2.putText(self.image, f'FPS: {self.fps:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                cv2.imshow('Camera Image', self.image)
+                self.imsg = None
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('q'):
+                    cv2.destroyAllWindows()
+                    rclpy.shutdown()
+                    exit()
+                return
+            except Exception as e:
+                # self.get_logger().error(f'Error displaying image: {str(e)}')
+                pass
+
         if self.imsg is not None:
             msg = self.imsg
         else:
-            self.get_logger().warn('No image message received yet.')
+            # self.get_logger().warn('No image message received yet.')
             return
         try:
             if isinstance(msg, CompressedImage):
@@ -106,7 +110,8 @@ class CameraNode(Node):
             self.show_view()
 
         except Exception as e:
-            self.get_logger().error(f'Camera error: {str(e)}')
+            # self.get_logger().error(f'Camera error: {str(e)}')
+            pass
 
 def startNode(node):
     rclpy.spin(node)

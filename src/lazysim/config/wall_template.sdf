@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <sdf version="1.6">
-    <model name="tower">
-        <static>false</static>
+    <model name="wall">
+        <static>{static}</static>
         <link name="link">
             <inertial>
-                <mass>0.5</mass>
+                <mass>0.2</mass>
                 <inertia>
                     <ixx>0.01</ixx>
                     <iyy>0.01</iyy>
@@ -17,7 +17,7 @@
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.05 0.05 0.1</size>
+                        <size>{sz_x} {sz_y} 0.1</size>
                     </box>
                 </geometry>
                 <material>
@@ -30,7 +30,7 @@
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.05 0.05 0.1</size>
+                        <size>{sz_x} {sz_y} 0.1</size>
                     </box>
                 </geometry>
             </collision>

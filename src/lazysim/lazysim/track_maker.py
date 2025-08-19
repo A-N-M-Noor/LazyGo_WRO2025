@@ -25,11 +25,14 @@ class TrackMaker(Node):
     def __init__(self):
         super().__init__('track_maker')
         self.declare_parameter('tower_template_path', '')
+        self.declare_parameter('wall_template_path', '')
         self.declare_parameter('settings_path', '')
 
         self.tower_template_path = self.get_parameter('tower_template_path').get_parameter_value().string_value
+        self.wall_template_path = self.get_parameter('wall_template_path').get_parameter_value().string_value
         self.settings_path = self.get_parameter('settings_path').get_parameter_value().string_value
-        self.template = ""
+        self.tower_template = ""
+        self.wall_template = ""
         self.settings = {}
 
         yaml = YAML()
@@ -55,10 +58,17 @@ class TrackMaker(Node):
         
         if os.path.isfile(self.tower_template_path):
             with open(self.tower_template_path, 'r') as f:
-                self.template = f.read()
+                self.tower_template = f.read()
                 self.get_logger().info(f"Template loaded from {self.tower_template_path}")
         else:
             self.get_logger().warn(f"Template file '{self.tower_template_path}' does not exist.")
+
+        if os.path.isfile(self.wall_template_path):
+            with open(self.wall_template_path, 'r') as f:
+                self.wall_template = f.read()
+                self.get_logger().info(f"Template loaded from {self.wall_template_path}")
+        else:
+            self.get_logger().warn(f"Template file '{self.wall_template_path}' does not exist.")
 
 
         self.count = 1
@@ -66,7 +76,8 @@ class TrackMaker(Node):
         for tower in self.settings['towers']:
             self.get_logger().info(f"Spawning tower: {tower}")
             self.spawn_tower(tower)
-
+            
+        self.spawn_parking(self.settings['parking'])
         self.set_pose('lazyBot', self.settings['start']['pos']['x'], self.settings['start']['pos']['y'], 0.0, self.settings['start']['angle'])
 
     def set_pose(self, target, x: float, y: float, z: float, yaw_deg: float):
@@ -94,12 +105,8 @@ class TrackMaker(Node):
     def spawn_tower(self, tower):
         position = (tower['pos']['x'], tower['pos']['y'], 0.5)
 
-        # SDF XML for a red cube
-        sdf = self.template.format(
-            color=tower['color'],
-            pos_x=position[0],
-            pos_y=position[1],
-            pos_z=position[2]
+        sdf = self.tower_template.format(
+            color=tower['color']
         )
 
         req = SpawnEntity.Request()
@@ -112,15 +119,62 @@ class TrackMaker(Node):
         req.initial_pose.position.y = position[1]
         req.initial_pose.position.z = position[2]
 
-        future = self.spawn_client.call_async(req)
-        rclpy.spin_until_future_complete(self, future)
+        resp = self.spawn_client.call_async(req)
+        rclpy.spin_until_future_complete(self, resp)
 
-        if future.result().success:
+        if resp.result().success:
             self.get_logger().info(f'Tower {self.count} spawned successfully!')
             self.count += 1
         else:
-            self.get_logger().error(f'Failed to spawn tower: {future.result().status_message}')
+            self.get_logger().error(f'Failed to spawn tower: {resp.result().status_message}')
 
+    def spawn_parking(self, parking):
+        if(not parking['enabled']):
+            return
+
+        x, y, l = parking['pos']['x'], parking['pos']['y'], (parking['size']+0.02)/2
+        ang_rad = math.radians(parking['angle'])
+        
+        pos1 = (
+            x - l * math.cos(ang_rad),
+            y - l * math.sin(ang_rad)
+        )
+        pos2 = (
+            x + l * math.cos(ang_rad),
+            y + l * math.sin(ang_rad)
+        )
+        
+        self.spawn_wall("parking_wall_1", "Purple", pos1, ang_rad, 0.2, static=False)
+        self.spawn_wall("parking_wall_2", "Purple", pos2, ang_rad, 0.2, static=False)
+
+    def spawn_wall(self, name, color, pos, ang, size, static=True):
+        position = (pos[0], pos[1], 0.05)
+
+        sdf = self.wall_template.format(
+            color=color,
+            sz_x=size,
+            sz_y=0.02,
+            static=static
+        )
+
+        req = SpawnEntity.Request()
+        req.name = name
+        req.xml = sdf
+        req.robot_namespace = ''
+        req.reference_frame = 'world'
+        req.initial_pose = Pose()
+        req.initial_pose.position.x = position[0]
+        req.initial_pose.position.y = position[1]
+        req.initial_pose.position.z = position[2]
+        req.initial_pose.orientation = euler_to_quaternion(0.0, 0.0, ang + math.pi / 2)
+
+        resp = self.spawn_client.call_async(req)
+        rclpy.spin_until_future_complete(self, resp)
+
+        if resp.result().success:
+            self.get_logger().info(f'Wall {name} spawned successfully!')
+        else:
+            self.get_logger().error(f'Failed to spawn wall: {resp.result().status_message}')
 
 def main():
     rclpy.init()
