@@ -21,14 +21,14 @@ towers:
         pos:
             x: 0.5
             y: -0.1
+    -   color: "Red"
+        pos:
+            x: 1.1
+            y: 1.5
     -   color: "Green"
         pos:
-            x: 0.9
-            y: 1.0
-    # -   color: "Red"
-    #     pos:
-    #         x: 0.5
-    #         y: 2.1
+            x: 0.5
+            y: 1.9
     -   color: "Green"
         pos:
             x: -0.5

@@ -307,9 +307,6 @@ class ControlNode(Node):
             dt = self.marching(i)
             if(dt["dst"] > _max["dst"]):
                 _max = dt
-
-            if(abs(self.i2a(i, True)) < 60):
-                pass
             
             objectFound = self.detectContrast(i)
             
