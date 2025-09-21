@@ -157,7 +157,7 @@ Install the required python packages
 ```
 pip3 install -r requirements.txt
 ```
-If pip3 refuses to install the packages, use this command
+If pip3 refuses to install the packages, use this command (Only on the Pi. Ideally you would want to create a virtual environment if you're doing this on your everyday device)
 ```
 pip3 install -r requirements.txt --break-system-packages
 ```
