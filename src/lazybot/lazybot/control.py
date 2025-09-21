@@ -184,20 +184,20 @@ class ControlNode(Node):
             self.pubObjData()
 
             maxD, tA = self.getMaxDOBJ()
-            self.objs.sort(key=lambda x: x["dst"], reverse=True)
+            self.objs.sort(key=lambda x: x["dst"], reverse=False)
             
             dS = self.dangerSense()
-
             if(dS):
                 tA -= dS * self.strRange * 1.0
 
             delta = abs(tA-self.targetAng)
             self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)
             self.targetAng = self.lerp(self.targetAng, tA, 0.1)
-            self.targetAng = degrees(self.targetAng)
             self.targetD = maxD
 
-            corner = self.prevent_corner(self.objs[0] if self.objs else None)
+            corner = self.prevent_corner_and_turn(self.objs[0] if self.objs else None)
+            
+            self.targetAng = degrees(self.targetAng)
             
             sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
             self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
@@ -270,6 +270,16 @@ class ControlNode(Node):
         self.ranges[targetI] = self.fix_missing(targetI)
         self.ranges[frontI] = self.fix_missing(frontI)
 
+        rel_sec = self.sectionAngle - self.pos.z
+        rel_target = self.targetAng - rel_sec
+        
+        if(self.dir == 1):
+            if(self.closest == "G" and obj is not None):
+                if(rel_target > pi/4 and self.targetD > 0.8 and obj['dst'] < 0.8):
+                    self.targetAng = obj['ang'] + self.clearance_ang(obj['dst'])
+                    self.get_logger().info(f"\n>>> a{self.targetAng:.2f}, rs{degrees(rel_sec):.2f}, rt{degrees(rel_target):.2f}, d{self.targetD:.2f}, od{obj['dst']:.2f}, oa{degrees(obj['ang']):.2f}, ta:{degrees(self.targetAng):.2f}")
+                    return False
+        
         if(self.ranges[targetI] > 0.8 and self.ranges[frontI] > 0.30):
             return False
         
@@ -283,10 +293,9 @@ class ControlNode(Node):
     
     def getMaxDOBJ(self):
         _max = {"dst": 0, "ang": 0}
+        # _prev_max = _max.copy()
         
         chkRng = self.indRng(-self.lookRng, self.lookRng)
-        # if(self.dir == 1):
-        #     chkRng = self.indRng(-self.lookRng, self.lookRngS)
 
         self.objs = []
         self.cont_stack = []
@@ -307,18 +316,34 @@ class ControlNode(Node):
                 continue
             
             dt = self.marching(i)
+            # _prev_max = _max.copy()
             if(dt["dst"] > _max["dst"]):
                 _max = dt
-            
+                
             objectFound = self.detectContrast(i)
             
             if objectFound:
+                # if abs(_max["ang"]) > pi/3:
+                #     if self.prevent_full_turn(_max):
+                #         self.get_logger().info(f"Preventing full turn: {_max['ang']}")
+                #         _max = _prev_max.copy()
+
                 if remove == "Right":
                     _max = dt
                 if remove == "Left":
                     return _max["dst"], _max["ang"]
         return _max["dst"], _max["ang"]
     
+    # def prevent_full_turn(self, target):
+    #     rel_sec = self.sectionAngle - self.pos.z
+    #     rel_target = target["ang"] - rel_sec
+        
+    #     if(self.dir == 1 and rel_target > pi/4 and target["dst"] > 0.8):
+    #         self.get_logger().info(f"\n>>> a{degrees(target['ang']):.2f}, rs{degrees(rel_sec):.2f}, rt{degrees(rel_target):.2f}, d{target['dst']:.2f}")
+    #         return True
+    
+    def prevent_full_turn(self, obj):
+        pass
     
     def detectContrast(self, i):
         slope = (self.ranges[i] - self.ranges[i-self.skip1]) / self.skip1
@@ -406,6 +431,9 @@ class ControlNode(Node):
             return checkPnt["dst"]
         
         return False
+    
+    def clearance_ang(self, d):
+        return self.castR/d
     
     def dangerSense(self):
         for i in range(len(self.ranges)):

@@ -1,7 +1,7 @@
 import cv2
 
 def main():
-    cap = cv2.VideoCapture(0)  # 0 is the default camera
+    cap = cv2.VideoCapture(2)  # 0 is the default camera
 
     if not cap.isOpened():
         print("Cannot open camera")

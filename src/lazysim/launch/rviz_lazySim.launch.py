@@ -28,7 +28,7 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz',
         arguments=['-d', os.path.join(package_directory, 'config', 'lazySim.rviz'), '--ros-args', '--log-level', 'ERROR'],
-        parameters=[{'use_sim_time': True}],
+        # parameters=[{'use_sim_time': True}],
         output='log',
         emulate_tty=False
     )
@@ -38,7 +38,7 @@ def generate_launch_description():
         executable='robot_state_publisher',
         parameters=[
             {'robot_description': Command(['xacro ', os.path.join(package_directory, 'description', 'lazyBot.xacro')])},
-            {'use_sim_time': True}
+            # {'use_sim_time': True}
         ],
         condition=UnlessCondition(disable_robot_publisher)
     )

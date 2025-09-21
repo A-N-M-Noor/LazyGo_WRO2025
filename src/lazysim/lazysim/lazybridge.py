@@ -28,7 +28,8 @@ class LazyBridge(Node):
         self.throttle = 0.0
         self.steer = 0.0
         
-        self.maxSpeed = 47.0 # rad/s
+        self.rpm = 454
+        self.maxSpeed = (self.rpm * 2 * pi) / 60.0
         self.max_steer = radians(30)
         self.axle_length = 0.094
         self.wheelbase = 0.12
