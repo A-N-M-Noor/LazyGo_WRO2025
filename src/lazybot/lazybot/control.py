@@ -30,7 +30,7 @@ class ControlNode(Node):
         self.create_timer(0.025, self.odom_loop)
         self.create_timer(0.025, self.control_loop)
 
-        self.IS_SIM = True
+        self.IS_SIM = False
         
         self.dir = 1 #CCW
         
@@ -259,6 +259,8 @@ class ControlNode(Node):
     #     #         self.get_logger().info(f"Turning right, target angle: {degrees(tA)}")
     
     def prevent_corner(self, obj):
+        return False
+
         targetI = self.a2i(radians(self.targetAng))
         frontI = self.a2i(0.0)
         

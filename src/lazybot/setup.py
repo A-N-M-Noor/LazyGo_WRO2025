@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'control = lazybot.control:main',
             'detect = lazybot.detection:main',
+            'detect_cam = lazybot.detection_cam:main',
             'serial = lazybot.ser:main',
             # 'avoid = lazybot.avoid:main',
             'camera_node = lazybot.camera:main',

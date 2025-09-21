@@ -21,12 +21,6 @@ def generate_launch_description():
         executable='serial',
         name='serial'
     )
-
-    detect = Node(
-        package='lazybot',
-        executable='detect_bot',
-        name='detect_bot'
-    )
     
     debug = Node(
         package='lazybot',
@@ -63,7 +57,5 @@ def generate_launch_description():
 
     ld.add_action(control)
     ld.add_action(serial)
-    ld.add_action(detect)
     ld.add_action(debug)
-    
     return ld

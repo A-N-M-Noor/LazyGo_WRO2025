@@ -9,6 +9,7 @@ import numpy as np
 import customtkinter as ctk
 from threading import Thread
 import lazybot.helper.util as util
+from lazybot.helper.camera_capture import Camera
 
 
 ctk.set_appearance_mode("dark")
@@ -133,6 +134,9 @@ def setSliders(rng, thr):
 class CameraNode(Node):
     def __init__(self):
         super().__init__('color_calibration_node')
+        self.declare_parameter('topic', '')
+        self.topic = self.get_parameter('topic').get_parameter_value().string_value
+
         self.compressed = True
         
         qos_profile = QoSProfile(
@@ -165,6 +169,12 @@ class CameraNode(Node):
         cv2.namedWindow('Camera Image', cv2.WINDOW_GUI_NORMAL)
         cv2.resizeWindow('Camera Image', 640, 480)
         cv2.setMouseCallback('Camera Image', self.mouseClick)
+
+        if(self.topic == ''):
+            self.cam = Camera(0)
+            self.cam.start()
+            self.create_timer(1/60, self.getCamFrame)
+
         self.get_logger().info('CameraNode started, waiting for images...')
 
     def mouseClick(self, event, x, y, flags, param):
@@ -197,6 +207,13 @@ class CameraNode(Node):
                 fps = 1 / dt
                 self.fps = self.fps + (fps - self.fps) * 0.1
     
+    def getCamFrame(self):
+        frame = self.cam.getFrame()
+        if(frame is None):
+            self.get_logger().error("No Frame")
+            return
+        self.image = frame
+    
     def obj_callback(self, msg: Float32MultiArray):
         if len(msg.data) > 0:
             self.objs = msg.data
@@ -226,7 +243,7 @@ class CameraNode(Node):
     def show_view(self):
         if not running:
             return
-        frame = self.image
+        frame = self.image.copy() if self.image is not None else None
         if frame is not None:
             cv2.imshow("Camera Image", frame)
             hsv, mask, thresh = util.process_mask(
@@ -245,6 +262,7 @@ class CameraNode(Node):
                 
             if(swMaskBlr.get() == 1):
                 cv2.imshow("Processed Mask", thresh)
+
             elif(cv2.getWindowProperty("Processed Mask", cv2.WND_PROP_VISIBLE) == 1):
                 cv2.destroyWindow("Processed Mask")
             self.imsg = None
