@@ -1,0 +1,178 @@
+#include <Arduino.h>
+#include <NewPing.h>
+#include "MPU.h"
+#include "OLED.h"
+#include "battery.h"
+#include "motors.h"
+#include "bno.h"
+
+Motors motors;
+
+int spdMin = 240;
+int spdMax = 255;
+int spd = 0;
+int str_angle = SERVO_CENTER_US; // Servo pulse width in microseconds
+long lastEncoderPos = 0;
+long currentEncoderPos = 0;
+float headingPrev = 0.0;
+float Current_angle = 0.0;
+
+float posX = 0.0, posY = 0.0;
+float sectionHeading = 0.0;
+bool turning = false;
+int turnCount = 0;
+int laps = 3;
+
+long srlTmr = 0;
+long stopTmr = 0;
+bool stop_bot = 0;
+bool running = false;
+
+
+#define btn 0
+#define green 2
+#define buzzer 4
+
+
+void srl()
+{   
+    if(running){
+        Serial.printf("[%f,%f,%f]\n", -posY, posX, -heading);
+    }
+    
+    while (Serial.available())
+    {
+        int v = Serial.read();
+        srlTmr = millis();
+        if (v >= 50 && v <= 150)
+        {
+            if (v == 100)
+            {
+                spd = 0;
+            }
+            else
+            {
+                spd = map(v, 50, 150, -255, 255);
+            }
+        }
+        else if (v > 150 && v <= 250)
+        {
+            if (v == 200)
+            {
+                str_angle = SERVO_CENTER_US; // Center position for servo
+                motors.setServoUs(str_angle);
+            }
+            else
+            {
+                str_angle = map(v, 151, 250, SERVO_MIN_US, SERVO_MAX_US); // Map to motor speed range
+            }
+        }
+    }
+}
+
+void odometry()
+{
+    currentEncoderPos = motors.getEncoderCount();
+    float deltaEncoderPos = (currentEncoderPos - lastEncoderPos)/2178.0;
+    float ang = (heading + headingPrev) / 2;
+    headingPrev = heading;
+    lastEncoderPos = currentEncoderPos;
+
+    if (abs(deltaEncoderPos) > 0)
+    {
+        float deltaX = deltaEncoderPos * cos(ang * DEG_TO_RAD);
+        float deltaY = deltaEncoderPos * sin(ang * DEG_TO_RAD);
+
+        posX += deltaX;
+        posY += deltaY;
+    }
+}
+
+// void keyboard_Works()
+// {
+// }
+
+void srlRead(void *pvParameters)
+{
+    while (true)
+    {
+        srl();
+        if (millis() - srlTmr < 100)
+        {
+            digitalWrite(green, HIGH);
+        }
+        else
+        {
+            digitalWrite(green, LOW);
+        }
+        vTaskDelay(50 / portTICK_PERIOD_MS); // Yield to other tasks for 50 milliseconds
+    }
+}
+
+void startSerialReadTask()
+{
+    xTaskCreatePinnedToCore(srlRead, "SerialTask", 4096, NULL, 10, NULL, 1); // Core 1, high priority
+}
+
+void setup()
+{
+    Serial.begin(115200);
+    while (!Serial)
+        ;
+
+    initOLED();
+    startOLEDDisplayTask();
+    displayText("Wait...");
+
+    initBNO();
+    bnoCalc();
+    bnoCalcOffset(1500);
+
+    motors.begin();
+    pinMode(green, OUTPUT);
+    pinMode(buzzer, OUTPUT);
+
+    while (Serial.available() > 0)
+    {
+        Serial.read();
+    }
+
+    startSerialReadTask(); // Serial read task on Core 1
+    motors.setServoUs(SERVO_CENTER_US);
+
+    pinMode(btn, INPUT_PULLUP); // Button pin for manual control
+
+    digitalWrite(green, HIGH);
+    displayText("All okay!");
+    while (digitalRead(btn) == HIGH)
+    {
+        bnoCalc();
+        vTaskDelay(50 / portTICK_PERIOD_MS); // Yield to other tasks for 100 milliseconds
+    }
+    while (digitalRead(btn) == LOW)
+    {
+        bnoCalc();
+        vTaskDelay(50 / portTICK_PERIOD_MS); // Yield to other tasks for 100 milliseconds
+    }
+    Serial.println(F("Start"));
+    displayText("");
+    motors.setServoUs(1125);                      // Center servo position
+    motors.run(0);                                // Stop motors initially
+    lastEncoderPos = motors.getEncoderCount();    // Initialize last encoder position
+    headingPrev = heading;                        // Initialize previous angle
+    posX = 0.0;                                   // Initialize position X
+    posY = 0.0;                                   // Initialize position Y
+    
+    sectionHeading = heading;
+    startTime = millis();
+    running = true;
+}
+
+void loop()
+{
+    bnoCalc();
+    motors.run(spd);
+    motors.setServoUs(str_angle);
+    odometry();
+    vTaskDelay(10 / portTICK_PERIOD_MS); // IMPORTANT: Yield to other tasks for 100 milliseconds
+}
