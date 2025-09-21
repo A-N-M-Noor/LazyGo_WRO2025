@@ -88,11 +88,12 @@ This repository includes all files, designs, and code for **Lazy_Bot**, our WRO 
 <img align="right" alt="Lazy_bot" width="270" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
 Here’s a breakdown of the project folders:
 
-- **[`models`](./models/)**: Contains 3D models and CAD designs.
-- **[`src`](./src/)**: Source code for robot programming.
+- **[`instructions`](./instructions/)**: Contains all the instructions on how to setup and use the package.
+- **[`models`](./models/)**: Contains 3D models and CAD designs of the robot.
+- **[`src`](./src/)**: Source code for the robot's programming. This contains the ROS2 packages.
 - **[`t-photos`](./t-photos/)**: Technical images of the robot build.
 - **[`v-photos`](./v-photos/)**: Visual photos for aesthetics and showcasing.
-- **[`video`](./video/)**: Performance and demo videos of SMOKI.
+- **[`video`](./video/)**: Performance and demo videos of LazyBot.
 
 ---
 
@@ -105,10 +106,10 @@ Here’s a breakdown of the project folders:
 
 ## Table of Contents
 
-- <span style="color:green;">Mission Overview for WRO Future Engineers Rounds</span>
-- <span style="color:orange;">Components and Hardware</span>
-- <span style="color:teal;">Mobility Management</span>
-- <span style="color:navy;">Power and Sense Management</span>
+- Mission Overview for WRO Future Engineers Rounds
+- Components and Hardware
+- Mobility Management
+- Power and Sense Management
 
 
 
