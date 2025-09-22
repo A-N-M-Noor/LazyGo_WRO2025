@@ -4,8 +4,19 @@
   <strong>Team LazyGo</strong> is a robotics team from <strong>Bangladesh</strong>. Originally formed in 2022, LazyGo won <strong>Bronze</strong> at the WRO international round in the Future Engineers category. Now returns again with three experienced international participants.
 <br><br>
 
+We named our robot **LazyBot**, which is built for the **Future Engineers** category in the **World Robot Olympiad 2025**. This year, we are trying to bring some interesting changes from the typical way a robot is built for this category.
+
 [![facebook](https://img.shields.io/badge/face-book-blue?style=flat&logo=facebook)](https://www.facebook.com/team.lazygo)
 [![linkedin](https://img.shields.io/badge/linked-in-blue?style=flat)](https://www.linkedin.com/company/lazygo)
+
+
+## Table of Contents
+
+- Mission Overview for WRO Future Engineers Rounds
+- Components and Hardware
+- Mobility Management
+- Power and Sense Management
+
 
 ---
 ## 👥 Team Introduction
@@ -98,23 +109,6 @@ Here’s a breakdown of the project folders:
 ---
 
 
-
-
-
-
-----
-
-## Table of Contents
-
-- Mission Overview for WRO Future Engineers Rounds
-- Components and Hardware
-- Mobility Management
-- Power and Sense Management
-
-
-
-
-Our bot, **Lazy_bot**, is built for excellence in the **World Robot Olympiad 2025** in the Future Engineers category. From its custom 3D-printed chassis and LEGO differential drive system to its powerful computing duo of the **Raspberry Pi 5** and **ESP32 microcontroller**, Lazy_bot is engineered to tackle the complex challenges of autonomous navigation, real-time sensing, and dynamic obstacle avoidance.
 
 
 ---
