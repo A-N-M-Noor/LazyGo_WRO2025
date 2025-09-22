@@ -101,9 +101,10 @@ This repository includes all files, designs, and code for **LazyBot**, our WRO 2
 ### File Structure
 
 
-<img align="right" alt="Lazy_bot" width="270" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
+<img align="right" alt="LazyBot" width="270" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
 Here’s a breakdown of the project folders:
 
+- **[`assets`](./assets/)**: Contains all the images used in the README files of this repository.
 - **[`instructions`](./instructions/)**: Contains all the instructions on how to setup and use the package.
 - **[`models`](./models/)**: Contains 3D models and CAD designs of the robot.
 - **[`src`](./src/)**: Source code for the robot's programming. This contains the ROS2 packages.
@@ -128,11 +129,11 @@ Here’s a breakdown of the project folders:
 
 ## Key Features
 
-- **Hybrid LEGO & 3D Printed Design**: Using LEGO parts proved to be very helpful based on the previous experience of our members. That, along with 3D printed parts made it possible to harness LEGO's precision and the flexibility of 3D printing.
-- **Advanced Sensor Suite**: LazyBot is equipped with a LiDAR (to perfectly sense the sorroundings), encoder motor (to precisely calculate the position), IMU (to calculate realtime orientation).
-- **Use of Robot Operating System**: We used ROS2 to control the robot. We took this decision because Robot Operating System allows to make a project very modular and provide a lot of useful tools for simulation and visualization.
-- **Real-Time Odometry Calculation**: This is one of the major feature of pur robot. Using the onboard IMU sensor and the value from the motor's encoder, the robot calculates the exact realtime position of the robot.
-- **Efficient Debugging**: We've added an OLED display to the MCU of the robot which helps to debug the issues on the MCU side. And ROS2 provides with a lot of debugging tools that helps us debug any issues hapening on the Pi side.
+- **`Hybrid LEGO & 3D Printed Design`**: Using LEGO parts proved to be very helpful based on the previous experience of our members. That, along with 3D printed parts made it possible to harness LEGO's precision and the flexibility of 3D printing.
+- **`Advanced Sensor Suite`**: LazyBot is equipped with a LiDAR (to perfectly sense the sorroundings), encoder motor (to precisely calculate the position), IMU (to calculate realtime orientation).
+- **`Use of Robot Operating System`**: We used ROS2 to control the robot. We took this decision because Robot Operating System allows to make a project very modular and provide a lot of useful tools for simulation and visualization.
+- **`Real-Time Odometry Calculation`**: This is one of the major feature of pur robot. Using the onboard IMU sensor and the value from the motor's encoder, the robot calculates the exact realtime position of the robot.
+- **`Efficient Debugging`**: We've added an OLED display to the MCU of the robot which helps to debug the issues on the MCU side. And ROS2 provides with a lot of debugging tools that helps us debug any issues hapening on the Pi side.
 
 ---
 
@@ -144,17 +145,17 @@ Our bot is equipped with various components that support its autonomous function
 
 | Component                          | Description                                                                                      | Image                                                                                      | Purchase Link                                                                                     |
 |-----------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| **Raspberry Pi 5**                | Provides powerful onboard processing for computer vision, SLAM, and higher-level navigation.     | <div align="center"><img src="#" alt="Raspberry Pi 5" width="100"></div>                  | [Purchase Raspberry Pi 5](#)                                                                      |
+| **Raspberry Pi 5**                | Provides powerful onboard processing for computer vision, and higher-level navigation.     | <div align="center"><img src="#" alt="Raspberry Pi 5" width="100"></div>                  | [Purchase Raspberry Pi 5](#)                                                                      |
 | **RPLidar C1**                    | Enables 360-degree obstacle detection and environment mapping through LiDAR scanning.            | <div align="center"><img src="#" alt="RPLidar C1" width="100"></div>                       | [Purchase RPLidar C1](#)                                                                          |
 | **ESP32 Microcontroller**         | Manages real-time control such as motor commands, sensor data collection, and communication.     | <div align="center"><img src="#" alt="ESP32" width="100"></div>                            | [Purchase ESP32](#)                                                                               |
-| **MPU6050 Gyroscope/Accelerometer** | Tracks orientation and motion to assist with balance and movement stabilization.                 | <div align="center"><img src="#" alt="MPU6050" width="100"></div>                          | [Purchase MPU6050](#)                                                                             |
-| **0.96" OLED Display (I2C)**      | Displays status information such as battery, sensor readings, and debug info.                    | <div align="center"><img src="#" alt="OLED Display" width="100"></div>                     | [Purchase OLED Display](#)                                                                        |
+| **BNO055 9Axis IMU Sensor** | Tracks orientation and motion to assist with balance and movement stabilization. The internal microcontroller allows for precision orientation tracking.                 | <div align="center"><img src="#" alt="MPU6050" width="100"></div>                          | [Purchase MPU6050](#)                                                                             |
+| **0.96" OLED Display (I2C)**      | Displays status information such as sensor readings, and debug info.                    | <div align="center"><img src="#" alt="OLED Display" width="100"></div>                     | [Purchase OLED Display](#)                                                                        |
 | **Mini560 Buck Converter**        | Provides compact 5V power regulation for the Raspberry Pi and peripherals.                        | <div align="center"><img src="#" alt="Mini560 Buck Converter" width="100"></div>           | [Purchase Mini560 Buck Converter](#)                                                              |
 | **LM2596 5V 5A Buck Converter**   | Supplies a steady 5V 5A output for powering high-draw components like the motor driver.           | <div align="center"><img src="#" alt="LM2596 Buck Converter" width="100"></div>            | [Purchase LM2596 Buck Converter](#)                                                               |
 | **20GA Gear Motors with Encoder** | Offers precise speed and position feedback for accurate wheel control and localization.          | <div align="center"><img src="#" alt="20GA Motor with Encoder" width="100"></div>          | [Purchase 20GA Encoder Motor](#)                                                                  |
 | **VNH2SP30 Motor Driver**         | High-power motor driver used to control brushed DC motors with PWM and direction control.        | <div align="center"><img src="#" alt="VNH2SP30 Motor Driver" width="100"></div>            | [Purchase VNH2SP30](#)                                                                            |
 | **AM117 Servo Motor**             | Controls precise angular movements, typically used for steering or actuation.                    | <div align="center"><img src="#" alt="AM117 Servo" width="100"></div>                      | [Purchase AM117 Servo](#)                                                                         |
-| **Custom Secondary PCB**          | Integrates ESP32, MPU6050, OLED, and buck converter for cleaner wiring and modularity.           | <div align="center"><img src="#" alt="Custom PCB" width="100"></div>                       | N/A                                                                                               |
+| **Custom Secondary PCB**          | Integrates ESP32, BNO055, OLED, and buck converter for cleaner wiring and modularity.           | <div align="center"><img src="#" alt="Custom PCB" width="100"></div>                       | N/A                                                                                               |
 | **3rd Generation LEGO Differential** | Utilized in the drive system to enable turning with gear synchronization.                        | <div align="center"><img src="#" alt="LEGO Differential" width="100"></div>                | [Purchase LEGO Differential](#)                                                                   |
 | **3D Printed Body Frame**         | Provides a lightweight and modular chassis tailored for our component layout and design.         | <div align="center"><img src="#" alt="3D Printed Frame" width="100"></div>                 | N/A                                                                                               |
 
@@ -164,20 +165,20 @@ Our bot is equipped with various components that support its autonomous function
 
 # Mobility Management
 
-This segment outlines the mobility system of **Lazy_bot**, the first version of our robot developed for **WRO 2025 - Future Engineers**.
+This segment outlines the mobility system of **LazyBot**, with two key features: a differential gear system, and ackermann steering.
 
 ---
 
 ### **Differential Drive System**
 
-Our robot utilizes a differential drive system powered by two **20GA DC gear motors with encoders**. These motors are connected through a **3rd generation LEGO differential**, allowing the wheels on the same axle to rotate at different speeds — a critical feature for smooth cornering and precise movement.
+Our robot utilizes a differential gear system powered by one **20GA DC gear motor with encoders** and a **3rd generation LEGO differential**, allowing the wheels on the same axle to rotate at different speeds even though they are both connected toa single motor. This is crucial feature for smooth cornering and precise movement.
 
 <table>
 <tr>
 <td width="50%">
 
 #### How It Works:
-- Each motor drives one side of the robot.
+- The motor is connected to the differential gearset. The gear system distributes torque to the wheels as needed.
 - The differential automatically compensates for wheel speed differences when turning.
 - Encoders provide real-time feedback to ensure accurate speed and distance tracking.
 
@@ -186,27 +187,18 @@ Our robot utilizes a differential drive system powered by two **20GA DC gear mot
 2. **Precise Odometry**: Encoders enhance path planning and tracking.
 3. **Compact & Modular**: LEGO-based integration makes the drivetrain easy to modify or maintain.
 
+<div align="center">
+  <img src="./assets/diff_drive_diagram.png" alt="Differential Gear Diagram" width="80%" style="max-width: 400px; border-radius: 20px">
+</div>
+
 </td>
 <td width="50%">
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/7a50709c-d077-462a-b6b7-bfc616fd4920" alt="Differential Drive Setup" width="300"/>
+  <img src="https://github.com/user-attachments/assets/7a50709c-d077-462a-b6b7-bfc616fd4920" alt="Differential Drive Setup" style="border-radius: 20px" width="300"/>
 </div>
 </td>
 </tr>
 </table>
-
----
-
-### **Motor Driver - VNH2SP30**
-
-To control the high-current 20GA motors, we use the **VNH2SP30 full-bridge motor driver**. It allows for bidirectional motor control and supports high current output with excellent thermal performance.
-
-##### Features:
-- **High Power Handling**: Supports up to 30A peak, suitable for robust DC motors.
-- **PWM Support**: Allows smooth speed control using ESP32 PWM signals.
-- **Thermal Shutdown & Protection**: Keeps the system safe during heavy load.
-
----
 
 ### **Steering System - 3D Printed Ackermann Mechanism**
 
@@ -219,14 +211,26 @@ The robot features a **3D printed Ackermann steering system** controlled by a **
 4. **Mechanical Efficiency**: Reduces energy loss and component wear during turning.
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/6fde062d-c3a9-425e-8087-3d79e93b38eb" alt="3D Printed Ackermann Steering System" width="300"/>
+  <img src="https://github.com/user-attachments/assets/6fde062d-c3a9-425e-8087-3d79e93b38eb" alt="3D Printed Ackermann Steering System" style="border-radius: 20px" width="500"/>
 </div>
 
 ---
 
+### **Motor Driver - VNH2SP30**
+
+To control the high-current 20GA motor, we use the **VNH2SP30 full-bridge motor driver**. It allows for bidirectional motor control and supports high current output with excellent thermal performance.
+
+##### Features:
+- **High Power Handling**: Supports up to 30A peak, suitable for robust DC motor.
+- **PWM Support**: Allows smooth speed control using ESP32 PWM signals.
+- **Thermal Shutdown & Protection**: Keeps the system safe during heavy load.
+
+---
+
+
 ### Summary
 
-The first version of Lazy_bot features a simple yet effective mobility system combining:
+The first version of LazyBot features a simple yet effective mobility system combining:
 - **Differential drive** with encoder feedback for stable movement.
 - **VNH2SP30 motor driver** for high-efficiency control.
 
@@ -280,7 +284,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 ---
 
 ### **4. VNH2SP30 Motor Driver with Built-in Regulator**
-- **Purpose**: Drives two **20GA motors with encoders**
+- **Purpose**: Drives the **20GA motor with encoders**
 - **Regulation**: Built-in buck handles motor voltage directly from the 3S battery
 - **Features**:
   - No external buck needed
@@ -337,7 +341,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-This modular and carefully balanced power system allows **Lazy_bot** to run smoothly under demanding conditions while maintaining safety and long-term reliability.
+This modular and carefully balanced power system allows **LazyBot** to run smoothly under demanding conditions while maintaining safety and long-term reliability.
 tubuntu
 
 ## Future Improvements
