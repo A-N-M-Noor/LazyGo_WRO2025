@@ -101,7 +101,7 @@ This repository includes all files, designs, and code for **LazyBot**, our WRO 2
 ### File Structure
 
 
-<img align="right" alt="LazyBot" width="270" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
+<img align="right" alt="LazyBot" width="270" src="./assets/lazygo_logo_round.png">
 Here’s a breakdown of the project folders:
 
 - **[`assets`](./assets/)**: Contains all the images used in the README files of this repository.
@@ -194,7 +194,7 @@ Our robot utilizes a differential gear system powered by one **20GA DC gear moto
 </td>
 <td width="50%">
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/7a50709c-d077-462a-b6b7-bfc616fd4920" alt="Differential Drive Setup" style="border-radius: 20px" width="300"/>
+  <img src="./assets/differential.jpeg" alt="Differential Drive Setup" style="border-radius: 20px" width="300"/>
 </div>
 </td>
 </tr>
@@ -211,7 +211,7 @@ The robot features a **3D printed Ackermann steering system** controlled by a **
 4. **Mechanical Efficiency**: Reduces energy loss and component wear during turning.
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/6fde062d-c3a9-425e-8087-3d79e93b38eb" alt="3D Printed Ackermann Steering System" style="border-radius: 20px" width="500"/>
+  <img src="./assets/steering.jpeg" alt="3D Printed Ackermann Steering System" style="border-radius: 20px" width="500"/>
 </div>
 
 ---
@@ -364,16 +364,12 @@ The camera feeds data to the **Raspberry Pi 5**, which processes image recogniti
 
 ## Our PCB is custom made. 
 
----
-# Project Name
-
-## System Visuals
 
 ### PCB Views
 
 | **Top View of PCB**                 | **Bottom View of PCB**             |
 |-------------------------------------|-------------------------------------|
-| <img src="https://github.com/user-attachments/assets/b1cfbc71-9583-4432-a8bf-8053735f607d" width="800"/> | <img src="https://github.com/user-attachments/assets/fe572fad-c348-459d-ab76-1f389a12ebcd" width="800"/> |
+| <img src="./assets/pcb_top.jpeg" width="800"/> | <img src="./assets/pcb_bottom.jpeg" width="800"/> |
 
 
 
