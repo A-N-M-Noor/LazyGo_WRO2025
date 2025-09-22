@@ -19,6 +19,7 @@ Visit our socials:
 - [`Repository`](#repository)
 - [`Key Features`](#key-features)
 - [`Components and Hardware`](#components-and-hardware)
+- [`Algorithm`](#algorithm)
 - [`Mobility Management`](#mobility-management)
 - [`Power and Sense Management`](#power-and-sense-management)
 
@@ -162,8 +163,40 @@ Our bot is equipped with various components that support its autonomous function
 ---
 ---
 
+## Algorithm
+### Odometry
+A very interesting feature of our robot is that it can calculate it's realtime position. We achieved this by fusing the realtime orientation value with the motor's encoder values. When the robot is moving in a straight line, it is possible to calculate how far the robot has moven using the encoder values. But it isn't sosimple when the robot turns. But when the robot is turning, we can actually divide it's curved path into tiny sentions that resembles straight lines. And if we accumulate those straight lines, taking their directions into account, we can find the actual displacement of the robot pretty accurately.
 
-# Mobility Management
+Here's how it is calculated:
+1. Find the delta of the encoder's value. Let's call it `ds`
+1. Find the average angle between the last calculation and current heading angle. Let's call it `A`.
+1. The movement vector would be: _(x = `ds*cos(A)`, y = `ds*sin(A)`)_
+1. By accumulating this movement vector, and we can find the realtime position of the robot.
+
+Before getting an usable value, we had to calibrate our encoder to calculate values in metric unit.
+
+### Open Round
+
+#### Avoidance using LiDAR
+During the open round, there is no towers on the track. So we don't need the camera. To move the robot in the track, we use a modified version of [Disparity Extender](https://www.nathanotterness.com/2019/04/the-disparity-extender-algorithm-and.html) algorithm. Here's a step by step description of the idea:
+
+1. The LiDAR scans the area and gives a bunch of distances in many directions (one distance per ray).
+1. For each ray, start with the ray’s measured distance as the “candidate” distance.
+1. Look at the nearby rays around that ray. If any nearby ray’s obstacle is close enough that the car’s body would hit it when moving along the candidate ray, shorten the candidate distance to that nearby obstacle. (In other words: pretend the car is wide and see where it would first hit something.)
+1. After doing that for every ray, you have a “safe distance” for every direction — the farthest you can travel in that direction without your body hitting something.
+1. Pick the direction with the largest safe distance and steer the car toward it.
+
+One drawback of this method is that on straight sections, the robot shows a tendency to point itself toward the next corner. This happens because corners often look like the direction with the most open space before discovering the next turn, so the algorithm treats them as the safest option - even though the robot should ideally stay centered on the straight path. But this algorithm works really well to move between tight gaps. So the little drawback doesn't really matter to us. And ofcourse, there are ways to improve on this issue.
+#### Lap Count
+Because we can precisely calculate odometry, keeping lap count is a very simple task. The robot just keeps track of how many times it passes through the starting section. When it reaches the desired lap count, it just stops there. And it worked really well. The robot always stops between a few centimeters from the dead center of the starting section.
+
+### Camera Placement
+
+The robot's main camera is positioned at the front and angled directly forwards. The camera is place 5cm above ground level so it is directly pointing towards the center of the towers. The camera feeds data to the **Raspberry Pi 5**, which processes the image to detect the towers. The processed dataalong with the LiDAR scan is used to plan the movement of the robot. The Pi then sends throttle and steering value to the ESP32. The ESP32 controls the motor and servo to move the robot.
+
+---
+
+## Mobility Management
 
 This segment outlines the mobility system of **LazyBot**, with two key features: a differential gear system, and ackermann steering.
 
@@ -239,21 +272,21 @@ This configuration allowed us to build a robust platform capable of handling the
 ----
 ----
 
-# Power and Sense Management
+## Power and Sense Management
 
 The **Power and Sense Management** system of our robot has been meticulously designed to optimize performance while ensuring reliable power delivery, precise sensing, and efficient communication between components.
 
 ---
 
-## Overview
+### Overview
 
 Our system is powered by a 3-cell lithium battery and efficiently distributed using dedicated buck converters for high and low power domains. This structure ensures stable operation across core modules like the Raspberry Pi 5, RPLidar, ESP32, sensors, and motor systems.
 
 ---
 
-## System Architecture
+### System Architecture
 
-### **1. Power Source: 3-Cell Lithium Polymer Battery**
+#### **1. Power Source: 3-Cell Lithium Polymer Battery**
 - **Configuration**: 3S (3 cells in series)
 - **Voltage**: 12.6V (fully charged) → ~11.1V (nominal) → ~9V (discharged)
 - **Features**:
@@ -263,7 +296,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-### **2. LM2596 / Mini560 5A Buck Converter**
+#### **2. LM2596 / Mini560 5A Buck Converter**
 - **Purpose**: Supplies 5V to **Raspberry Pi 5** and **RPLidar C1**
 - **Input**: Directly from the 3S battery (~12.6V max)
 - **Output**: Stable 5V / 5A
@@ -273,7 +306,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-### **3. Secondary 5V Buck Converter**
+#### **3. Secondary 5V Buck Converter**
 - **Purpose**: Powers the **ESP32**, **MPU6050**, **OLED display**, and other secondary PCB components
 - **Input**: 12.6V battery input
 - **Output**: 5V regulated
@@ -283,7 +316,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-### **4. VNH2SP30 Motor Driver with Built-in Regulator**
+#### **4. VNH2SP30 Motor Driver with Built-in Regulator**
 - **Purpose**: Drives the **20GA motor with encoders**
 - **Regulation**: Built-in buck handles motor voltage directly from the 3S battery
 - **Features**:
@@ -293,7 +326,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-## Voltage Distribution Table
+### Voltage Distribution Table
 
 | Component                     | Voltage Supplied | Power Source / Converter        |
 |-------------------------------|------------------|----------------------------------|
@@ -304,13 +337,6 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 
 ---
-## Camera Placement and Functionality
-
-The robot's main camera is positioned at the front and angled directly forwards. The camera is place 5cm above ground level so it is directly pointing towards the center of the towers. The camera feeds data to the **Raspberry Pi 5**, which processes the image to detect the towers. The processed dataalong with the LiDAR scan is used to plan the movement of the robot. The Pi then sends throttle and steering value to the ESP32. The ESP32 controls the motor and servo to move the robot.
-
----
-
-
 ---
 
 ## Our PCB is custom made. 
