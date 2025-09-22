@@ -40,7 +40,7 @@ class ControlNode(Node):
         self.ranges = []
         self.ints = []
 
-        self.maxSpeed : float = 0.45
+        self.maxSpeed : float = 0.65
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0
@@ -173,6 +173,12 @@ class ControlNode(Node):
             self.get_logger().info(f"Wall Distance: {self.ranges[wi]:.2f}, End Offset: {self.endOffset}")
             
             self.gotWallD = True
+            
+            isInside = abs(self.pos.x) < 0.5 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
+            
+            if not isInside:
+                self.lapCount = -1
+                self.get_logger().info(f"Robot is outside the area, setting lap count to {self.lapCount}.")
 
     def calc_lidar(self):
         while True:
@@ -259,7 +265,7 @@ class ControlNode(Node):
     #     #         tA = -self.lookRng
     #     #         self.get_logger().info(f"Turning right, target angle: {degrees(tA)}")
     
-    def prevent_corner(self, obj):
+    def prevent_corner_and_turn(self, obj):
         return False
 
         targetI = self.a2i(radians(self.targetAng))
