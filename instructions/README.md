@@ -1,6 +1,12 @@
 # Instructions
 Want to use this package for your robot? Or maybe you just want to use the simulator? You can find the instructions here.
 
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-DE4E1B?style=flat-square)](#installing-ubuntu)
+[![Packages](https://img.shields.io/badge/Packages-4584b6?style=flat-square)](#installing-packages)
+[![ROS2](https://img.shields.io/badge/ROS2-22314E?style=flat-square)](#installing-ros2)
+[![Gazebo](https://img.shields.io/badge/Gazebo-EE7C11?style=flat-square)](#installing-gazebo)
+[![Codes](https://img.shields.io/badge/Codes-gray?style=flat-square)](#use-our-codes)
+
 ## Installing Ubuntu
 As we are using ROS2 for our robot, we installed Ubuntu on our Pi. Now, it is completely possible to use ROS2 without using Ubuntu, just on a Pi OS using Docker. But to keep things simple, we decided to install Ubuntu on our Pi.
 
@@ -9,26 +15,27 @@ You can either use ROS2 Humble with Ubuntu 22.04, or you can use ROS2 Jazzy with
 
 There is no direct download link for Ubuntu 22.04 for ARM architecture (Please let us know if you find any). And you can't install Ubuntu 22.04 from Pi Imager for a Pi 5. Therefore, we are using ROS2 Jazzy with Ubuntu 24.04. But this version of Ubuntu comes with a few problems. For example,you'll face a lot of issues installing a working VNC here. But thankfully ROS2 comes with a lot of remote debugging tools. And you can even code inside VSCode with its remote SSH feature. So you probably won't even need any VNC.
 
-#### Installation - Ubuntu
+#### Installation
 Download the Official Ubuntu Image for ARM from [here](https://cdimage.ubuntu.com/daily-live/20240421/). Download the `64-bit ARM (ARMv8/AArch64) desktop image` iso file.
 
 Install Raspberry Pi Imager from [here](https://www.raspberrypi.com/software/). Use the imager to burn the image file to an SD card. Or you can use any othe image writing software of your choice.
 
 Insert the SD card into the Pi, and turn it on. The first time you'll need to use a monitor.
 
-#### Installation - pip3, git, VSCode
 
-Install pip3
+## Installing Packages
+#### Pip3
+
 ```
 sudo apt install python3-pip
 ```
 
-Install git
+#### Git
 ```
 sudo apt install git-all
 ```
 
-Install VSCode (Optional)
+#### VSCode (Optional)
 ```
 wget https://update.code.visualstudio.com/latest/linux-deb-arm64/stable -O code_arm64.deb
 ```
@@ -36,13 +43,11 @@ wget https://update.code.visualstudio.com/latest/linux-deb-arm64/stable -O code_
 sudo apt install ./code_arm64.deb
 ```
 
-#### Installation - ROS2
+## Installing ROS2
 You can find all the instructions on the official [ROS2 website](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html).
 
 
-.
-
-
+#### UTF8
 First, check if you have UTF8
 ```
 locale
@@ -56,8 +61,7 @@ export LANG=en_US.UTF-8
 ```
 Then verify again.
 
-.
-
+#### APT Repository
 Ensure that the Ubuntu Universe repository is enabled.
 ```
 sudo apt install software-properties-common
@@ -75,8 +79,7 @@ sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc -o
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 ```
 
-.
-
+#### Installation - ROS2 Jazzy Jelisco
 Install ROS2 Jazzy Jelisco
 ```
 sudo apt update
@@ -101,8 +104,7 @@ sudo rosdep init
 rosdep update
 ```
 
-.
-
+#### Source some files
 Add ROS2 and colcon to the ~/.bashrc file, so that theyare sourced on every terminal. Adding colcon will enable autocomplete of commands.
 
 First, open the .bashrc file
@@ -115,15 +117,15 @@ source /opt/ros/humble/setup.bash
 source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
 ```
 
-#### Install Gazebo (If you want to run the simulation)
+## Installing Gazebo
+If you want to run the simulation, you'll need to install Gazebo.
 
 > [!WARNING]  
 > Do not try to run the simulation on your Raspberry Pi!
 
-> [!Note]  
-> To use the simulation, you should install ROS2 on a separate PC/Laptop and run the simulation there.
+To use the simulation, you should install ROS2 on a separate PC/Laptop and run the simulation there.
 
-We already had ROS2 Humble installed on a separate device, so we used that version to run the simulation. You can install the new ignition gazebo with ROS2 Jazzy. But we used Gazebo Classic 11 with ROS2 Humble ([Installation guide here](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html)).
+> We already had ROS2 Humble installed on a separate device, so we used that version to run the simulation. You can install the new ignition gazebo with ROS2 Jazzy. But we used Gazebo Classic 11 with ROS2 Humble ([Installation guide here](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html)).
 
 After you have ROS2 Humble working on your device...
 
@@ -143,7 +145,7 @@ ros2 launch gazebo_ros gazebo.launch.py
 ```
 
 
-### Use our codes
+## Use our codes
 
 First, clone our repository
 ```
