@@ -1,5 +1,5 @@
 <div align="center">
-  <img alt="image" src="https://github.com/user-attachments/assets/7d07546e-424a-4d2b-ba96-8149f166cd7d" />
+  <img alt="image" src="./assets/banner.png" />
 </div>
   <strong>Team LazyGo</strong> is a robotics team from <strong>Bangladesh</strong>. Originally formed in 2022, LazyGo won <strong>Bronze</strong> at the WRO international round in the Future Engineers category. Now returns again with three experienced international participants.
 <br><br>
@@ -26,7 +26,7 @@ Visit our socials:
 ---
 ## Team Introduction
 <div>
-  <img src="https://github.com/user-attachments/assets/5c2665d3-2c25-455c-9a63-0e6dbe2a04a4" width="180" height="180" align="left"/><br>
+  <img src="./assets/Prithul.png" width="180" height="180" align="left"/><br>
   <strong>Iqbal Samin Prithul</strong><br>
   Embedded Electronics<br>
   WRO 2022 International Bronze Medalist (Future Engineers Category)<br>
@@ -35,7 +35,7 @@ Visit our socials:
 
 ---
 <div>
-  <img src="https://github.com/user-attachments/assets/8915b0b6-8cd6-478e-881d-204b97b2fe92" width="180" height="180" align="right"/><br>
+  <img src="./assets/Noor.png" width="180" height="180" align="right"/><br>
   <div align="right">
   <strong>A.N.M Noor</strong><br>
   Software and ROS<br>
@@ -45,7 +45,7 @@ Visit our socials:
 
 ---
 <div>
-  <img src="https://github.com/user-attachments/assets/6c385963-b8a9-42e1-8e9a-766de05e3397" width="180" height="180" align="left"/><br>
+  <img src="./assets/Rakibul.png" width="180" height="180" align="left"/><br>
   <strong>Rakibul Islam</strong><br>
   Hardware and CAD design<br>
   WRO 2024 International Participant (Future Engineers Category)<br>
