@@ -98,8 +98,6 @@ class SerNode(Node):
                 try:
                     data = self.ser.readline().decode('utf-8').strip()
                     if data:
-                        self.get_logger().info(f'Received data: {data}')
-
                         if data == "Start":
                             self.get_logger().info('Starting Bot')
                             self.pub_cmd("start")
@@ -116,7 +114,6 @@ class SerNode(Node):
                                     pos_msg.y = y
                                     pos_msg.z = radians(theta)
                                     self.pos_pub.publish(pos_msg)
-                                    self.get_logger().info(f'Published position: x={x}, y={y}, theta={theta}')
                                 else:
                                     self.get_logger().warn(f'Unexpected position format: {data}')
                             except ValueError as ve:

@@ -71,6 +71,7 @@ class ControlNode(Node):
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
+        self.targetLap = 3
         self.running = False
         self.endOffset = [0.0, 0.0]
 
@@ -114,7 +115,7 @@ class ControlNode(Node):
             self.get_logger().info("Moving on...")
             self.reached = False
         
-        if self.lapCount >= 3:
+        if self.lapCount >= self.targetLap:
             self.running = False
             self.get_logger().info("Reached the destination, stopping the robot.")
             self.pubDrive(disable=True)
