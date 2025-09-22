@@ -4,22 +4,27 @@
   <strong>Team LazyGo</strong> is a robotics team from <strong>Bangladesh</strong>. Originally formed in 2022, LazyGo won <strong>Bronze</strong> at the WRO international round in the Future Engineers category. Now returns again with three experienced international participants.
 <br><br>
 
-We named our robot **LazyBot**, which is built for the **Future Engineers** category in the **World Robot Olympiad 2025**. This year, we are trying to bring some interesting changes from the typical way a robot is built for this category.
+We named our robot **LazyBot**, which is built for the **Future Engineers** category in the **World Robot Olympiad 2025**. This year, we are trying to bring some interesting changes from the typical way a robot is built for this category. This repository contains all the files, codes, models, photos and everything about our team and the robot.
 
-[![facebook](https://img.shields.io/badge/face-book-blue?style=flat&logo=facebook)](https://www.facebook.com/team.lazygo)
-[![linkedin](https://img.shields.io/badge/linked-in-blue?style=flat)](https://www.linkedin.com/company/lazygo)
+Visit our socials:
+
+[![facebook](https://img.shields.io/badge/face-book-blue?style=flat-square&logo=facebook)](https://www.facebook.com/team.lazygo)
+[![linkedin](https://img.shields.io/badge/linked-in-blue?style=flat-square)](https://www.linkedin.com/company/lazygo)
 
 
 ## Table of Contents
 
-- Mission Overview for WRO Future Engineers Rounds
-- Components and Hardware
-- Mobility Management
-- Power and Sense Management
+- [`Team Introduction`](#team-introduction)
+- [`Mission Overview for WRO Future Engineers Rounds`](#mission-overview-for-wro-future-engineers-rounds)
+- [`Repository`](#repository)
+- [`Key Features`](#key-features)
+- [`Components and Hardware`](#components-and-hardware)
+- [`Mobility Management`](#mobility-management)
+- [`Power and Sense Management`](#power-and-sense-management)
 
 
 ---
-## 👥 Team Introduction
+## Team Introduction
 <div>
   <img src="https://github.com/user-attachments/assets/5c2665d3-2c25-455c-9a63-0e6dbe2a04a4" width="180" height="180" align="left"/><br>
   <strong>Iqbal Samin Prithul</strong><br>
@@ -51,7 +56,7 @@ We named our robot **LazyBot**, which is built for the **Future Engineers** cate
 
 ---
 
-<h1 align="center">Mission Overview for WRO Future Engineers Rounds</h1>
+## Mission Overview for WRO Future Engineers Rounds
 
 <table>
   <tr>
@@ -89,11 +94,11 @@ We named our robot **LazyBot**, which is built for the **Future Engineers** cate
 </table>
 
 ---
-## 🎉 Project Overview
+## Repository
 
-This repository includes all files, designs, and code for **Lazy_Bot**, our WRO 2025 robot. Below is the folder structure:
+This repository includes all files, designs, and code for **LazyBot**, our WRO 2025 robot. Below is the file structure:
 
-## 📂 Structure
+### File Structure
 
 
 <img align="right" alt="Lazy_bot" width="270" src="https://github.com/user-attachments/assets/153bd9aa-6155-4586-a022-d08b24079a2a">
@@ -121,7 +126,19 @@ Here’s a breakdown of the project folders:
 ---
 
 
-## 🧩 Components and Hardware
+## Key Features
+
+- **Hybrid LEGO & 3D Printed Design**: Using LEGO parts proved to be very helpful based on the previous experience of our members. That, along with 3D printed parts made it possible to harness LEGO's precision and the flexibility of 3D printing.
+- **Advanced Sensor Suite**: LazyBot is equipped with a LiDAR (to perfectly sense the sorroundings), encoder motor (to precisely calculate the position), IMU (to calculate realtime orientation).
+- **Use of Robot Operating System**: We used ROS2 to control the robot. We took this decision because Robot Operating System allows to make a project very modular and provide a lot of useful tools for simulation and visualization.
+- **Real-Time Odometry Calculation**: This is one of the major feature of pur robot. Using the onboard IMU sensor and the value from the motor's encoder, the robot calculates the exact realtime position of the robot.
+- **Efficient Debugging**: We've added an OLED display to the MCU of the robot which helps to debug the issues on the MCU side. And ROS2 provides with a lot of debugging tools that helps us debug any issues hapening on the Pi side.
+
+---
+
+
+
+## Components and Hardware
 
 Our bot is equipped with various components that support its autonomous functionality. Below is a breakdown of the key hardware elements used in this project:
 
@@ -142,25 +159,10 @@ Our bot is equipped with various components that support its autonomous function
 | **3D Printed Body Frame**         | Provides a lightweight and modular chassis tailored for our component layout and design.         | <div align="center"><img src="#" alt="3D Printed Frame" width="100"></div>                 | N/A                                                                                               |
 
 ---
-
-## 🚀 Key Features
-
-- **Hybrid LEGO & 3D Printed Design**: Combines modular LEGO Technic elements with custom 3D-printed mounts for adaptability and structural stability.
-- **High-Performance Computing with Raspberry Pi 5**: Handles advanced algorithms, LiDAR processing, and high-level control logic.
-- **Real-Time Control via ESP32**: Manages low-latency tasks like motor control, sensor polling, and communication through a custom secondary PCB.
-- **Efficient Power Management**: Dual buck converters (Mini560 & LM2596) ensure stable voltage delivery across the system.
-- **Advanced Sensor Suite**: Equipped with **RPLidar C1**, **MPU6050**, **motor encoders**, and a **0.96" OLED display** for feedback, navigation, and obstacle mapping.
-
 ---
 
 
-
-
-
-----
-
-
-# 🚗 Mobility Management
+# Mobility Management
 
 This segment outlines the mobility system of **Lazy_bot**, the first version of our robot developed for **WRO 2025 - Future Engineers**.
 
@@ -174,12 +176,12 @@ Our robot utilizes a differential drive system powered by two **20GA DC gear mot
 <tr>
 <td width="50%">
 
-##### 🔧 How It Works:
+#### How It Works:
 - Each motor drives one side of the robot.
 - The differential automatically compensates for wheel speed differences when turning.
 - Encoders provide real-time feedback to ensure accurate speed and distance tracking.
 
-##### ✅ Benefits:
+#### Benefits:
 1. **Smooth Turning**: Independent wheel speeds allow efficient navigation.
 2. **Precise Odometry**: Encoders enhance path planning and tracking.
 3. **Compact & Modular**: LEGO-based integration makes the drivetrain easy to modify or maintain.
@@ -199,7 +201,7 @@ Our robot utilizes a differential drive system powered by two **20GA DC gear mot
 
 To control the high-current 20GA motors, we use the **VNH2SP30 full-bridge motor driver**. It allows for bidirectional motor control and supports high current output with excellent thermal performance.
 
-##### ⚙️ Features:
+##### Features:
 - **High Power Handling**: Supports up to 30A peak, suitable for robust DC motors.
 - **PWM Support**: Allows smooth speed control using ESP32 PWM signals.
 - **Thermal Shutdown & Protection**: Keeps the system safe during heavy load.
@@ -210,7 +212,7 @@ To control the high-current 20GA motors, we use the **VNH2SP30 full-bridge motor
 
 The robot features a **3D printed Ackermann steering system** controlled by a **servo motor**. This configuration allows the front wheels to turn at appropriate angles during a corner, minimizing tire slippage and improving real-world steering accuracy.
 
-##### 🛠️ Advantages:
+##### Advantages:
 1. **Realistic Geometry**: Replicates automotive-grade steering for smoother and more stable turns.
 2. **Customizable Design**: 3D printed components allow fine-tuning and easy iteration.
 3. **Precise Control**: Servo-driven mechanism ensures consistent and accurate angle adjustments.
@@ -222,7 +224,7 @@ The robot features a **3D printed Ackermann steering system** controlled by a **
 
 ---
 
-### ✅ Summary
+### Summary
 
 The first version of Lazy_bot features a simple yet effective mobility system combining:
 - **Differential drive** with encoder feedback for stable movement.
@@ -233,19 +235,19 @@ This configuration allowed us to build a robust platform capable of handling the
 ----
 ----
 
-# ⚡ Power and Sense Management
+# Power and Sense Management
 
 The **Power and Sense Management** system of our robot has been meticulously designed to optimize performance while ensuring reliable power delivery, precise sensing, and efficient communication between components.
 
 ---
 
-## 📜 Overview
+## Overview
 
 Our system is powered by a 3-cell lithium battery and efficiently distributed using dedicated buck converters for high and low power domains. This structure ensures stable operation across core modules like the Raspberry Pi 5, RPLidar, ESP32, sensors, and motor systems.
 
 ---
 
-## ⚙️ System Architecture
+## System Architecture
 
 ### **1. Power Source: 3-Cell Lithium Polymer Battery**
 - **Configuration**: 3S (3 cells in series)
@@ -287,7 +289,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-## 🔌 Voltage Distribution Table
+## Voltage Distribution Table
 
 | Component                     | Voltage Supplied | Power Source / Converter        |
 |-------------------------------|------------------|----------------------------------|
@@ -298,7 +300,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-## 🔧 Installation and Configuration
+## Installation and Configuration
 
 1. **Battery Setup**:
    - Connect the 3S LiPo pack to power rail or XT60 input
@@ -322,7 +324,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-## 🛠 Maintenance Tips
+## Maintenance Tips
 
 - **Check Connectors Weekly**:
   - Secure all screw terminals and pin headers
@@ -338,16 +340,16 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 This modular and carefully balanced power system allows **Lazy_bot** to run smoothly under demanding conditions while maintaining safety and long-term reliability.
 tubuntu
 
-## 🚀 Future Improvements
+## Future Improvements
 - Integrate a smart power monitoring system to dynamically adjust power distribution.
 - Upgrade to more energy-efficient components as technology advances. ( WE WILL BE AROUND HOPEFULLY)
 
 ---
-## 🎥 Camera Placement and Functionality
+## Camera Placement and Functionality
 
 The robot's main camera is positioned at the top and angled slightly downwards. This setup enhances object detection capabilities by providing:
-- **🔍 Close-Range Detection**: The camera can identify objects in close proximity with high accuracy.
-- **🌐 Extended-Range Detection**: Ensures objects further away are detected effectively.
+- **Close-Range Detection**: The camera can identify objects in close proximity with high accuracy.
+- **Extended-Range Detection**: Ensures objects further away are detected effectively.
 
 The camera feeds data to the **Raspberry Pi 5**, which processes image recognition algorithms to detect towers and corner lines. The processed data is then transmitted to the **ESP32 microcontroller** for real-time navigation and obstacle avoidance.
 
@@ -356,12 +358,12 @@ The camera feeds data to the **Raspberry Pi 5**, which processes image recogniti
 
 ---
 
-## 🛠️ Our PCB is custom made. 
+## Our PCB is custom made. 
 
 ---
 # Project Name
 
-## 🖼️ System Visuals
+## System Visuals
 
 ### PCB Views
 
