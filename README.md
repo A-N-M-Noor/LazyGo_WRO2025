@@ -245,17 +245,6 @@ The robot features a **3D printed Ackermann steering system** controlled by a **
 </div>
 
 ---
-
-### **Motor Driver - VNH2SP30**
-
-To control the high-current 20GA motor, we use the **VNH2SP30 full-bridge motor driver**. It allows for bidirectional motor control and supports high current output with excellent thermal performance.
-
-##### Features:
-- **High Power Handling**: Supports up to 30A peak, suitable for robust DC motor.
-- **PWM Support**: Allows smooth speed control using ESP32 PWM signals.
-- **Thermal Shutdown & Protection**: Keeps the system safe during heavy load.
-
----
 ---
 
 ## Power and Sense Management
