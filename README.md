@@ -95,6 +95,12 @@ Visit our socials:
 </table>
 
 ---
+>[!IMPORTANT]
+>**Important: WRO Future Engineers Rulebook**
+>* **Thorough Reading:** Ensure that you thoroughly read the **WRO Future Engineers 2025 Rulebook** to understand all rules and guidelines.
+>* **Official Link:** Access the rulebook here: [🔗 WRO Future Engineers 2025 Rulebook](https://wro-association.org/wp-content/uploads/WRO-2025-Future-Engineers-Self-Driving-Cars-General-Rules.pdf).
+
+---
 ## Repository
 
 This repository includes all files, designs, and code for **LazyBot**, our WRO 2025 robot. Below is the file structure:
@@ -114,17 +120,6 @@ Here’s a breakdown of the project folders:
 - **[`video`](./video/)**: Performance and demo videos of LazyBot.
 
 ---
-
-
-
-
----
->[!IMPORTANT]
->**Important: WRO Future Engineers Rulebook**
->* **Thorough Reading:** Ensure that you thoroughly read the **WRO Future Engineers 2025 Rulebook** to understand all rules and guidelines.
->* **Official Link:** Access the rulebook here: [🔗 WRO Future Engineers 2025 Rulebook](https://wro-association.org/wp-content/uploads/WRO-2025-Future-Engineers-Self-Driving-Cars-General-Rules.pdf).
-
----
 ---
 
 
@@ -137,7 +132,7 @@ Here’s a breakdown of the project folders:
 - **`Efficient Debugging`**: We've added an OLED display to the MCU of the robot which helps to debug the issues on the MCU side. And ROS2 provides with a lot of debugging tools that helps us debug any issues hapening on the Pi side.
 
 ---
-
+---
 
 
 ## Components and Hardware
@@ -195,6 +190,8 @@ Because we can precisely calculate odometry, keeping lap count is a very simple 
 The robot's main camera is positioned at the front and angled directly forwards. The camera is place 5cm above ground level so it is directly pointing towards the center of the towers. The camera feeds data to the **Raspberry Pi 5**, which processes the image to detect the towers. The processed dataalong with the LiDAR scan is used to plan the movement of the robot. The Pi then sends throttle and steering value to the ESP32. The ESP32 controls the motor and servo to move the robot.
 
 ---
+---
+
 
 ## Mobility Management
 
@@ -259,18 +256,7 @@ To control the high-current 20GA motor, we use the **VNH2SP30 full-bridge motor 
 - **Thermal Shutdown & Protection**: Keeps the system safe during heavy load.
 
 ---
-
-
-### Summary
-
-The first version of LazyBot features a simple yet effective mobility system combining:
-- **Differential drive** with encoder feedback for stable movement.
-- **VNH2SP30 motor driver** for high-efficiency control.
-
-This configuration allowed us to build a robust platform capable of handling the dynamic challenges of autonomous navigation in the WRO Future Engineers category.
-
-----
-----
+---
 
 ## Power and Sense Management
 
