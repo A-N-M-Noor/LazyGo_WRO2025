@@ -302,60 +302,11 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 | **ESP32 + Sensors + OLED**    | 5V               | Secondary Buck Converter         |
 | **Motors (20GA with encoder)**| Battery Voltage  | VNH2SP30 Motor Driver (built-in) |
 
----
-
-## Installation and Configuration
-
-1. **Battery Setup**:
-   - Connect the 3S LiPo pack to power rail or XT60 input
-   - Ensure battery management safety using a BMS or proper low-voltage cut-off
-
-2. **Main 5A Buck Converter (Pi + Lidar)**:
-   - Adjust output to **5.1V** for Pi and LiDAR
-   - Connect output through a capacitor filter for extra stability
-
-3. **Secondary Buck Converter (ESP32 PCB)**:
-   - Adjust output to **5V**
-   - Wire output to ESP32 VIN and sensor lines
-
-4. **Motor Driver (VNH2SP30)**:
-   - Connect input power directly from battery
-   - No need for external buck or regulator
-
-5. **Final Check**:
-   - Use multimeter to test all voltages before powering up components
-   - Ensure cooling and airflow for high-power regulators
-
----
-
-## Maintenance Tips
-
-- **Check Connectors Weekly**:
-  - Secure all screw terminals and pin headers
-- **Monitor Battery Health**:
-  - Never discharge below 9V or overcharge past 12.6V
-- **Inspect Buck Converters**:
-  - Touch test for overheating and ensure proper heatsinking
-- **Use a Multimeter**:
-  - Regularly verify output voltages and current draw
-
----
-
-This modular and carefully balanced power system allows **LazyBot** to run smoothly under demanding conditions while maintaining safety and long-term reliability.
-tubuntu
-
-## Future Improvements
-- Integrate a smart power monitoring system to dynamically adjust power distribution.
-- Upgrade to more energy-efficient components as technology advances. ( WE WILL BE AROUND HOPEFULLY)
 
 ---
 ## Camera Placement and Functionality
 
-The robot's main camera is positioned at the top and angled slightly downwards. This setup enhances object detection capabilities by providing:
-- **Close-Range Detection**: The camera can identify objects in close proximity with high accuracy.
-- **Extended-Range Detection**: Ensures objects further away are detected effectively.
-
-The camera feeds data to the **Raspberry Pi 5**, which processes image recognition algorithms to detect towers and corner lines. The processed data is then transmitted to the **ESP32 microcontroller** for real-time navigation and obstacle avoidance.
+The robot's main camera is positioned at the front and angled directly forwards. The camera is place 5cm above ground level so it is directly pointing towards the center of the towers. The camera feeds data to the **Raspberry Pi 5**, which processes the image to detect the towers. The processed dataalong with the LiDAR scan is used to plan the movement of the robot. The Pi then sends throttle and steering value to the ESP32. The ESP32 controls the motor and servo to move the robot.
 
 ---
 
