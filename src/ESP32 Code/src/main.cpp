@@ -6,10 +6,11 @@
 #include "motors.h"
 #include "bno.h"
 
+float TPM = 1825.0;
+
 Motors motors;
 
-int spdMin = 240;
-int spdMax = 255;
+float spdMult = 0.75;
 int spd = 0;
 int str_angle = SERVO_CENTER_US; // Servo pulse width in microseconds
 long lastEncoderPos = 0;
@@ -73,7 +74,7 @@ void srl()
 void odometry()
 {
     currentEncoderPos = motors.getEncoderCount();
-    float deltaEncoderPos = (currentEncoderPos - lastEncoderPos)/2178.0;
+    float deltaEncoderPos = (currentEncoderPos - lastEncoderPos)/TPM;
     float ang = (heading + headingPrev) / 2;
     headingPrev = heading;
     lastEncoderPos = currentEncoderPos;
@@ -115,7 +116,11 @@ void startSerialReadTask()
 }
 
 void setup()
-{
+{   
+
+    initBNO();
+
+    
     Serial.begin(115200);
     while (!Serial)
         ;
@@ -124,7 +129,6 @@ void setup()
     startOLEDDisplayTask();
     displayText("Wait...");
 
-    initBNO();
     bnoCalc();
     bnoCalcOffset(1500);
 
@@ -144,6 +148,7 @@ void setup()
 
     digitalWrite(green, HIGH);
     displayText("All okay!");
+    // motors.run(255);
     while (digitalRead(btn) == HIGH)
     {
         bnoCalc();

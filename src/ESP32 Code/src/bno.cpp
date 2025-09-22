@@ -40,6 +40,11 @@ void initBNO()
         while (1)
             delay(10);
     }
+    
+    bno.setExtCrystalUse(true);
+
+    bno.setMode(OPERATION_MODE_IMUPLUS);
+    delay(100);
 
     adafruit_bno055_offsets_t calibData;
     calibData.accel_offset_x = -27;
@@ -60,7 +65,6 @@ void initBNO()
     bno.setSensorOffsets(calibData);
 
     delay(1000);
-    bno.setExtCrystalUse(true);
 }
 
 void bnoTask(void *pvParameters)

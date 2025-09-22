@@ -3,6 +3,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+extern float spdMult;
 // Initialize static member
 Motors *Motors::instance = nullptr;
 
@@ -223,6 +224,8 @@ void Motors::moveDistance(float cm, float speed_mms)
 }
 void Motors::run(int spd_vlu)
 {   
+    spd_vlu = (float)spd_vlu * spdMult;
+    
     if (spd_vlu == 0)
     {
         digitalWrite(MOTOR_IN1, LOW);
