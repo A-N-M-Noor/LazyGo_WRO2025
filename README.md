@@ -185,6 +185,12 @@ One drawback of this method is that on straight sections, the robot shows a tend
 #### Lap Count
 Because we can precisely calculate odometry, keeping lap count is a very simple task. The robot just keeps track of how many times it passes through the starting section. When it reaches the desired lap count, it just stops there. And it worked really well. The robot always stops between a few centimeters from the dead center of the starting section.
 
+### Obstacle Round
+It works similar to the open round. But the robots needs to detect the towers. In our robot, tower detection is done in two ways.
+
+1. `Using the camera`: This is a very basic color detection algorithm. From the camera feed, the robot detects the towers by masking colors.
+1. `Using LiDAR data`: This approach is a bit more interesting. Towers create sudden changes (spikes) in the LiDAR distance readings. If the readings suddenly get closer and then farther again, that usually means there’s an object in between. By checking how wide this change looks from the LiDAR’s point of view, we can estimate whether it matches the expected size of a tower. If it does, the robot marks it as a possible tower - but it still confirms the color with the camera to be sure.
+
 ### Camera Placement
 
 The robot's main camera is positioned at the front and angled directly forwards. The camera is place 5cm above ground level so it is directly pointing towards the center of the towers. The camera feeds data to the **Raspberry Pi 5**, which processes the image to detect the towers. The processed dataalong with the LiDAR scan is used to plan the movement of the robot. The Pi then sends throttle and steering value to the ESP32. The ESP32 controls the motor and servo to move the robot.
