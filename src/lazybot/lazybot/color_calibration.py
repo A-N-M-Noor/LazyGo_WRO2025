@@ -22,7 +22,7 @@ window.title("HSV Calibration Tool")
 window.grid_columnconfigure(0, weight=1)
 
 
-CAMSRC = 2
+CAMSRC = 0
 RANGES = [[0,0,0],[255,255,255]]
 # COLORSPACE = ["Hue", "Saturation", "Value"]
 COLORSPACE = ["L", "A", "B"]
