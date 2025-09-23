@@ -118,7 +118,6 @@ class SerNode(Node):
                                     self.get_logger().warn(f'Unexpected position format: {data}')
                             except ValueError as ve:
                                 self.get_logger().error(f'Error parsing position data: {ve}')
-
                 except Exception as e:
                     self.get_logger().error(f'Error reading from serial: {e}')
 
