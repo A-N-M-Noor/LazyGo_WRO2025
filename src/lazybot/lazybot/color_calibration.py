@@ -245,7 +245,6 @@ class CameraNode(Node):
             return
         frame = self.image.copy() if self.image is not None else None
         if frame is not None:
-            cv2.imshow("Camera Image", frame)
             hsv, mask, thresh = util.process_mask(
                 frame, 
                 [
@@ -262,9 +261,15 @@ class CameraNode(Node):
                 
             if(swMaskBlr.get() == 1):
                 cv2.imshow("Processed Mask", thresh)
-
             elif(cv2.getWindowProperty("Processed Mask", cv2.WND_PROP_VISIBLE) == 1):
                 cv2.destroyWindow("Processed Mask")
+            
+            if(swContour.get() == 1):
+                cnt = util.get_contours(thresh)
+                cv2.drawContours(frame, cnt, -1, (0,255,0), 2)
+            
+            cv2.imshow("Camera Image", frame)
+
             self.imsg = None
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
