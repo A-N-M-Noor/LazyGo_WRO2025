@@ -21,12 +21,18 @@ window.title("HSV Calibration Tool")
 # Configuring the grid system
 window.grid_columnconfigure(0, weight=1)
 
+
+CAMSRC = 2
+RANGES = [[0,0,0],[255,255,255]]
+# COLORSPACE = ["Hue", "Saturation", "Value"]
+COLORSPACE = ["L", "A", "B"]
+
 def btn_press(cmd):
     global first
     print(f"{cmd} happened")
     
     if(cmd == "reset"):
-        setSliders([[0,0,0],[179,255,255]], 0)
+        setSliders(RANGES, 0)
         first = True
     
     if(cmd == "save"):
@@ -92,9 +98,9 @@ resetBtn = ctk.CTkButton(frmMenu, text="Reset", fg_color="firebrick3", hover_col
 resetBtn.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
 
 swMask = createSwitch(frmMenu, "Show Mask", 2, 0)
-swMaskBlr = createSwitch(frmMenu, "Show Processed Mask", 2, 1, True)
-swContour = createSwitch(frmMenu, "Draw Contour", 3, 0)
-swBox = createSwitch(frmMenu, "Draw Bounding Box", 3, 1, True)
+swMaskBlr = createSwitch(frmMenu, "Show Processed Mask", 2, 1)
+swContour = createSwitch(frmMenu, "Draw Contour", 3, 0, True)
+swBox = createSwitch(frmMenu, "Draw Bounding Box", 3, 1)
 swMinRect = createSwitch(frmMenu, "Draw MinAreaRect", 4, 0)
 swLine = createSwitch(frmMenu, "Draw Fitted Line", 4, 1)
 
@@ -105,12 +111,12 @@ blurLbl, blurSlider = createSlider(frmOptions, "Blur Amount", (0, 21), 1, defaul
 maskBlurLbl, maskBlurSlider = createSlider(frmOptions, "Mask Blur Amount", (0, 21), 2, default = util.get_mask_blur_val())
 
 frmRngs = createFrame(window, 3, "ew", True)
-H_min_lbl, H_min = createSlider(frmRngs, "HUE Min", (0, 179), _row = 0, _column = 0)
-H_max_lbl, H_max = createSlider(frmRngs, "HUE Max", (0, 179), _row = 0, _column = 1, default = 179)
-S_min_lbl, S_min = createSlider(frmRngs, "Saturation Min", (0, 255), _row = 1, _column = 0)
-S_max_lbl, S_max = createSlider(frmRngs, "Saturation Max", (0, 255), _row = 1, _column = 1, default = 255)
-V_min_lbl, V_min = createSlider(frmRngs, "Value Min", (0, 255), _row = 2, _column = 0)
-V_max_lbl, V_max = createSlider(frmRngs, "Value Max", (0, 255), _row = 2, _column = 1, default = 255)
+H_min_lbl, H_min = createSlider(frmRngs, f"{COLORSPACE[0]} Min", (RANGES[0][0], RANGES[1][0]), _row = 0, _column = 0)
+H_max_lbl, H_max = createSlider(frmRngs, f"{COLORSPACE[0]} Max", (RANGES[0][0], RANGES[1][0]), _row = 0, _column = 1, default = 179)
+S_min_lbl, S_min = createSlider(frmRngs, f"{COLORSPACE[1]} Min", (RANGES[0][1], RANGES[1][1]), _row = 1, _column = 0)
+S_max_lbl, S_max = createSlider(frmRngs, f"{COLORSPACE[1]} Max", (RANGES[0][1], RANGES[1][1]), _row = 1, _column = 1, default = 255)
+V_min_lbl, V_min = createSlider(frmRngs, f"{COLORSPACE[2]} Min", (RANGES[0][2], RANGES[1][2]), _row = 2, _column = 0)
+V_max_lbl, V_max = createSlider(frmRngs, f"{COLORSPACE[2]} Max", (RANGES[0][2], RANGES[1][2]), _row = 2, _column = 1, default = 255)
 
 
 # Just started the program or not
@@ -118,17 +124,17 @@ first = True
 
 def setSliders(rng, thr):
     H_min.set(util.clamp(rng[0][0] - thr, 0, 179))
-    setLabel(H_min_lbl, "HUE Min", H_min.get())
+    setLabel(H_min_lbl, f"{COLORSPACE[0]} Min", H_min.get())
     H_max.set(util.clamp(rng[1][0] + thr, 0, 179))
-    setLabel(H_max_lbl, "HUE Max", H_max.get())
+    setLabel(H_max_lbl, f"{COLORSPACE[0]} Max", H_max.get())
     S_min.set(util.clamp(rng[0][1] - thr, 0, 255))
-    setLabel(S_min_lbl, "Saturation Min", S_min.get())
+    setLabel(S_min_lbl, f"{COLORSPACE[1]} Min", S_min.get())
     S_max.set(util.clamp(rng[1][1] + thr, 0, 255))
-    setLabel(S_max_lbl, "Saturation Max", S_max.get())
+    setLabel(S_max_lbl, f"{COLORSPACE[1]} Max", S_max.get())
     V_min.set(util.clamp(rng[0][2] - thr, 0, 255))
-    setLabel(V_min_lbl, "Value Min", V_min.get())
+    setLabel(V_min_lbl, f"{COLORSPACE[2]} Min", V_min.get())
     V_max.set(util.clamp(rng[1][2] + thr, 0, 255))
-    setLabel(V_max_lbl, "Value Max", V_max.get())
+    setLabel(V_max_lbl, f"{COLORSPACE[2]} Max", V_max.get())
 
 
 class CameraNode(Node):
@@ -171,7 +177,7 @@ class CameraNode(Node):
         cv2.setMouseCallback('Camera Image', self.mouseClick)
 
         if(self.topic == ''):
-            self.cam = Camera(0)
+            self.cam = Camera(CAMSRC)
             self.cam.start()
             self.create_timer(1/60, self.getCamFrame)
 
@@ -181,8 +187,11 @@ class CameraNode(Node):
         global first
         if event == cv2.EVENT_LBUTTONUP:
             
-            hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
+            # hsv = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
+            hsv = util.process_mask(self.image)[0]
             h, s, v = hsv[y, x, :]
+            
+            self.get_logger().info(f"Clicked Color: {h}, {s}, {v}")
             
             _min = [min(h, H_min.get()), min(s, S_min.get()), min(v, V_min.get())]
             _max = [max(h, H_max.get()), max(s, S_max.get()), max(v, V_max.get())]
@@ -190,8 +199,8 @@ class CameraNode(Node):
             threshold = threshSlider.get()
             
             if first:
-                _min = [h, s - threshold*6, v - threshold*6]
-                _max = [h, s + threshold*6, v + threshold*6]
+                _min = [h - threshold, s - threshold, v - threshold]
+                _max = [h + threshold, s + threshold, v + threshold]
                 first = False
             setSliders([_min,_max], threshold)
 

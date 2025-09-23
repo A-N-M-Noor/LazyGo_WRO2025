@@ -9,6 +9,10 @@ class Camera:
         self.cap=cv2.VideoCapture(src)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self.cap.set(cv2.CAP_PROP_SETTINGS, 1)
+        self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.5) # Manual Mode
+        self.cap.set(cv2.CAP_PROP_EXPOSURE, -1) # Exposure Value
+        # self.cap.set(cv2.CAP_PROP_AUTO_WB, 0) # Disable Auto White Balance
         
         self.frame = None
         

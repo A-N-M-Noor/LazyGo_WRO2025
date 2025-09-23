@@ -77,14 +77,29 @@ def make_mask(_hsv, rngMin, rngMax):
 
     return mask
 
-def process_mask(frame, rng, maskBlr=0, crop = None, hsv = None):
+# def process_mask(frame, rng, maskBlr=0, crop = None, hsv = None):
+#     frm = frame.copy()
+#     if(crop is not None):
+#         frm = frm[crop[0]:crop[1], :]
+#     if hsv is None:
+#         hsv = cv2.cvtColor(frm, cv2.COLOR_BGR2HSV)
+        
+
+#     mask = make_mask(hsv, rng[0], rng[1])
+#     blrMask = blur(mask, maskBlr)
+#     _, thresh = cv2.threshold(blrMask, 127, 255, cv2.THRESH_BINARY)
+    
+#     return hsv, blrMask, thresh
+
+def process_mask(frame, rng = None, maskBlr=0, crop = None, hsv = None):
     frm = frame.copy()
     if(crop is not None):
         frm = frm[crop[0]:crop[1], :]
     if hsv is None:
-        hsv = cv2.cvtColor(frm, cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(frm, cv2.COLOR_BGR2LAB)
         
-
+    if rng is None:
+        return hsv, None, None
     mask = make_mask(hsv, rng[0], rng[1])
     blrMask = blur(mask, maskBlr)
     _, thresh = cv2.threshold(blrMask, 127, 255, cv2.THRESH_BINARY)
