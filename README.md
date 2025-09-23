@@ -320,7 +320,19 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 | **ESP32 + Sensors + OLED**    | 5V               | Secondary Buck Converter         |
 | **Motors (20GA with encoder)**| Battery Voltage  | VNH2SP30 Motor Driver (built-in) |
 
-
+```mermaid
+---
+config:
+  theme: redux
+---
+flowchart TD
+    n1["3s lipo battery"] --> n3["LM2596 Buck<br>Converter"] & n4["Mini 360 Buck<br>Converter"] & n5["VNH2SP30<br>Motor Driver"]
+    n3 --> n6["Raspberry Pi 5"]
+    n6 --> n7["RP Lidar C1"] & n8["USB Camera"]
+    n4 --> n9["ESP32<br>IMU<br>IR Sensors<br>OLED<br>Encoder"] & n11["Servo"]
+    n5 --> n10["Motor"]
+    n1@{ shape: rounded}
+```
 ---
 ---
 
