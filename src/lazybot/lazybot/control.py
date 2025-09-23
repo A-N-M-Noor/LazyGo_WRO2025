@@ -213,7 +213,6 @@ class ControlNode(Node):
             mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
 
             self.speed = self.maxSpeed * mult2
-
             self.pubDebugPoint()
             self.new_lidar_val = False
     

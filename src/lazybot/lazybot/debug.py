@@ -25,6 +25,9 @@ class DebugNode(Node):
         self.tf_broadcaster = TransformBroadcaster(self)
         
         self.pos = Vector3()
+        self.pos.x = 0.0
+        self.pos.y = 0.0
+        self.pos.z = 0.0
         
         self.dangerDist = 0.25
         self.dangerAng = [25.0, 90.0]

@@ -16,6 +16,8 @@ from lazybot.helper.camera_capture import Camera
 class Detect(Node):
     def __init__(self):
         super().__init__('detect_cam')
+        self.display = False
+        
         self.compressed = True
         
         self.cam = Camera(0)
@@ -46,9 +48,10 @@ class Detect(Node):
             "P": (0, 255, 255)
         }
 
-        cv2.namedWindow('Camera Image', cv2.WINDOW_GUI_NORMAL)
-        cv2.resizeWindow('Camera Image', 640, 480)
-        cv2.setMouseCallback('Camera Image', self.mouseClick)
+        if(self.display):
+            cv2.namedWindow('Camera Image', cv2.WINDOW_GUI_NORMAL)
+            cv2.resizeWindow('Camera Image', 640, 480)
+            cv2.setMouseCallback('Camera Image', self.mouseClick)
 
         self.cam.start()
 
@@ -130,6 +133,8 @@ class Detect(Node):
         self.obj_pub.publish(t_infos)
 
     def show_view(self):
+        if(not self.display):
+            return
         if self.frame is not None:
             self.image = self.frame.copy()
             

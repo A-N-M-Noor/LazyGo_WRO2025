@@ -53,6 +53,7 @@ class SerNode(Node):
             ports_to_try = list_ports.comports()
             
             for port in ports_to_try:
+                self.printSerialDetails(port)
                 if port.device.startswith("/dev/ttyUSB") or port.device.startswith("/dev/ttyACM"):
                     if port.product and not port.product.startswith("CP2102N"):
                         try:
@@ -81,12 +82,14 @@ class SerNode(Node):
         if self.ser is None or not self.ser.is_open:
             self.get_logger().error('Serial connection is not available.')
             return
+        try:
+            v = int(self.thr * 50) + 100
+            self.ser.write(v.to_bytes(1, 'little'))
 
-        v = int(self.thr * 50) + 100
-        self.ser.write(v.to_bytes(1, 'little'))
-
-        v = int(self.str * 50) + 200
-        self.ser.write(v.to_bytes(1, 'little'))
+            v = int(self.str * 50) + 200
+            self.ser.write(v.to_bytes(1, 'little'))
+        except Exception as e:
+            self.get_logger().error(f'Error writing to serial: {e}')
 
     def ser_read(self):
         while rclpy.ok():

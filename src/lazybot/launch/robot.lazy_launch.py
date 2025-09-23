@@ -24,7 +24,7 @@ def generate_launch_description():
 
     detect = Node(
         package='lazybot',
-        executable='detect_bot',
+        executable='detect_cam',
         name='detect_bot'
     )
     
