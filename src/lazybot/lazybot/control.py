@@ -201,22 +201,33 @@ class ControlNode(Node):
             self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)
             self.targetAng = self.lerp(self.targetAng, tA, 0.1)
             self.targetD = maxD
-
-            corner = self.prevent_corner_and_turn(self.objs[0] if self.objs else None)
+            
+            corner = False
+            
+            if(self.get_dst(-90) + self.get_dst(90) > 1.3):
+                corner = self.prevent_corner_and_turn(self.objs[0] if self.objs else None)
             
             self.targetAng = degrees(self.targetAng)
             
             sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
             self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
             if(corner):
-                self.strAngle = corner * self.strRange
+                self.targetAng = corner
             mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
 
             self.speed = self.maxSpeed * mult2
             self.pubDebugPoint()
             self.new_lidar_val = False
-    
-    # def prevent_corner(self, obj):
+
+    def prevent_corner_and_turn(self, obj):
+        if(obj is None):
+            return self.dir*90.0
+
+        ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
+        return degrees(obj['ang'] + ang)
+    # def prevent_corner_and_turn(self, obj):
+    #     return False
+
     #     targetI = self.a2i(radians(self.targetAng))
     #     frontI = self.a2i(0.0)
         
@@ -226,71 +237,21 @@ class ControlNode(Node):
     #     self.ranges[targetI] = self.fix_missing(targetI)
     #     self.ranges[frontI] = self.fix_missing(frontI)
 
-    #     if(self.ranges[targetI] > 1.3 and self.ranges[frontI] > 0.30):
+    #     rel_sec = self.sectionAngle - self.pos.z
+    #     rel_target = self.targetAng - rel_sec
+        
+    #     if(self.dir == 1):
+    #         if(self.closest == "G" and obj is not None):
+    #             if(rel_target > pi/4 and self.targetD > 0.8 and obj['dst'] < 0.8):
+    #                 self.targetAng = obj['ang'] + self.clearance_ang(obj['dst'])
+    #                 self.get_logger().info(f"\n>>> a{self.targetAng:.2f}, rs{degrees(rel_sec):.2f}, rt{degrees(rel_target):.2f}, d{self.targetD:.2f}, od{obj['dst']:.2f}, oa{degrees(obj['ang']):.2f}, ta:{degrees(self.targetAng):.2f}")
+    #                 return False
+        
+    #     if(self.ranges[targetI] > 0.8 and self.ranges[frontI] > 0.30):
     #         return False
         
-    #     self.get_logger().info(f"Dsts: {self.ranges[frontI]}, {self.ranges[targetI]}")
-        
-    #     # self.get_logger().info("Going to a wall")
-    #     bot_ang = self.norm_ang(self.pos.z)
-        
-    #     relative_sec_ang = self.sectionAngle - self.pos.z
-    #     targ_ang = bot_ang + self.targetAng
-        
-    #     obj_ang = obj['ang'] if obj is not None else 0.0
-    #     clearance_ang = 0.60 * (self.castR / obj['dst']) if obj is not None else 0.0
-    #     str_dir = 1.0
-    #     is_out = relative_sec_ang > 0 and obj_ang + clearance_ang <= 0
-    #     self.get_logger().info(f"Angs: {relative_sec_ang}, {max(relative_sec_ang, obj_ang + clearance_ang)}")
-
-    #     if(self.dir == -1):
-    #         is_out = min(relative_sec_ang, obj_ang - clearance_ang) < 0
-    #         str_dir = -1.0
-        
-    #     if(self.ranges[frontI] < 0.30):
-    #         self.get_logger().info(">>> Too close")
-    #         return str_dir
-    #     if(is_out):
-    #         self.get_logger().error(">>> Out of Bound")
-    #         return str_dir
-        
-    #     return False
-        
-    #     # if(len(self.objs) == 0 and abs(self.pos.z - self.sectionAngle) > radians(30)):
-    #     #     if self.dir == 1 and self.pos.z < self.sectionAngle:
-    #     #         tA = self.lookRng
-    #     #         self.get_logger().info(f"Turning left, target angle: {degrees(tA)}")
-    #     #     elif self.dir == -1 and self.pos.z > self.sectionAngle:
-    #     #         tA = -self.lookRng
-    #     #         self.get_logger().info(f"Turning right, target angle: {degrees(tA)}")
-    
-    def prevent_corner_and_turn(self, obj):
-        return False
-
-        targetI = self.a2i(radians(self.targetAng))
-        frontI = self.a2i(0.0)
-        
-        if(targetI < 0 or targetI >= len(self.ranges)):
-            return False
-        
-        self.ranges[targetI] = self.fix_missing(targetI)
-        self.ranges[frontI] = self.fix_missing(frontI)
-
-        rel_sec = self.sectionAngle - self.pos.z
-        rel_target = self.targetAng - rel_sec
-        
-        if(self.dir == 1):
-            if(self.closest == "G" and obj is not None):
-                if(rel_target > pi/4 and self.targetD > 0.8 and obj['dst'] < 0.8):
-                    self.targetAng = obj['ang'] + self.clearance_ang(obj['dst'])
-                    self.get_logger().info(f"\n>>> a{self.targetAng:.2f}, rs{degrees(rel_sec):.2f}, rt{degrees(rel_target):.2f}, d{self.targetD:.2f}, od{obj['dst']:.2f}, oa{degrees(obj['ang']):.2f}, ta:{degrees(self.targetAng):.2f}")
-                    return False
-        
-        if(self.ranges[targetI] > 0.8 and self.ranges[frontI] > 0.30):
-            return False
-        
-        if obj is None or abs(obj['ang']) > radians(60):
-            return self.dir
+    #     if obj is None or abs(obj['ang']) > radians(60):
+    #         return self.dir
         
     def pos_callback(self, msg: Vector3):
         self.pos.x = msg.x
@@ -491,6 +452,13 @@ class ControlNode(Node):
             msg.towers.append(tower)
         self.pubDebug.publish(msg)
 
+    def get_dst(self, ang):
+        i = self.a2i(radians(ang))
+        if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
+            self.ranges[i] = self.fix_missing(i)
+            self.ints[i] = 1.0
+        return self.ranges[i]
+    
     def i2a(self, i, deg = False):
         if deg:
             return degrees(self.angMin + self.angInc*i)
