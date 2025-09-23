@@ -175,7 +175,7 @@ Before getting an usable value, we had to calibrate our encoder to calculate val
 ### Open Round
 
 #### Avoidance using LiDAR
-During the open round, there is no towers on the track. So we don't need the camera. To move the robot in the track, we use a modified version of [Disparity Extender](https://www.nathanotterness.com/2019/04/the-disparity-extender-algorithm-and.html) algorithm. Here's a step by step description of the idea:
+During the open round, there is no towers on the track. So we don't need the camera. To move the robot in the track, we use a modified version of `Disparity Extender` algorithm. Here's a step by step description of the idea:
 
 1. The LiDAR scans the area and gives a bunch of distances in many directions (one distance per ray).
 1. For each ray, start with the ray’s measured distance as the “candidate” distance.
