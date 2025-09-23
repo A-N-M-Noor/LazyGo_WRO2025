@@ -6,7 +6,7 @@ class Camera:
         self.width = width
         self.height = height
         
-        self.cap=cv2.VideoCapture(src)
+        self.cap=cv2.VideoCapture(2)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         
@@ -32,21 +32,23 @@ class Camera:
         while self.running:
             _,self.frame = self.cap.read()
             
-    def getFrame(self, blr:int = 0):
+    def getFrame(self, blr:int = 0, rotate_180:bool = True):
         if(not self.running or self.frame is None):
             return None
             
+        _frm = self.frame.copy()
+        
+        # Rotate by 180 degrees
+        if rotate_180:
+            _frm = cv2.rotate(_frm, cv2.ROTATE_180)
+        
         blr = int(blr)            
         if(blr > 0):
             if(blr%2 == 0):
                 blr = blr+1
-            _frm = self.frame.copy()
             _frm = cv2.GaussianBlur(_frm, (blr,blr), cv2.BORDER_DEFAULT)
-            return _frm
-        
-        if(self.frame is not None):
-            return self.frame.copy()
-        return None
+            
+        return _frm
 
 if(__name__ == "__main__"):
     cam = Camera(0)

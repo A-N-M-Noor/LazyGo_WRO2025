@@ -3,7 +3,7 @@ import numpy as np
 import pathlib
 import ruamel.yaml
 
-directory = pathlib.Path(__file__).parent.parent.resolve()
+directory = pathlib.Path("~/WRO_25_ws/src/lazybot/lazybot").expanduser()
 config_dir = directory / 'configure'
 color_calib_file = config_dir / 'color_data.yaml'
 

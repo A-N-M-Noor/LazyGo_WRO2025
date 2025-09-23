@@ -1,16 +1,16 @@
 # blur on the main feed
 main_blur: 3
 # blur on the mask to smooth it out
-mask_blur: 1
+mask_blur: 4
 
 # color ranges
 colors:
     red:
-        min: [173, 172, 64]
-        max: [9, 255, 255]
+        min: [169, 92, 75]
+        max: [16, 255, 193]
     green:
-        min: [40, 60, 24]
-        max: [80, 255, 252]
+        min: [45, 88, 0]
+        max: [85, 248, 127]
     blue:
         min: [164, 109, 10]
         max: [15, 249, 150]
