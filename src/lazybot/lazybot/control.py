@@ -144,9 +144,6 @@ class ControlNode(Node):
         self.closest = msg.data
         
     def lidar_callback(self, msg: LaserScan):
-        if not self.running:
-            return
-        
         self.new_lidar_val = True
         
         self.dt = time.time() - self.lastTime
@@ -158,6 +155,9 @@ class ControlNode(Node):
 
         self.ranges = msg.ranges
         self.ints = msg.intensities
+        
+        if not self.running:
+            return
         
         if(not self.gotWallD):
             wi = self.a2i(0.0)
