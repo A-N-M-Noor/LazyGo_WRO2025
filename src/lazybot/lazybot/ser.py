@@ -99,6 +99,7 @@ class SerNode(Node):
     
     def cam_callback(self, msg):
         self.cam = msg.data
+        self.send_val(17, int(self.cam)+140)
 
     def steer_callback(self, msg):
         self.str = msg.data
@@ -122,7 +123,6 @@ class SerNode(Node):
             self.ser.write(v.to_bytes(1, 'little'))
             self.send_val(15, int(self.thr * 100)+150)
             self.send_val(16, int(self.str * 100)+150)
-            self.send_val(17, int(self.cam)+50)
             
         except Exception as e:
             self.get_logger().error(f'Error writing to serial: {e}')

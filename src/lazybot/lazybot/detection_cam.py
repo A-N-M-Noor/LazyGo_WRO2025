@@ -16,7 +16,7 @@ from lazybot.helper.camera_capture import Camera
 class Detect(Node):
     def __init__(self):
         super().__init__('detect_cam')
-        self.display = True
+        self.display = False
         
         self.compressed = True
         
