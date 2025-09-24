@@ -4,7 +4,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Vector3
 
-from std_msgs.msg import Float32, Float32MultiArray, String, Int8MultiArray
+from std_msgs.msg import Float32, Float32MultiArray, String, Int8MultiArray, Int8
 from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 from math import pi, radians, degrees, sin, cos
 import time
@@ -22,6 +22,7 @@ class ControlNode(Node):
         self.objPub = self.create_publisher(Float32MultiArray, '/obj_data', 1)
         self.throttle_pub = self.create_publisher(Float32, '/throttle', 1)
         self.steer_pub = self.create_publisher(Float32, '/steer', 1)
+        self.cam_pub = self.create_publisher(Int8, '/cam_servo', 1)
 
         self.pubDebug = self.create_publisher(BotDebugInfo, '/lazybot/debug', 10)
         
@@ -191,6 +192,17 @@ class ControlNode(Node):
 
             maxD, tA = self.getMaxDOBJ()
             self.objs.sort(key=lambda x: x["dst"], reverse=False)
+
+            ang = 0.0
+            
+            for obj in self.objs:
+                if(abs(obj['ang']) < radians(60)):
+                    ang = obj['ang']
+                    break
+            
+            msg = Int8()
+            msg.data = int(degrees(ang))
+            self.cam_pub.publish(msg)
 
             delta = abs(tA-self.targetAng)
             self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)

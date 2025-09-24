@@ -76,6 +76,10 @@ void srl()
             if(key == 16){
                 str_angle = map(v, 50, 250, SERVO_MIN_US, SERVO_MAX_US);
             }
+            if(key == 17){
+                int ang = v - 50;
+                motors.setCamServoUs(map(ang, 0, 180, CAM_SERVO_MIN_US, CAM_SERVO_MAX_US));
+            }
             key = 0;
         }
         

@@ -18,11 +18,13 @@ class SerNode(Node):
         self.pos_pub = self.create_publisher(Vector3, '/lazypos', 10)
         self.thr_sub = self.create_subscription(Float32, '/throttle', self.thr_callback, 1)
         self.str_sub = self.create_subscription(Float32, '/steer', self.steer_callback, 1)
+        self.cam_sub = self.create_subscription(Int8, '/cam_servo', self.cam_callback, 1)
         
         self.esp_cmd_sub = self.create_subscription(Int8, '/esp_cmd', self.esp_cmd_callback, 1)
 
         self.thr = 0.0
         self.str = 0.0
+        self.cam = 0.0
         self.ser = None
         self.isDone = False
         
@@ -94,6 +96,9 @@ class SerNode(Node):
     
     def thr_callback(self, msg):
         self.thr = msg.data
+    
+    def cam_callback(self, msg):
+        self.cam = msg.data
 
     def steer_callback(self, msg):
         self.str = msg.data
@@ -117,6 +122,7 @@ class SerNode(Node):
             self.ser.write(v.to_bytes(1, 'little'))
             self.send_val(15, int(self.thr * 100)+150)
             self.send_val(16, int(self.str * 100)+150)
+            self.send_val(17, int(self.cam)+50)
             
         except Exception as e:
             self.get_logger().error(f'Error writing to serial: {e}')
