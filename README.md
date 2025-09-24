@@ -282,6 +282,8 @@ Our robot utilizes a differential gear system powered by one **25GA DC gear moto
 <td width="50%">
 <div align="center">
   <img src="./assets/differential.jpeg" alt="Differential Drive Setup" style="border-radius: 20px" width="300"/>
+  <br>
+  A 16GA Motor was being used when we took this picture.
 </div>
 </td>
 </tr>
@@ -295,7 +297,7 @@ The robot features a **3D printed Ackermann steering system** controlled by a **
 1. **Realistic Geometry**: Replicates automotive-grade steering for smoother and more stable turns.
 2. **Customizable Design**: 3D printed components allow fine-tuning and easy iteration.
 3. **Precise Control**: Servo-driven mechanism ensures consistent and accurate angle adjustments.
-4. **Mechanical Efficiency**: Reduces energy loss and component wear during turning.
+4. **Mechanical Efficiency**: Reduces energy loss (friction) and component wear during turning.
 
 <div align="center">
   <img src="./assets/steering.jpeg" alt="3D Printed Ackermann Steering System" style="border-radius: 20px" width="500"/>
@@ -338,7 +340,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-#### **3. Mini560 5V 5A Buck Converter**
+#### **3. Secondary 5V 5A Buck Converter (Mini560)**
 - **Purpose**: Supplies 5V to **Servo**
 - **Input**: Directly from the 3S battery (~12.6V max)
 - **Output**: Rush currents at 5V / 5A
@@ -348,23 +350,13 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-#### **4. Secondary 5V Buck Converter**
-- **Purpose**: Powers the **ESP32**, **MPU6050**, **OLED display**, and other secondary PCB components
-- **Input**: 12.6V battery input
-- **Output**: 5V regulated
-- **Use Cases**:
-  - Enables low-power real-time control and sensing
-  - Protects ESP32 and peripherals from voltage fluctuations
-
----
-
-#### **5. VNH2SP30 Motor Driver with Built-in Regulator**
+#### **4. VNH2SP30 Motor Driver with Built-in Regulator**
 - **Purpose**: Drives the **20GA motor with encoders**
 - **Regulation**: Built-in buck handles motor voltage directly from the 3S battery
 - **Features**:
-  - No external buck needed
+  - No external 5V needed
   - Simplifies wiring and improves efficiency
-  - Supports high current with integrated protections
+  - Has very low RDS(on) resistance with integrated protections
 
 ---
 
@@ -372,9 +364,10 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 | Component                     | Voltage Supplied | Power Source / Converter        |
 |-------------------------------|------------------|----------------------------------|
-| **Raspberry Pi 5**            | 5V               | LM2596 / Mini560 (5A Buck)       |
-| **RPLidar C1**                | 5V               | LM2596 / Mini560 (5A Buck)       |
-| **ESP32 + Sensors + OLED**    | 5V               | Secondary Buck Converter         |
+| **Raspberry Pi 5**            | 5V               | Unknown chip 5A Buck             |
+| **RPLidar C1**                | 5V               | Unknown chip 5A Buck             |
+| **ESP32 + Sensors + OLED**    | 5V               | Unknown chip 5A Buck             |
+| **Servo Motor**               | 5V               | Mini560 5A Buck                  |
 | **Motors (20GA with encoder)**| Battery Voltage  | VNH2SP30 Motor Driver (built-in) |
 
 ```mermaid
@@ -383,17 +376,18 @@ config:
   theme: redux
 ---
 flowchart TD
-    n1["3s lipo battery"] --> n3["LM2596 Buck<br>Converter"] & n4["Mini 360 Buck<br>Converter"] & n5["VNH2SP30<br>Motor Driver"]
+    n1["3s LiPo Battery"] --> n3["5V 5A Buck<br>Converter"] & n4["Mini 360 Buck<br>Converter"] & n5["VNH2SP30<br>Motor Driver"]
     n3 --> n6["Raspberry Pi 5"]
-    n6 --> n7["RP Lidar C1"] & n8["USB Camera"]
-    n4 --> n9["ESP32<br>IMU<br>IR Sensors<br>OLED<br>Encoder"] & n11["Servo"]
-    n5 --> n10["Motor"]
+    n6 --> n7["RP Lidar C1"] & n8["USB Camera"] & n9["Main PCB"]
+    n9 --> n10["ESP32<br>IMU<br>IR Sensors<br>OLED<br>Encoder"]
+    n4 --> n11["Servo"]
+    n5 --> n12["Motor"]
     n1@{ shape: rounded}
 ```
 ---
 ---
 
-## Our PCB is custom made. 
+## Our PCB is completely custom homemade. 
 
 
 ### PCB Views
