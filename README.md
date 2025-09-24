@@ -172,6 +172,18 @@ Here's how it is calculated:
 
 Before getting an usable value, we had to calibrate our encoder to calculate values in metric unit.
 
+```mermaid
+flowchart LR
+    C["Repeat process continuously"] --> D["Calculate delta encoder value: ds"]
+    D --> E["Read current orientation angle"]
+    E --> F["Find average angle (A) between last and current heading"]
+    F --> G["Compute movement vector: x = ds * cos(A), y = ds * sin(A)"]
+    G --> H["Accumulate movement vector to update position"]
+    H --> I["Output realtime position"]
+    I --> C
+    A["Start"] --> C
+```
+
 ### Open Round
 
 #### Avoidance using LiDAR
@@ -183,7 +195,27 @@ During the open round, there is no towers on the track. So we don't need the cam
 1. After doing that for every ray, you have a “safe distance” for every direction — the farthest you can travel in that direction without your body hitting something.
 1. Pick the direction with the largest safe distance and steer the car toward it.
 
+```mermaid
+flowchart LR
+    A[Start control loop] --> B[Perform LiDAR scan to get rays]
+    B --> C[Iterate over each ray]
+    C --> D[Set candidate distance from measured ray]
+    D --> E[Check nearby rays for potential body collision]
+    E --> F{Nearby ray would cause collision}
+    F -- Yes --> G[Shorten candidate distance to nearby obstacle]
+    F -- No  --> H[Keep candidate distance as is]
+    G --> I[Save safe distance for current ray]
+    H --> I
+    I --> J{More rays to process}
+    J -- Yes --> C
+    J -- No  --> K[Pick direction with largest safe distance]
+    K --> L[Steer car toward chosen direction]
+    L --> M[Repeat control loop]
+    M --> B
+```
+
 One drawback of this method is that on straight sections, the robot shows a tendency to point itself toward the next corner. This happens because corners often look like the direction with the most open space before discovering the next turn, so the algorithm treats them as the safest option - even though the robot should ideally stay centered on the straight path. But this algorithm works really well to move between tight gaps. So the little drawback doesn't really matter to us. And ofcourse, there are ways to improve on this issue.
+
 #### Lap Count
 Because we can precisely calculate odometry, keeping lap count is a very simple task. The robot just keeps track of how many times it passes through the starting section. When it reaches the desired lap count, it just stops there. And it worked really well. The robot always stops between a few centimeters from the dead center of the starting section.
 
@@ -192,6 +224,21 @@ It works similar to the open round. But the robots needs to detect the towers. I
 
 1. `Using the camera`: This is a very basic color detection algorithm. From the camera feed, the robot detects the towers by masking colors.
 1. `Using LiDAR data`: This approach is a bit more interesting. Towers create sudden changes (spikes) in the LiDAR distance readings. If the readings suddenly get closer and then farther again, that usually means there’s an object in between. By checking how wide this change looks from the LiDAR’s point of view, we can estimate whether it matches the expected size of a tower. If it does, the robot marks it as a possible tower - but it still confirms the color with the camera to be sure.
+
+```mermaid
+flowchart LR
+    A[Start LiDAR scan] --> B[Read distance values across rays]
+    B --> C[Look for sudden changes in distances]
+    C --> D{Spike detected?}
+    D -- No --> B
+    D -- Yes --> E[Measure width of the detected spike]
+    E --> F{Width matches tower size?}
+    F -- No --> B
+    F -- Yes --> H[Mark as possible tower]
+    H --> I[Final tower detection result]
+    I --> B[Continue scanning]
+
+```
 
 After detecting the towers, the robot needs to avoid them. The robot needs to move to the left of green objects. So what it does, it imagins a wall at the right of any green tower. That way,the robot is forced to pass the object from the left side. The opposite happens for red towers.
 
@@ -211,7 +258,7 @@ This segment outlines the mobility system of **LazyBot**, with two key features:
 
 ### **Differential Drive System**
 
-Our robot utilizes a differential gear system powered by one **20GA DC gear motor with encoders** and a **3rd generation LEGO differential**, allowing the wheels on the same axle to rotate at different speeds even though they are both connected toa single motor. This is crucial feature for smooth cornering and precise movement.
+Our robot utilizes a differential gear system powered by one **25GA DC gear motor with encoders** and a **3rd generation LEGO differential**, allowing the wheels on the same axle to rotate at different speeds even though they are both connected toa single motor. This is crucial feature for smooth cornering and precise movement.
 
 <table>
 <tr>
