@@ -3,7 +3,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, TimerAction
 
 from serial.tools import list_ports
 
@@ -63,7 +63,9 @@ def generate_launch_description():
 
     ld.add_action(control)
     ld.add_action(serial)
-    ld.add_action(detect)
+    ld.add_action(
+        TimerAction(period=4.0, actions=[detect])
+    )
     ld.add_action(debug)
     
     return ld

@@ -2,7 +2,7 @@ import cv2, time
 from threading import Thread
 
 class Camera:
-    def __init__(self, src:int, width:int=640, height:int=480):
+    def __init__(self, src, width:int=640, height:int=480):
         self.width = width
         self.height = height
         
