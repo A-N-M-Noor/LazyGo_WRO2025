@@ -148,8 +148,8 @@ Our bot is equipped with various components that support its autonomous function
 | **ESP32 Microcontroller**         | Manages real-time control such as motor commands, sensor data collection, and communication.      | <div align="center"><img src="./assets/ESP32.jpg" alt="ESP32" width="200"></div>                            |
 | **BNO055 9Axis IMU Sensor**       | Tracks orientation and motion to assist with balance and movement stabilization. The internal microcontroller allows for precision orientation tracking. | <div align="center"><img src="./assets/BNO.jpg" alt="BNO055" width="200"></div>                          |
 | **0.96" OLED Display (I2C)**      | Displays status information such as sensor readings, and debug info.                              | <div align="center"><img src="./assets/oled.jpg" alt="OLED Display" width="200"></div>                     |
-| **Mini560 Buck Converter**        | Provides compact 5V power regulation for the Raspberry Pi and peripherals.                        | <div align="center"><img src="./assets/mini560.jpg" alt="Mini560 Buck Converter" width="200"></div>           |
-| **LM2596 5V 5A Buck Converter**   | Supplies a steady 5V 5A output for powering high-draw components like the motor driver.           | <div align="center"><img src="./assets/5v5a.jpg" alt="LM2596 Buck Converter" width="200"></div>            |
+| **Mini560 Buck Converter**        | Provides compact 5V power regulation for the servo.                        | <div align="center"><img src="./assets/mini560.jpg" alt="Mini560 Buck Converter" width="200"></div>           |
+| **5V 5A Buck Converter (Unknown chip)**   | Supplies a steady 5V 5A output for powering the raspberry pi and peripherals.           | <div align="center"><img src="./assets/5v5a.jpg" alt="LM2596 Buck Converter" width="200"></div>            |
 | **25GA Gear Motors with Encoder** | Offers precise speed and position feedback for accurate wheel control and localization.           | <div align="center"><img src="./assets/25GA.jpg" alt="25GA Motor with Encoder" width="200"></div>          |
 | **VNH2SP30 Motor Driver**         | High-power motor driver used to control brushed DC motors with PWM and direction control.         | <div align="center"><img src="./assets/VNH2SP30.jpg" alt="VNH2SP30 Motor Driver" width="200"></div>            |
 | **AM117 Servo Motor**             | Controls precise angular movements, typically used for steering or actuation.                     | <div align="center"><img src="./assets/1171mg.jpg" alt="AM117 Servo" width="200"></div>                      |
@@ -323,22 +323,32 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 - **Voltage**: 12.6V (fully charged) → ~11.1V (nominal) → ~9V (discharged)
 - **Features**:
   - High energy density
-  - Sufficient current delivery for high-load components like Pi and LiDAR
-  - Rechargeable and lightweight
+  - Sufficient current delivery for high-load components like Motors, Pi and LiDAR
+  - Rechargeable and easily purchasable
 
 ---
 
-#### **2. LM2596 / Mini560 5A Buck Converter**
+#### **2. 5V 5A Buck Converter with unknown chip**
 - **Purpose**: Supplies 5V to **Raspberry Pi 5** and **RPLidar C1**
 - **Input**: Directly from the 3S battery (~12.6V max)
 - **Output**: Stable 5V / 5A
 - **Benefits**:
-  - Powers high-demand modules without overheating
+  - Provides continuous high-current draw without overheating
   - Ensures stable real-time data processing and mapping
 
 ---
 
-#### **3. Secondary 5V Buck Converter**
+#### **3. Mini560 5V 5A Buck Converter**
+- **Purpose**: Supplies 5V to **Servo**
+- **Input**: Directly from the 3S battery (~12.6V max)
+- **Output**: Rush currents at 5V / 5A
+- **Benefits**:
+  - Provides rush current with large electrolytic capacitors
+  - Ensures separate 5V with separate ground path so that the servo current does not affect other modules
+
+---
+
+#### **4. Secondary 5V Buck Converter**
 - **Purpose**: Powers the **ESP32**, **MPU6050**, **OLED display**, and other secondary PCB components
 - **Input**: 12.6V battery input
 - **Output**: 5V regulated
@@ -348,7 +358,7 @@ Our system is powered by a 3-cell lithium battery and efficiently distributed us
 
 ---
 
-#### **4. VNH2SP30 Motor Driver with Built-in Regulator**
+#### **5. VNH2SP30 Motor Driver with Built-in Regulator**
 - **Purpose**: Drives the **20GA motor with encoders**
 - **Regulation**: Built-in buck handles motor voltage directly from the 3S battery
 - **Features**:
