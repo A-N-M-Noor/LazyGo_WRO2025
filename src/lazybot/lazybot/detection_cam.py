@@ -20,7 +20,7 @@ class Detect(Node):
         
         self.compressed = True
         
-        self.cam = Camera("/dev/v4l/by-id/usb-HD_Camera_Manufacturer_USB_2.0_Camera-video-index0")
+        self.cam = Camera("/dev/v4l/by-id/usb-046d_081b_61C8A860-video-index0  usb-Generic_HP_HD_Camera_200901010001-video-index0")
         
         self.obj_pub = self.create_publisher(DetectionTowerList, 'lazy_towers', 3)
         

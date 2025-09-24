@@ -71,6 +71,16 @@ class SerNode(Node):
                 else:
                     self.get_logger().info(f'Skipping non-USB port: {port.device}')
 
+    def send_val(self, k, v):
+        if self.ser is None or not self.ser.is_open:
+            self.get_logger().error('Serial connection is not available.')
+            return
+        try:
+            self.ser.write(k.to_bytes(1, 'little'))
+            self.ser.write(v.to_bytes(1, 'little'))
+        except Exception as e:
+            self.get_logger().error(f'Error writing to serial: {e}')
+    
     def esp_cmd_callback(self, msg: Int8):
         if self.ser is None or not self.ser.is_open:
             self.get_logger().error('Serial connection is not available.')
@@ -99,15 +109,15 @@ class SerNode(Node):
             return
         try:
             if(not self.isDone):
-                v = 30
+                v = 10
                 self.ser.write(v.to_bytes(1, 'little'))
                 return
         
             v = int(self.thr * 50) + 100
             self.ser.write(v.to_bytes(1, 'little'))
-
-            v = int(self.str * 50) + 200
-            self.ser.write(v.to_bytes(1, 'little'))
+            self.send_val(15, int(self.thr * 100)+150)
+            self.send_val(16, int(self.str * 100)+150)
+            
         except Exception as e:
             self.get_logger().error(f'Error writing to serial: {e}')
 

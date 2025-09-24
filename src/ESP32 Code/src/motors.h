@@ -5,6 +5,11 @@
 // #include <ESP32Servo.h>
 
 #define SERVO_PIN 23
+#define CAM_SERVO_PIN 17
+#define CAM_SERVO_MIN_US 500
+#define CAM_SERVO_MAX_US 2400
+#define CAM_SERVO_CENTER_US 1450
+
 #define SERVO_MIN_US 600   // steers robot to the right
 #define SERVO_MAX_US 2000  // steers robot to the left
 #define SERVO_CENTER_US 1300 // center position for servo (Adjust if needed)1125
@@ -38,6 +43,7 @@ public:
     void begin();
     void setServoUs(uint32_t pulse_width_us);   // Set servo pulse width in microseconds
     void setServoAngle(uint8_t angle0to100);    // Set servo angle from 0 to 100 (0% to 100%)
+    void setCamServoUs(uint32_t pulse_width_us);
     void setMotorSpeed(float speed_mms); // Set motor speed in mm/s (positive for forward, negative for backward)
     void moveDistance(float cm, float speed_mms); // Move a distance in centimeters at a specified speed in mm/s
     void stop();    // Stop the motors

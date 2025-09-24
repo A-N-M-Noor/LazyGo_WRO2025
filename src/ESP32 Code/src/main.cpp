@@ -31,6 +31,8 @@ bool stop_bot = 0;
 bool running = false;
 String command = "none";
 
+int key = 0;
+
 
 #define btn 0
 #define green 2
@@ -47,29 +49,10 @@ void srl()
     {
         int v = Serial.read();
         srlTmr = millis();
-        if (v >= 50 && v <= 150)
-        {
-            if (v == 100)
-            {
-                spd = 0;
-            }
-            else
-            {
-                spd = map(v, 50, 150, -255, 255);
-            }
+        if(v >= 15 && v < 50){
+            key = v;
         }
-        else if (v > 150 && v <= 250)
-        {
-            if (v == 200)
-            {
-                str_angle = SERVO_CENTER_US; // Center position for servo
-                motors.setServoUs(str_angle);
-            }
-            else
-            {
-                str_angle = map(v, 151, 250, SERVO_MIN_US, SERVO_MAX_US); // Map to motor speed range
-            }
-        }
+
         else if(v == 1){
             command = "right45";
         }
@@ -84,6 +67,16 @@ void srl()
         }
         else if(v == 5){
             command = "go";
+        }
+
+        if(key != 0 && v >= 50){
+            if(key == 15){
+                spd = map(v, 50, 250, -255, 255);
+            }
+            if(key == 16){
+                str_angle = map(v, 50, 250, SERVO_MIN_US, SERVO_MAX_US);
+            }
+            key = 0;
         }
         
     }
@@ -157,6 +150,7 @@ void setup()
 
     startSerialReadTask(); // Serial read task on Core 1
     motors.setServoUs(SERVO_CENTER_US);
+    motors.setCamServoUs(CAM_SERVO_CENTER_US);
 
     pinMode(btn, INPUT_PULLUP); // Button pin for manual control
 
@@ -185,8 +179,6 @@ void setup()
     sectionHeading = heading;
     startTime = millis();
     running = true;
-
-    
 }
 
 void loop()

@@ -22,7 +22,7 @@ window.title("HSV Calibration Tool")
 window.grid_columnconfigure(0, weight=1)
 
 
-CAMSRC = 0
+CAMSRC = "/dev/v4l/by-id/usb-046d_081b_61C8A860-video-index0  usb-Generic_HP_HD_Camera_200901010001-video-index0"
 RANGES = [[0,0,0],[255,255,255]]
 # COLORSPACE = ["Hue", "Saturation", "Value"]
 COLORSPACE = ["L", "A", "B"]

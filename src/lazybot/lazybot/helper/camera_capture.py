@@ -6,7 +6,7 @@ class Camera:
         self.width = width
         self.height = height
         
-        self.cap=cv2.VideoCapture(src)
+        self.cap=cv2.VideoCapture(2)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.cap.set(cv2.CAP_PROP_SETTINGS, 1)

@@ -148,7 +148,7 @@ void Motors::begin()
     current_position_mm = 0;      // Initialize current position
     use_position_control = false; // Initialize to speed control
 
-    // Configure MCPWM for servo
+    // Configure MCPWM for steering servo (Timer 0, Operator A)
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, SERVO_PIN);
     mcpwm_config_t pwm_config = {
         .frequency = 50,                  // 50 Hz for servo
@@ -158,6 +158,17 @@ void Motors::begin()
         .counter_mode = MCPWM_UP_COUNTER, // Counter mode
     };
     mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);
+
+    // Configure MCPWM for camera servo (Timer 1, Operator A)
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, CAM_SERVO_PIN);
+    mcpwm_config_t cam_pwm_config = {
+        .frequency = 50,                  // 50 Hz for servo
+        .cmpr_a = 0,                      // Initial duty cycle for operator A
+        .cmpr_b = 0,                      // Initial duty cycle for operator B (not used)
+        .duty_mode = MCPWM_DUTY_MODE_0,   // Duty cycle mode
+        .counter_mode = MCPWM_UP_COUNTER, // Counter mode
+    };
+    mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_1, &cam_pwm_config);
 
     // Configure motor pins
     pinMode(MOTOR_IN1, OUTPUT);
@@ -206,6 +217,12 @@ void Motors::setServoAngle(uint8_t angle0to100)
         pulse_width_us = map(angle0to100, 50, 100, SERVO_CENTER_US, SERVO_MAX_US);
     }
     mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, pulse_width_us);
+}
+
+void Motors::setCamServoUs(uint32_t pulse_width_us)
+{
+    pulse_width_us = constrain(pulse_width_us, CAM_SERVO_MIN_US, CAM_SERVO_MAX_US);
+    mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, pulse_width_us);
 }
 
 void Motors::setMotorSpeed(float speed_mms)
