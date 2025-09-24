@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'control = lazybot.control:main',
+            'parking = lazybot.parking:main',
             'detect = lazybot.detection:main',
             'detect_cam = lazybot.detection_cam:main',
             'serial = lazybot.ser:main',

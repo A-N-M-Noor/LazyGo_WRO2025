@@ -15,6 +15,11 @@ def generate_launch_description():
         executable='control',
         name='control'
     )
+    parking = Node(
+        package='lazybot',
+        executable='parking',
+        name='parking'
+    )
 
     serial = Node(
         package='lazybot',
@@ -62,6 +67,7 @@ def generate_launch_description():
         ld.add_action(rplidar_launch)
 
     ld.add_action(control)
+    ld.add_action(parking)
     ld.add_action(serial)
     ld.add_action(
         TimerAction(period=4.0, actions=[detect])
