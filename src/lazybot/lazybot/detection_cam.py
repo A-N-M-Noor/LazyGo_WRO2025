@@ -16,11 +16,11 @@ from lazybot.helper.camera_capture import Camera
 class Detect(Node):
     def __init__(self):
         super().__init__('detect_cam')
-        self.display = False
+        self.display = True
         
         self.compressed = True
         
-        self.cam = Camera("/dev/v4l/by-id/usb-046d_081b_61C8A860-video-index0  usb-Generic_HP_HD_Camera_200901010001-video-index0")
+        self.cam = Camera("/dev/v4l/by-id/usb-046d_081b_61C8A860-video-index0")
         
         self.obj_pub = self.create_publisher(DetectionTowerList, 'lazy_towers', 3)
         
