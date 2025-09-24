@@ -212,10 +212,12 @@ class ControlNode(Node):
             
             self.targetAng = degrees(self.targetAng)
             
-            sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
-            self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
             if(corner):
                 self.targetAng = corner
+            
+            sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
+            self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
+            
             mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
 
             self.speed = self.maxSpeed * mult2
@@ -227,9 +229,11 @@ class ControlNode(Node):
         return degrees(obj['ang'] + ang)
     
     def prevent_corner(self, obj):
+        rel_sec = self.sectionAngle - self.pos.z
+        
         if(self.targetD < 1.2 and (obj is None or abs(obj['ang']) > radians(60))):
-            rel_sec = self.sectionAngle - self.pos.z
-            if(rel_sec*self.dir < 0):
+            
+            if(rel_sec*self.dir > 0):
                 return self.dir*90.0
         
         return False
