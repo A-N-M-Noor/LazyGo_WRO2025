@@ -193,17 +193,14 @@ class ControlNode(Node):
             maxD, tA = self.getMaxDOBJ()
             self.objs.sort(key=lambda x: x["dst"], reverse=False)
 
-            ang = 0.0
             
             for obj in self.objs:
                 if(abs(obj['ang']) < radians(60)):
-                    ang = obj['ang']
+                    msg = Int8()
+                    msg.data = int(degrees(obj['ang']))
+                    self.cam_pub.publish(msg)
                     break
             
-            msg = Int8()
-            msg.data = int(degrees(ang))
-            self.cam_pub.publish(msg)
-
             delta = abs(tA-self.targetAng)
             self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)
             self.targetAng = self.lerp(self.targetAng, tA, 0.1)
