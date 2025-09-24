@@ -24,6 +24,7 @@ class SerNode(Node):
         self.thr = 0.0
         self.str = 0.0
         self.ser = None
+        self.isDone = False
         
         self.establish_ser()
             
@@ -92,10 +93,16 @@ class SerNode(Node):
         self.cmd_pub.publish(msg)
 
     def timer_callback(self):
+        
         if self.ser is None or not self.ser.is_open:
             self.get_logger().error('Serial connection is not available.')
             return
         try:
+            if(not self.isDone):
+                v = 30
+                self.ser.write(v.to_bytes(1, 'little'))
+                return
+        
             v = int(self.thr * 50) + 100
             self.ser.write(v.to_bytes(1, 'little'))
 
@@ -117,9 +124,11 @@ class SerNode(Node):
                         if data == "Start":
                             self.get_logger().info('Starting Bot')
                             self.pub_cmd("start")
+                            self.isDone = True
                         if data == "Boot":
                             self.get_logger().info('Boot Bot')
                             self.pub_cmd("Boot")
+                            self.isDone = False
                         
                         if data == "Turned":
                             self.get_logger().info('Turned Bot')
@@ -128,6 +137,7 @@ class SerNode(Node):
                         if data == "Done":
                             self.get_logger().info('Done Bot')
                             self.pub_cmd("Done")
+                            self.isDone = True
                         
                         if data.startswith('[') and data.endswith(']'):
                             try:

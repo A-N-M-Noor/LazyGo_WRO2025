@@ -115,7 +115,7 @@ class Detect(Node):
         for obj in self.objs:
             if(obj[0] == 'P'):
                 continue
-            if (self.closest is None or obj[4] > self.closest[4]) and obj[4] > 12:
+            if (self.closest is None or obj[4] > self.closest[4]) and obj[4] > 30:
                 self.closest = obj
                 msg.data = self.closest[0]
         self.closest_pub.publish(msg)

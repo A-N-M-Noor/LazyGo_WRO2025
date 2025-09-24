@@ -4,6 +4,7 @@ from rclpy.node import Node
 from threading import Thread
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Vector3
+from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 
 from std_msgs.msg import String, Int8
 from math import pi, radians, degrees, sin, cos
@@ -21,8 +22,11 @@ class Parking(Node):
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
         self.pos_sub = self.create_subscription(Vector3, '/lazypos', self.pos_callback, 10)
         
+        self.debug_sub = self.create_subscription(BotDebugInfo, '/lazybot/debug', self.debug_callback, 10)
+        
         self.obj_sub = self.create_subscription(String, '/closest_obj', self.obj_callback, 1)
         self.obj = "N"
+        self.objs = []
         
         self.angMin = -pi
         self.angMax = pi
@@ -58,23 +62,31 @@ class Parking(Node):
                     self.state = "TurningLeft"
             
             if(self.state == "Turned"):
-                if(self.obj == "G" and self.park_dir == "L"):
-                    self.send_c(3)  # start parking
-                    self.state = "Moving"
-                elif(self.obj == "G" and self.park_dir == "R"):
-                    self.send_c(4)  # start parking
-                    self.state = "Moving"
-                elif(self.obj == "R" and self.park_dir == "L"):
-                    self.send_c(4)  # start parking
-                    self.state = "Moving"
-                elif(self.obj == "R" and self.park_dir == "R"):
-                    self.send_c(3)  # start parking
-                    self.state = "Moving"
-                elif(self.obj == "N"):
-                    self.send_c(3)
-                    self.state = "Moving"
+                time.sleep(3.0)
+                clr = "N"
+                if(len(self.objs) > 0):
+                    clr = self.objs[0]["color"]
+                    self.obj = clr
+                self.set_state_table(self.obj)
             
             time.sleep(0.1)
+    
+    def set_state_table(self, obj):
+        if(obj == "G" and self.park_dir == "L"):
+            self.send_c(3)  # start parking
+            self.state = "Moving"
+        elif(obj == "G" and self.park_dir == "R"):
+            self.send_c(4)  # start parking
+            self.state = "Moving"
+        elif(obj == "R" and self.park_dir == "L"):
+            self.send_c(4)  # start parking
+            self.state = "Moving"
+        elif(obj == "R" and self.park_dir == "R"):
+            self.send_c(3)  # start parking
+            self.state = "Moving"
+        elif(obj == "N"):
+            self.send_c(3)
+            self.state = "Moving"
     
     def send_c(self, c:int):
         msg = Int8()
@@ -100,6 +112,18 @@ class Parking(Node):
         self.angInc = msg.angle_increment
         self.ranges = msg.ranges
         self.ints = msg.intensities
+    
+    def debug_callback(self, msg: BotDebugInfo):        
+        self.objs = []
+        for tower in msg.towers:
+            self.objs.append({
+                "color": tower.color,
+                "index": tower.index,
+                "ang": tower.ang,
+                "dst": tower.dst,
+                "x": tower.x,
+                "y": tower.y
+            })
     
     def pos_callback(self, msg: Vector3):
         self.pos = msg
