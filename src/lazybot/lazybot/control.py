@@ -3,13 +3,11 @@ from threading import Thread
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Vector3
-import numpy as np
 
 from std_msgs.msg import Float32, Float32MultiArray, String, Int8MultiArray
 from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 from math import pi, radians, degrees, sin, cos
 import time
-from std_msgs.msg import Header
 
 class ControlNode(Node):
     def __init__(self):

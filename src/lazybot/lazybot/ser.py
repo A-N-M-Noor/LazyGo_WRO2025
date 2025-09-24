@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, String
+from std_msgs.msg import Float32, String, Int8
 from geometry_msgs.msg import Vector3
 
 from math import radians
@@ -16,8 +16,10 @@ class SerNode(Node):
 
         self.cmd_pub = self.create_publisher(String, '/cmd', 10)
         self.pos_pub = self.create_publisher(Vector3, '/lazypos', 10)
-        self.subscription1 = self.create_subscription(Float32, '/throttle', self.thr_callback, 1)
-        self.subscription2 = self.create_subscription(Float32, '/steer', self.steer_callback, 1)
+        self.thr_sub = self.create_subscription(Float32, '/throttle', self.thr_callback, 1)
+        self.str_sub = self.create_subscription(Float32, '/steer', self.steer_callback, 1)
+        
+        self.esp_cmd_sub = self.create_subscription(Int8, '/esp_cmd', self.esp_cmd_callback, 1)
 
         self.thr = 0.0
         self.str = 0.0
@@ -68,6 +70,17 @@ class SerNode(Node):
                 else:
                     self.get_logger().info(f'Skipping non-USB port: {port.device}')
 
+    def esp_cmd_callback(self, msg: Int8):
+        if self.ser is None or not self.ser.is_open:
+            self.get_logger().error('Serial connection is not available.')
+            return
+        try:
+            v = int(msg.data)
+            if(v >= 0 and v <= 49):
+                self.ser.write(msg.data.to_bytes(1, 'little'))
+        except Exception as e:
+            self.get_logger().error(f'Error writing to serial: {e}')
+    
     def thr_callback(self, msg):
         self.thr = msg.data
 
@@ -104,6 +117,17 @@ class SerNode(Node):
                         if data == "Start":
                             self.get_logger().info('Starting Bot')
                             self.pub_cmd("start")
+                        if data == "Boot":
+                            self.get_logger().info('Boot Bot')
+                            self.pub_cmd("Boot")
+                        
+                        if data == "Turned":
+                            self.get_logger().info('Turned Bot')
+                            self.pub_cmd("Turned")
+                        
+                        if data == "Done":
+                            self.get_logger().info('Done Bot')
+                            self.pub_cmd("Done")
                         
                         if data.startswith('[') and data.endswith(']'):
                             try:
