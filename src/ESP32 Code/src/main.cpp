@@ -191,6 +191,8 @@ void setup()
 
 void loop()
 {   
+
+    displayText(command);
     if(command == "right45"){
         turn_angle(45);
         command = "none";
@@ -204,6 +206,8 @@ void loop()
     }
 
     if(command == "straight"){
+        motors.setServoUs(SERVO_CENTER_US);
+        move_pos(0.10);
         turn_angle(0);
         command = "none";
         Serial.println("Done");
