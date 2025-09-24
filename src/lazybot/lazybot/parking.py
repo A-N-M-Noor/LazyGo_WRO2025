@@ -42,8 +42,8 @@ class Parking(Node):
     def parking_loop(self):
         while rclpy.ok():
             if(self.state == "toTurn"):
-                l = self.get_dst(-90)
-                r = self.get_dst(90)
+                l = self.get_dst(90)
+                r = self.get_dst(-90)
                 
                 if(l > r):
                     self.park_dir = "R"   # parking is on the right
