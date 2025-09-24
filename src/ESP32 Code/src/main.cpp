@@ -29,6 +29,7 @@ long srlTmr = 0;
 long stopTmr = 0;
 bool stop_bot = 0;
 bool running = false;
+String command = "none";
 
 
 #define btn 0
@@ -69,6 +70,22 @@ void srl()
                 str_angle = map(v, 151, 250, SERVO_MIN_US, SERVO_MAX_US); // Map to motor speed range
             }
         }
+        else if(v == 1){
+            command = "right45";
+        }
+        else if(v == 2){
+            command = "left45";
+        }
+        else if(v == 3){
+            command = "straight";
+        }
+        else if(v == 4){
+            command = "passTurn";
+        }
+        else if(v == 5){
+            command = "go";
+        }
+        
     }
 }
 
@@ -156,9 +173,9 @@ void setup()
         bnoCalc();
         vTaskDelay(50 / portTICK_PERIOD_MS); // Yield to other tasks for 100 milliseconds
     }
-    Serial.println(F("Start"));
+    Serial.println(F("Boot"));
     displayText("");
-    motors.setServoUs(1125);                      // Center servo position
+    motors.setServoUs(SERVO_CENTER_US);                      // Center servo position
     motors.run(0);                                // Stop motors initially
     lastEncoderPos = motors.getEncoderCount();    // Initialize last encoder position
     headingPrev = heading;                        // Initialize previous angle
@@ -169,22 +186,46 @@ void setup()
     startTime = millis();
     running = true;
 
-    delay(100);
-    turn_angle(45);
-    turn_angle(135);
-    // turn_angle(90);
-    // motors.setServoUs(SERVO_CENTER_US);
-    // move_pos(0.10);
-    turn_angle(0);
-    // delay(1000);
-    // turn_angle(0);
+    
 }
 
 void loop()
 {   
-    bnoCalc();
-    motors.run(spd);
-    motors.setServoUs(str_angle);
-    odometry();
-    vTaskDelay(10 / portTICK_PERIOD_MS); // IMPORTANT: Yield to other tasks for 100 milliseconds
+    if(command == "right45"){
+        turn_angle(45);
+        command = "none";
+        Serial.println("Turned");
+    }
+
+    if(command == "left45"){
+        turn_angle(-45);
+        command = "none";
+        Serial.println("Turned");
+    }
+
+    if(command == "straight"){
+        turn_angle(0);
+        command = "none";
+        Serial.println("Done");
+    }
+    if(command == "passTurn"){
+        bnoCalc();
+        if(heading > 0){
+            turn_angle(135);
+        }
+        else{
+            turn_angle(-135);
+        }
+        turn_angle(0);
+        command = "none";
+        Serial.println("Done");
+    }
+
+    if(command == "go"){
+        bnoCalc();
+        motors.run(spd);
+        motors.setServoUs(str_angle);
+        odometry();
+        vTaskDelay(10 / portTICK_PERIOD_MS); // IMPORTANT: Yield to other tasks for 100 milliseconds
+    }
 }
