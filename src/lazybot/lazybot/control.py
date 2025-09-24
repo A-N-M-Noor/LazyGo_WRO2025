@@ -41,6 +41,7 @@ class ControlNode(Node):
         self.ints = []
 
         self.maxSpeed : float = 0.65
+        self.speedCap : float = 0.45
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0
@@ -51,11 +52,11 @@ class ControlNode(Node):
         self.skip1 = 2
         self.skip2 = 1
 
-        self.dangerDist = 0.20
+        self.dangerDist = 0.225
         self.dangerAng = [25.0, 90.0]
 
         self.new_lidar_val = False
-        self.castRange = [0.13, 0.16]
+        self.castRange = [0.15, 0.17]
         self.castR = 0.25
         self.lookRng = radians(80.0)
         self.lookRngS = radians(130.0)
@@ -224,6 +225,8 @@ class ControlNode(Node):
             self.new_lidar_val = False
 
     def prevent_full_turn(self, obj):
+        if(obj is None):
+            return False
         ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
         return degrees(obj['ang'] + ang)
     
@@ -438,7 +441,7 @@ class ControlNode(Node):
             self.speed = 0.0
             self.strAngle = 0.0
         throttle_msg = Float32()
-        throttle_msg.data = self.speed
+        throttle_msg.data = self.clamp(self.speed, -self.speedCap, self.speedCap)
         self.throttle_pub.publish(throttle_msg)
 
         steer_msg = Float32()
