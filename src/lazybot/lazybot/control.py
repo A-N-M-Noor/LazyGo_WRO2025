@@ -51,11 +51,11 @@ class ControlNode(Node):
         self.skip1 = 2
         self.skip2 = 1
 
-        self.dangerDist = 0.25
+        self.dangerDist = 0.20
         self.dangerAng = [25.0, 90.0]
 
         self.new_lidar_val = False
-        self.castRange = [0.15, 0.18]
+        self.castRange = [0.13, 0.16]
         self.castR = 0.25
         self.lookRng = radians(80.0)
         self.lookRngS = radians(130.0)
@@ -192,10 +192,6 @@ class ControlNode(Node):
 
             maxD, tA = self.getMaxDOBJ()
             self.objs.sort(key=lambda x: x["dst"], reverse=False)
-            
-            dS = self.dangerSense()
-            if(dS):
-                tA -= dS * self.strRange * 1.0
 
             delta = abs(tA-self.targetAng)
             self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)
@@ -214,7 +210,10 @@ class ControlNode(Node):
             
             if(corner):
                 self.targetAng = corner
-            
+
+
+            self.targetAng = self.dangerSense(self.targetAng)
+
             sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
             self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
             
@@ -321,11 +320,9 @@ class ControlNode(Node):
     #         self.get_logger().info(f"\n>>> a{degrees(target['ang']):.2f}, rs{degrees(rel_sec):.2f}, rt{degrees(rel_target):.2f}, d{target['dst']:.2f}")
     #         return True
     
-    def prevent_full_turn(self, obj):
-        pass
-    
     def detectContrast(self, i):
-        slope = (self.ranges[i] - self.ranges[i-self.skip1]) / self.skip1
+        slope = (self.ranges[i] - self.ranges[i-self.skip1])
+        
         if(slope < -0.15):
             self.cont_stack.append(i)
         elif(slope > 0.15):
@@ -333,7 +330,7 @@ class ControlNode(Node):
                 pop = self.cont_stack.pop()
                 mid = (i + pop) // 2
                 sz = self.ranges[mid] * abs(i-pop)*self.angInc
-                if( sz > 0.03 and sz < 0.1):
+                if( sz > 0.02 and sz < 0.1):
                     ang = self.i2a(mid)
                     obj = {
                         "index": mid,
@@ -414,15 +411,27 @@ class ControlNode(Node):
     def clearance_ang(self, d):
         return self.castR/d
     
-    def dangerSense(self):
+    def dangerSense(self, tAng):
+        found_obst = False
+        obsAng = 0.0
         for i in range(len(self.ranges)):
+            if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
+                continue
             if(self.ranges[i] < self.dangerDist):
                 ang = degrees(self.i2a(i))
                 if(ang > self.dangerAng[0] and ang < self.dangerAng[1]):
-                    return self.remap(self.ranges[i], 0, self.dangerDist, 1.0, 0.0)
+                    found_obst = True
+                    obsAng = ang
+                    break
                 if(ang > -self.dangerAng[1] and ang < -self.dangerAng[0]):
-                    return -self.remap(self.ranges[i], 0, self.dangerDist, 1.0, 0.0)
-        return False
+                    found_obst = True
+                    obsAng = ang
+                    break
+        if(found_obst):
+            if(tAng*obsAng > 0):
+                # self.get_logger().info(f"Dangerous obstacle detected at {obsAng:.2f}°, adjusting target angle from {tAng:.2f}° to {tAng/3:.2f}°")
+                return tAng/3
+        return tAng
 
     def pubDrive(self, disable = False):
         if disable:
