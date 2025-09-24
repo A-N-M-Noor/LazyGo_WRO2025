@@ -1,5 +1,25 @@
 # Performance Videos
-Here you can find some videos of our robot
+Performance videos of our robot during the Open Challange and the Obstacle Challange:
+
+<table>
+    <tr>
+        <td align="center">
+            <a href="https://youtu.be/mmCBXnwzk5c">
+                <img src="../assets/open_performance.jpg" alt="Open Challenge Performance Video" width="375">
+            </a>
+        </td>
+        <td align="center">
+            <a href="https://youtu.be/ncdmDtmnTJw">
+                <img src="../assets/obstacle_performance.jpg" alt="Obstacle Challenge Performance Video" width="375">
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><sub>Open Challenge Performance Video</sub></td>
+        <td align="center"><sub>Obstacle Challenge Performance Video</sub></td>
+    </tr>
+</table>
+
 
 # Simulation Videos
 Initially we implemented all the logics on a simulated robot. Here are some screen recordings of those simulations:
