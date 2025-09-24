@@ -205,7 +205,10 @@ class ControlNode(Node):
             corner = False
             
             if(self.get_dst(-90) + self.get_dst(90) > 1.3):
-                corner = self.prevent_corner_and_turn(self.objs[0] if self.objs else None)
+                corner = self.prevent_full_turn(self.objs[0] if self.objs else None)
+                
+            if(not corner):
+                corner = self.prevent_corner(self.objs[0] if self.objs else None)
             
             self.targetAng = degrees(self.targetAng)
             
@@ -219,12 +222,17 @@ class ControlNode(Node):
             self.pubDebugPoint()
             self.new_lidar_val = False
 
-    def prevent_corner_and_turn(self, obj):
-        if(obj is None):
-            return self.dir*90.0
-
+    def prevent_full_turn(self, obj):
         ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
         return degrees(obj['ang'] + ang)
+    
+    def prevent_corner(self, obj):
+        if(self.targetD < 1.2 and (obj is None or abs(obj['ang']) > radians(60))):
+            rel_sec = self.sectionAngle - self.pos.z
+            if(rel_sec*self.dir < 0):
+                return self.dir*90.0
+        
+        return False
     # def prevent_corner_and_turn(self, obj):
     #     return False
 
