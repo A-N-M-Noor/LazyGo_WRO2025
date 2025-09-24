@@ -5,6 +5,7 @@
 #include "battery.h"
 #include "motors.h"
 #include "bno.h"
+#include "parking_operations.h"
 
 float TPM = 1825.0;
 
@@ -89,10 +90,6 @@ void odometry()
     }
 }
 
-// void keyboard_Works()
-// {
-// }
-
 void srlRead(void *pvParameters)
 {
     while (true)
@@ -106,7 +103,7 @@ void srlRead(void *pvParameters)
         {
             digitalWrite(green, LOW);
         }
-        vTaskDelay(50 / portTICK_PERIOD_MS); // Yield to other tasks for 50 milliseconds
+        vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 }
 
@@ -171,10 +168,20 @@ void setup()
     sectionHeading = heading;
     startTime = millis();
     running = true;
+
+    delay(100);
+    turn_angle(45);
+    turn_angle(135);
+    // turn_angle(90);
+    // motors.setServoUs(SERVO_CENTER_US);
+    // move_pos(0.10);
+    turn_angle(0);
+    // delay(1000);
+    // turn_angle(0);
 }
 
 void loop()
-{
+{   
     bnoCalc();
     motors.run(spd);
     motors.setServoUs(str_angle);

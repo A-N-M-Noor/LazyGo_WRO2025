@@ -5,9 +5,9 @@
 // #include <ESP32Servo.h>
 
 #define SERVO_PIN 23
-#define SERVO_MIN_US 750   // steers robot to the right
-#define SERVO_MAX_US 1900  // steers robot to the left
-#define SERVO_CENTER_US 1325 // center position for servo (Adjust if needed)1125
+#define SERVO_MIN_US 600   // steers robot to the right
+#define SERVO_MAX_US 2000  // steers robot to the left
+#define SERVO_CENTER_US 1300 // center position for servo (Adjust if needed)1125
 
 #define MOTOR_IN1 26
 #define MOTOR_IN2 27
