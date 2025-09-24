@@ -58,11 +58,12 @@ def createFrame(parent, _row, stick="nsew", column2 = False):
         frm.grid_columnconfigure(1, weight=1)
     return frm
 
-def createSwitch(parent, label, _row, _column, default = False):
+def createSwitch(parent, label, _row, _column, default = False, grid = False):
     switch = ctk.CTkSwitch(parent, text=label)
     if(default):
         switch.select()
-    switch.grid(row=_row, column=_column, padx=5, pady=5, stick="nsew")
+    if(grid):
+        switch.grid(row=_row, column=_column, padx=5, pady=5, stick="nsew")
     return switch
 
 def createSlider(parent, label, range, _row, _column = 0, default = 0):
@@ -99,7 +100,7 @@ resetBtn.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
 
 swMask = createSwitch(frmMenu, "Show Mask", 2, 0)
 swMaskBlr = createSwitch(frmMenu, "Show Processed Mask", 2, 1)
-swContour = createSwitch(frmMenu, "Draw Contour", 3, 0, True)
+swContour = createSwitch(frmMenu, "Draw Contour", 3, 0, True, True)
 swBox = createSwitch(frmMenu, "Draw Bounding Box", 3, 1)
 swMinRect = createSwitch(frmMenu, "Draw MinAreaRect", 4, 0)
 swLine = createSwitch(frmMenu, "Draw Fitted Line", 4, 1)

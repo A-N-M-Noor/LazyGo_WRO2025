@@ -36,7 +36,7 @@ class Camera:
         while self.running:
             _,self.frame = self.cap.read()
             
-    def getFrame(self, blr:int = 0, rotate_180:bool = True):
+    def getFrame(self, blr:int = 0, rotate_180:bool = False):
         if(not self.running or self.frame is None):
             return None
             
