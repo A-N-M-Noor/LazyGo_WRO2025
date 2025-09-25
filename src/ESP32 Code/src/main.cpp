@@ -10,6 +10,7 @@
 float TPM = 1825.0;
 
 Motors motors;
+int cam_current = CAM_SERVO_CENTER_US;
 
 float spdMult = 0.75;
 int spd = 0;
@@ -78,7 +79,10 @@ void srl()
             }
             if(key == 17){
                 int ang = v - 50;
-                motors.setCamServoUs(map(ang, 0, 180, CAM_SERVO_MIN_US, CAM_SERVO_MAX_US));
+
+                int t_us = map(ang, 0, 180, CAM_SERVO_MIN_US, CAM_SERVO_MAX_US);
+                motors.setCamServoUs(t_us);
+
             }
             key = 0;
         }
@@ -207,6 +211,8 @@ void loop()
         turn_angle(0);
         command = "none";
         Serial.println("Done");
+        posX = 0.0;
+        posY = 0.0;
     }
     if(command == "passTurn"){
         bnoCalc();
@@ -219,6 +225,8 @@ void loop()
         turn_angle(0);
         command = "none";
         Serial.println("Done");
+        posX = 0.0;
+        posY = 0.0;
     }
 
     if(command == "go"){
