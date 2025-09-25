@@ -186,6 +186,38 @@ Now, edit -
 - `/src/lazysim/config/lazySim.rviz` to change the rviz visualization.
 - `/src/lazysim/description` files to edit the robot model.
 
+
+
+## Launch it 🚀🚀
+You'll find three packages inside our [`/src`](../src/) directory.
+
+`lazysim`: This is the simulation package. This package handles launching gazebo with rviz2, and works as a bridge between the control package and gazebo.
+
+```
+ros2 launch lazysim gazebo.lazyBot.launch.py
+```
+Launches Gazebo, and RVIZ2 with custom URDF. Also launches a bridge node.
+```
+ros2 launch lazysim rviz_lazySim.launch.py
+```
+Only launches the RVIZ app, usefull for when you want to run the robot on track and only want to view debug info.
+
+.
+
+`lazy_interfaces`: This just contains some custom interfaces to communicate between different ROS Nodes.
+
+.
+
+`lazybot`: This is the control package. This includes all the nodes to run the robot.
+```
+ros2 launch lazybot open.lazy_launch.py
+```
+Launches a control node and serial node. Also launches a debug node.
+```
+ros2 launch lazybot robot.lazy_launch.py
+```
+Launches all the nodes from the previous one, in addition to a parking node and a detection node (using camera).
+
 ---
 
 Good luck! Do reach out if you face any issue.
