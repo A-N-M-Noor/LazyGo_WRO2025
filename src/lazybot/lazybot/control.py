@@ -30,6 +30,7 @@ class ControlNode(Node):
         self.create_timer(0.025, self.control_loop)
 
         self.IS_SIM = False
+        self.IS_OPEN = True
         
         self.dir = 1 #CCW
         
@@ -222,7 +223,7 @@ class ControlNode(Node):
             
             self.targetAng = degrees(self.targetAng)
             
-            if(corner):
+            if(corner and not self.IS_OPEN):
                 self.targetAng = corner
 
 
