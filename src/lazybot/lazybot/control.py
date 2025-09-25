@@ -239,12 +239,16 @@ class ControlNode(Node):
             self.new_lidar_val = False
 
     def prevent_full_turn(self, obj):
+        if(self.IS_OPEN):
+            return False
         if(obj is None):
             return False
         ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
         return degrees(obj['ang'] + ang)
     
     def prevent_corner(self, obj):
+        if(self.IS_OPEN):
+            return False
         rel_sec = self.sectionAngle - self.pos.z
         
         if(self.targetD < 1.2 and (obj is None or abs(obj['ang']) > radians(60))):
@@ -315,6 +319,7 @@ class ControlNode(Node):
             if(dt["dst"] > _max["dst"]):
                 _max = dt
                 
+            
             objectFound = self.detectContrast(i)
             
             if objectFound:
@@ -338,6 +343,8 @@ class ControlNode(Node):
     #         return True
     
     def detectContrast(self, i):
+        if(self.IS_OPEN):
+            return False
         slope = (self.ranges[i] - self.ranges[i-self.skip1])
         
         if(slope < -0.15):

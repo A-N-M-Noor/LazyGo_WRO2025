@@ -176,6 +176,7 @@ void setup()
         vTaskDelay(50 / portTICK_PERIOD_MS); // Yield to other tasks for 100 milliseconds
     }
     Serial.println(F("Start"));
+    command = "go";
     displayText("");
     motors.setServoUs(SERVO_CENTER_US);                      // Center servo position
     motors.run(0);                                // Stop motors initially
