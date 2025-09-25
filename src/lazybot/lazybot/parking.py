@@ -46,8 +46,9 @@ class Parking(Node):
     def parking_loop(self):
         while rclpy.ok():
             if(self.state == "toTurn"):
-                l = self.get_dst(90)
-                r = self.get_dst(-90)
+                time.sleep(1.0)
+                l = self.get_dst(80)
+                r = self.get_dst(-80)
                 
                 if(l > r):
                     self.park_dir = "R"   # parking is on the right
@@ -95,7 +96,7 @@ class Parking(Node):
         
     def cmd_callback(self, msg: String):
         self.get_logger().info(f'Received command: {msg.data}')
-        if(self.state == "Idle" and msg.data == "Boot"):
+        if(msg.data == "Boot"):
             self.state = "toTurn"
         
         if(msg.data == "Turned"):

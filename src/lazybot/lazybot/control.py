@@ -104,7 +104,7 @@ class ControlNode(Node):
         if not self.running or not self.gotWallD:
             self.pubDrive(disable=True)
             return
-        isInside = abs(self.pos.x) < 0.5 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
+        isInside = abs(self.pos.x) < 0.75 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
         if not self.reached:
             if isInside:
                 self.reached = True
@@ -168,13 +168,13 @@ class ControlNode(Node):
                 self.ints[wi] = 1.0
             
             self.endOffset[0] = self.ranges[wi] - 1.5
-            self.endOffset[1] = self.ranges[wi] - 1.0
+            self.endOffset[1] = self.ranges[wi] - 0.5
             
             self.get_logger().info(f"Wall Distance: {self.ranges[wi]:.2f}, End Offset: {self.endOffset}")
             
             self.gotWallD = True
             
-            isInside = abs(self.pos.x) < 0.5 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
+            isInside = abs(self.pos.x) < 0.75 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
             
             if not isInside:
                 self.lapCount = -1
