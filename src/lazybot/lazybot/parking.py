@@ -52,8 +52,10 @@ class Parking(Node):
                 
                 if(l > r):
                     self.park_dir = "R"   # parking is on the right
+                    self.cmd_pub.publish(String(data="ccw"))
                 else:
                     self.park_dir = "L"  # parking is on the left
+                    self.cmd_pub.publish(String(data="cw"))
                 
                 if(self.park_dir == "L"):
                     self.send_c(1)

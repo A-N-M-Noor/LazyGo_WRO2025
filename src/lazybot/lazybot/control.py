@@ -139,6 +139,12 @@ class ControlNode(Node):
         elif command == "stop":
             self.running = False
             self.get_logger().info("Stopping the robot.")
+        elif command == "cw":
+            self.dir = -1
+            self.get_logger().info("Setting direction to clockwise.")
+        elif command == "ccw":
+            self.dir = 1
+            self.get_logger().info("Setting direction to counter-clockwise.")
             
     def obj_callback(self, msg: String):
         self.closest = msg.data
