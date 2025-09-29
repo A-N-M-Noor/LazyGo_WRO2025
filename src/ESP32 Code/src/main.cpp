@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <NewPing.h>
+#include <cmath>
 #include "MPU.h"
 #include "OLED.h"
 #include "battery.h"
@@ -7,7 +8,7 @@
 #include "bno.h"
 #include "parking_operations.h"
 
-float TPM = 1825.0;
+float TPM = 1955.0;
 
 Motors motors;
 int cam_current = CAM_SERVO_CENTER_US;
@@ -68,6 +69,12 @@ void srl()
         }
         else if(v == 5){
             command = "go";
+        }
+        else if(v == 6){
+            command = "parkR";
+        }
+        else if(v == 7){
+            command = "parkL";
         }
 
         if(key != 0 && v >= 50){
@@ -175,8 +182,8 @@ void setup()
         bnoCalc();
         vTaskDelay(50 / portTICK_PERIOD_MS); // Yield to other tasks for 100 milliseconds
     }
-    Serial.println(F("Start"));
-    command = "go";
+    Serial.println(F("Boot"));
+    // command = "parkL";
     displayText("");
     motors.setServoUs(SERVO_CENTER_US);                      // Center servo position
     motors.run(0);                                // Stop motors initially
@@ -188,6 +195,35 @@ void setup()
     sectionHeading = heading;
     startTime = millis();
     running = true;
+}
+
+void paaark(int dir){
+    bnoCalc();
+    float dr = fmod(heading, 360.0);
+
+    float err = -dir*90 + dr;
+    float target = dr + dir*10;
+    bool frd = false;
+    motors.setServoUs(SERVO_CENTER_US);
+    move_pos(0.2);
+    while(dr > -85 && dr < 85){
+        bnoCalc();
+        odometry();
+        err = -dir*90 + dr;
+        Serial.println(err);
+        if(frd){
+            turn_angle(target);
+        }
+        else{
+            turn_angle_opp(target);
+        }
+        frd = !frd;
+        target = dr + dir*10;
+        delay(10);
+    }
+    command = "into";
+    motors.run(0);
+    motors.setServoUs(SERVO_CENTER_US);
 }
 
 void loop()
@@ -236,5 +272,21 @@ void loop()
         motors.setServoUs(str_angle);
         odometry();
         vTaskDelay(10 / portTICK_PERIOD_MS); // IMPORTANT: Yield to other tasks for 100 milliseconds
+    }
+
+    if(command == "parkR"){
+        paaark(1);
+    }
+    if(command == "parkL"){
+        paaark(-1);
+    }
+
+    if(command == "into"){
+        head_into();
+        command = "none";
+    }
+    if(command == "none"){
+        motors.run(0);
+        motors.setServoUs(SERVO_CENTER_US);
     }
 }

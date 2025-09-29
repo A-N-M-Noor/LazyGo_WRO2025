@@ -24,6 +24,7 @@ void turn_angle(float target_angle) {
     bnoCalc();
     odometry();
     float error = target_angle - heading;
+    float initErr = error;
 
     if(error > 0) {
         motors.setServoUs(SERVO_MIN_US); // Turn right
@@ -48,7 +49,42 @@ void turn_angle(float target_angle) {
 
         delay(10);
     }
-    motors.run(-parking_pwm);
+    // if(abs(initErr) > 30){
+        motors.run(-parking_pwm);
+        delay(80);
+    // }
+    motors.run(0);
+}
+
+void turn_angle_opp(float target_angle) {
+    bnoCalc();
+    odometry();
+    float error = target_angle - heading;
+
+    if(error > 0) {
+        motors.setServoUs(SERVO_MIN_US); // Turn right
+    } else {
+        motors.setServoUs(SERVO_MAX_US); // Turn left
+    }
+
+    delay(100);
+
+    while (abs(error) > 2) { // Allowable error margin
+        bnoCalc();
+        odometry();
+        // srl();
+
+        error = target_angle - heading;
+        motors.run(-parking_pwm);
+        if(error < 0) {
+            motors.setServoUs(SERVO_MIN_US); // Turn right
+        } else {
+            motors.setServoUs(SERVO_MAX_US); // Turn left
+        }
+
+        delay(10);
+    }
+    motors.run(parking_pwm);
     delay(80);
     motors.run(0);
 }
@@ -77,4 +113,37 @@ void move_pos(float distance){
     motors.run(-parking_pwm);
     delay(80);
     motors.run(0);
+}
+
+void head_into(){
+    odometry();
+    bnoCalc();
+    int tickNow = motors.getEncoderCount();
+    float trg = 0;
+    if(heading > 0){
+        trg = 360*3;
+    }
+    else{
+        trg = -360*3;
+    }
+
+    motors.run(parking_pwm);
+    long tmr = millis();
+
+    while(true){
+        odometry();
+        bnoCalc();
+        int sv = map(trg - heading, -45, 45, SERVO_MAX_US, SERVO_MIN_US);
+        motors.setServoUs(sv);
+        delay(20);
+
+        if(millis() - tmr > 1000){
+            if(motors.getEncoderCount() != tickNow){
+                tickNow = motors.getEncoderCount();
+            }
+            else{
+                break;
+            }
+        }
+    }
 }

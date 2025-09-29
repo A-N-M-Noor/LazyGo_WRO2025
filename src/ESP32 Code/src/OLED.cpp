@@ -12,6 +12,7 @@
 extern float posX;
 extern float posY;
 extern Motors motors; 
+extern String command;
 
 // Declare global distance sensor variables defined elsewhere
 // extern int distLeft;
@@ -58,10 +59,10 @@ void displayTask(void *pvParameters)
             u8g2.setFont(u8g2_font_4x6_tf);
             u8g2.drawStr(0, 10, disp.c_str());
 
-            char lapBuf[9];
-            snprintf(lapBuf, sizeof(lapBuf),"Laps: %d", turnCount/4);
-            int lapWidth = u8g2.getStrWidth(lapBuf);
-            u8g2.drawStr((128 - lapWidth), 10, lapBuf);
+            char cmdBuf[16];
+            snprintf(cmdBuf, sizeof(cmdBuf),"%s", command);
+            int cmdWdth = u8g2.getStrWidth(cmdBuf);
+            u8g2.drawStr((128 - cmdWdth), 10, cmdBuf);
 
             char timeBuf[9];
             snprintf(timeBuf, sizeof(timeBuf),"%d:%d", seconds / 60, seconds % 60);
