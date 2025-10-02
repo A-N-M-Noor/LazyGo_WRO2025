@@ -27,17 +27,17 @@ Initially we implemented all the logics on a simulated robot. Here are some scre
 <table>
     <tr>
         <td align="center">
-            <a href="https://youtu.be/-kUOkPkEcgc">
+            <a href="https://youtu.be/7jhgtUxxIgY">
                 <img src="../assets/Open Round Basic.png" alt="Open Round Basic" width="250">
             </a>
         </td>
         <td align="center">
-            <a href="https://youtu.be/aGE3ibwPSZU">
+            <a href="https://youtu.be/7BVIbg3AUaY">
                 <img src="../assets/Open Round With Lap Count.png" alt="Open Round With Lap Count" width="250">
             </a>
         </td>
         <td align="center">
-            <a href="https://youtu.be/M6jFrCd0BJU">
+            <a href="https://youtu.be/xk6vUA5FqXY">
                 <img src="../assets/Obstacle Round.png" alt="Obstacle Round" width="250">
             </a>
         </td>
