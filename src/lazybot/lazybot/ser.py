@@ -15,6 +15,7 @@ class SerNode(Node):
         super().__init__('ser')
 
         self.cmd_pub = self.create_publisher(String, '/cmd', 10)
+        self.cmd_sub = self.create_subscription(String, '/cmd', self.cmd_callback, 1)
         self.pos_pub = self.create_publisher(Vector3, '/lazypos', 10)
         self.thr_sub = self.create_subscription(Float32, '/throttle', self.thr_callback, 1)
         self.str_sub = self.create_subscription(Float32, '/steer', self.steer_callback, 1)
@@ -40,6 +41,15 @@ class SerNode(Node):
         else:
             self.get_logger().error('Failed to establish serial connection to ESP32')
 
+    
+    def cmd_callback(self, msg: String):
+        if(msg.data == "completeR"):
+            self.send_val(6, 100)
+            self.isDone = True
+        elif(msg.data == "completeL"):
+            self.send_val(7, 100)
+            self.isDone = True
+    
     def printSerialDetails(self, port):
         print(f'Port device: {port.device}')
         print(f'Port name: {port.name}')

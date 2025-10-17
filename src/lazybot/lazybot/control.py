@@ -13,6 +13,7 @@ class ControlNode(Node):
     def __init__(self):
         super().__init__('control')
         self.cmd_sub = self.create_subscription(String, '/cmd', self.cmd_callback, 10)
+        self.cmd_pub = self.create_publisher(String, '/cmd', 10)
         
         self.sensor_sub = self.create_subscription(Int8MultiArray, '/lazybot/sensors', self.sensor_callback, 10)
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
@@ -30,7 +31,7 @@ class ControlNode(Node):
         self.create_timer(0.025, self.control_loop)
 
         self.IS_SIM = False
-        self.IS_OPEN = True
+        self.IS_OPEN = False
         
         self.dir = 1 #CCW
         
@@ -52,11 +53,11 @@ class ControlNode(Node):
         self.skip1 = 2
         self.skip2 = 1
 
-        self.dangerDist = 0.225
+        self.dangerDist = 0.22
         self.dangerAng = [25.0, 90.0]
 
         self.new_lidar_val = False
-        self.castRange = [0.15, 0.17]
+        self.castRange = [0.13, 0.16]
         self.castR = 0.25
         self.lookRng = radians(80.0)
         self.lookRngS = radians(130.0)
@@ -117,10 +118,22 @@ class ControlNode(Node):
             self.reached = False
         
         if self.lapCount >= self.targetLap:
+            self.speedCap = 0.35
+            
             self.running = False
             self.get_logger().info("Reached the destination, stopping the robot.")
             self.pubDrive(disable=True)
             return
+            
+            # if(abs(self.pos.y) < 0.05):
+            #     self.running = False
+            #     self.get_logger().info("Reached the destination, stopping the robot.")
+            #     self.pubDrive(disable=True)
+            #     if(self.dir == 1):
+            #         self.cmd_pub.publish(String(data="completeR"))
+            #     else:
+            #         self.cmd_pub.publish(String(data="completeL"))
+            #     return
         
         if abs(self.pos.z - self.sectionAngle) > radians(80):
             if(self.pos.z > self.sectionAngle):
