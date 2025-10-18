@@ -12,8 +12,8 @@ def generate_launch_description():
 
     control = Node(
         package='lazybot',
-        executable='control',
-        name='control'
+        executable='open_control',
+        name='open_control'
     )
 
     serial = Node(

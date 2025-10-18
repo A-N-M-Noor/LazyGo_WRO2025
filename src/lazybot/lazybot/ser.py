@@ -49,6 +49,10 @@ class SerNode(Node):
         elif(msg.data == "completeL"):
             self.send_val(7, 100)
             self.isDone = True
+        elif(msg.data == "start_open"):
+            self.cmd_pub.publish(String(data="start"))
+            self.send_val(5, 100)
+            self.isDone = True
     
     def printSerialDetails(self, port):
         print(f'Port device: {port.device}')
