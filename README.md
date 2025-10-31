@@ -145,11 +145,12 @@ Our bot is equipped with various components that support its autonomous function
 |-------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
 | **Raspberry Pi 5**                | Provides powerful onboard processing for computer vision, and higher-level navigation.            | <div align="center"><img src="./assets/Pi5.jpg" alt="Raspberry Pi 5" width="200"></div>                  |
 | **RPLidar C1**                    | Enables 360-degree obstacle detection and environment mapping through LiDAR scanning.             | <div align="center"><img src="./assets/lidar.jpg" alt="RPLidar C1" width="200"></div>                       |
+| **Logitech C270 Camera**                    | Using this to detect colored towers.             | <div align="center"><img src="./assets/camera.png" alt="Logi c270" width="200"></div>                       |
 | **ESP32 Microcontroller**         | Manages real-time control such as motor commands, sensor data collection, and communication.      | <div align="center"><img src="./assets/ESP32.jpg" alt="ESP32" width="200"></div>                            |
 | **BNO055 9Axis IMU Sensor**       | Tracks orientation and motion to assist with balance and movement stabilization. The internal microcontroller allows for precision orientation tracking. | <div align="center"><img src="./assets/BNO.jpg" alt="BNO055" width="200"></div>                          |
 | **0.96" OLED Display (I2C)**      | Displays status information such as sensor readings, and debug info.                              | <div align="center"><img src="./assets/oled.jpg" alt="OLED Display" width="200"></div>                     |
 | **Mini560 Buck Converter**        | Provides compact 5V power regulation for the servo.                        | <div align="center"><img src="./assets/mini560.jpg" alt="Mini560 Buck Converter" width="200"></div>           |
-| **5V 5A Buck Converter (Unknown chip)**   | Supplies a steady 5V 5A output for powering the raspberry pi and peripherals.           | <div align="center"><img src="./assets/5v5a.jpg" alt="LM2596 Buck Converter" width="200"></div>            |
+| **5V 5A Buck Converter (LM2596S)**   | Supplies a steady 5V 5A output for powering the raspberry pi and peripherals.           | <div align="center"><img src="./assets/5v5a.jpg" alt="LM2596 Buck Converter" width="200"></div>            |
 | **25GA Gear Motors with Encoder** | Offers precise speed and position feedback for accurate wheel control and localization.           | <div align="center"><img src="./assets/25GA.jpg" alt="25GA Motor with Encoder" width="200"></div>          |
 | **VNH2SP30 Motor Driver**         | High-power motor driver used to control brushed DC motors with PWM and direction control.         | <div align="center"><img src="./assets/VNH2SP30.jpg" alt="VNH2SP30 Motor Driver" width="200"></div>            |
 | **PS1171MG Servo Motor**             | Controls precise angular movements, typically used for steering or actuation.                     | <div align="center"><img src="./assets/1171mg.jpg" alt="AM117 Servo" width="200"></div>                      |
@@ -216,6 +217,23 @@ flowchart LR
 
 One drawback of this method is that on straight sections, the robot shows a tendency to point itself toward the next corner. This happens because corners often look like the direction with the most open space before discovering the next turn, so the algorithm treats them as the safest option - even though the robot should ideally stay centered on the straight path. But this algorithm works really well to move between tight gaps. So the little drawback doesn't really matter to us. And ofcourse, there are ways to improve on this issue.
 
+One important thing to remember, the robot does not target the farthest distance, it targets the farthest `safe` distance - where it can move to without collision. Here's how it works:
+
+<table>
+    <tr>
+        <td align="center">
+            <img src="./assets/collision.png" alt="Targetting farthest distance">
+        </td>
+        <td align="center">
+            <img src="./assets/no_collision.png" alt="Targetting farthest safe distance">
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><sub>Targetting farthest distance</sub></td>
+        <td align="center"><sub>Targetting farthest `safe` distance</sub></td>
+    </tr>
+</table>
+
 #### Lap Count
 Because we can precisely calculate odometry, keeping lap count is a very simple task. The robot just keeps track of how many times it passes through the starting section. When it reaches the desired lap count, it just stops there. And it worked really well. The robot always stops between a few centimeters from the dead center of the starting section.
 
@@ -223,7 +241,25 @@ Because we can precisely calculate odometry, keeping lap count is a very simple 
 It works similar to the open round. But the robots needs to detect the towers. In our robot, tower detection is done in two ways.
 
 1. `Using the camera`: This is a very basic color detection algorithm. From the camera feed, the robot detects the towers by masking colors.
-1. `Using LiDAR data`: This approach is a bit more interesting. Towers create sudden changes (spikes) in the LiDAR distance readings. If the readings suddenly get closer and then farther again, that usually means there’s an object in between. By checking how wide this change looks from the LiDAR’s point of view, we can estimate whether it matches the expected size of a tower. If it does, the robot marks it as a possible tower - but it still confirms the color with the camera to be sure.
+1. `Using LiDAR data`: This approach is a bit more interesting. Towers create sudden changes (valley) in the LiDAR distance readings. If the readings suddenly get closer and then farther again, that usually means there’s an object in between. By checking how wide this change looks from the LiDAR’s point of view, we can estimate whether it matches the expected size of a tower. The object's size can be easily calculated using the formula `s = rθ`. If the size is around 5cm (width of a tower) the robot marks it as a possible tower. But it still confirms the color with the camera to be sure.
+
+Here's how it works:
+
+<table>
+    <tr>
+        <td align="center">
+            <img src="./assets/Tower.png" alt="Tower">
+        </td>
+        <td align="center">
+            <img src="./assets/notTower.png" alt="Not a tower">
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><sub>The valley has a depth of more than 20cm and the calculated size is around 5cm</sub></td>
+        <td align="center"><sub>These are not towers because either the valley depth is lower than 20cm, or the calculated size is much different from 5cm.</sub></td>
+    </tr>
+</table>
+
 
 ```mermaid
 flowchart LR
@@ -244,7 +280,14 @@ After detecting the towers, the robot needs to avoid them. The robot needs to mo
 
 ### Camera Placement
 
-The robot's main camera is positioned at the front and angled directly forwards. The camera is place 5cm above ground level so it is directly pointing towards the center of the towers. The camera feeds data to the **Raspberry Pi 5**, which processes the image to detect the towers. The processed dataalong with the LiDAR scan is used to plan the movement of the robot. The Pi then sends throttle and steering value to the ESP32. The ESP32 controls the motor and servo to move the robot.
+We attached the robot's main camera on a servo motor. Because we are detecting the towers' positions using the LiDAR values, we can easily point the camera towards the closest object using the servo. This makes it super easy to isolate a target tower. And this allowes us to use a lower Field of View (`FoV`) camera and cover a large area.
+
+But does using a low `FoV` camera has any benefit?
+
+Well, fish eye lenses introduce a lot of distortion. It can be fixed by calculating the lense intrinsics and camera matrix coefficients, but that also takes up some processing time as it needs to be done per frame. Although it is not too much of an issue if you just need to use color masking using opencv. But there is another issue with high `FoV` cameras. Generally, cameras with a higher `FoV` have lower image brightness (per unit area) if other settings (such as aperture and exposure time) remain the same. This is because the same amount of light gathered by the lens is distributed over a larger sensor area. We can increase the exposure, but that increases motion blur and sometimes even introduces lag. This is an issue especially for WRO Future Engineers Category. Over the years, we've noticed that the tower colors are usually very dark. This makes it very difficult to detect their colors. Here, a camera with more overall brightness will perform better than one with a lower overall brightness. So a low `FoV` camera helps in this sense as well. 
+
+Also, as we are directly pointing the camera towards a tower, the chance to falsely detect, let's say, the parking walls as a red tower.
+
 
 ---
 ---

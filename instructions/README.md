@@ -7,6 +7,10 @@ Want to use this package for your robot? Or maybe you just want to use the simul
 [![Gazebo](https://img.shields.io/badge/Gazebo-EE7C11?style=flat-square)](#installing-gazebo)
 [![Codes](https://img.shields.io/badge/Codes-gray?style=flat-square)](#use-our-codes)
 
+
+Hey! If you have any trouble, you may want to check out the [Issues](https://github.com/A-N-M-Noor/LazyGo_WRO2025/issues?q=is%3Aissue%20state%3Aclosed) page and find if there's any solution there.
+
+
 ## Installing Ubuntu
 As we are using ROS2 for our robot, we installed Ubuntu on our Pi. Now, it is completely possible to use ROS2 without using Ubuntu, just on a Pi OS using Docker. But to keep things simple, we decided to install Ubuntu on our Pi.
 
