@@ -175,14 +175,13 @@ Before getting an usable value, we had to calibrate our encoder to calculate val
 
 ```mermaid
 flowchart LR
-    C["Repeat process continuously"] --> D["Calculate delta encoder value: ds"]
-    D --> E["Read current orientation angle"]
-    E --> F["Find average angle (A) between last and current heading"]
-    F --> G["Compute movement vector: x = ds * cos(A), y = ds * sin(A)"]
-    G --> H["Accumulate movement vector to update position"]
-    H --> I["Output realtime position"]
-    I --> C
-    A["Start"] --> C
+    n1 --> D["Calculate delta encoder value: ds<br><br>Read current orientation angle<br><br>Find average angle (A) between last and current heading"]
+    D --> E["Compute movement vector: x = ds * cos(A), y = ds * sin(A)"]
+    E --> F["Accumulate movement vector to update position<br><br>Output realtime position"]
+    A["Start"] --> n1
+    F --> n1["Small Circle"]
+
+    n1@{ shape: sm-circ}
 ```
 
 ### Open Round
@@ -198,20 +197,17 @@ During the open round, there is no towers on the track. So we don't need the cam
 
 ```mermaid
 flowchart LR
-    A[Start control loop] --> B[Perform LiDAR scan to get rays]
-    B --> C[Iterate over each ray]
-    C --> D[Set candidate distance from measured ray]
-    D --> E[Check nearby rays for potential body collision]
-    E --> F{Nearby ray would cause collision}
-    F -- Yes --> G[Shorten candidate distance to nearby obstacle]
-    F -- No  --> H[Keep candidate distance as is]
-    G --> I[Save safe distance for current ray]
-    H --> I
-    I --> J{More rays to process}
-    J -- Yes --> C
-    J -- No  --> K[Pick direction with largest safe distance]
-    K --> L[Steer car toward chosen direction]
-    L --> M[Repeat control loop]
+    A["Start control loop"] --> B["LiDAR scan"]
+    B --> C["Iterate"]
+    C --> D["Set candidate distance from measured ray<br><br>Check nearby rays for potential body collision"]
+    D --> F{"Nearby ray would cause collision"}
+    F -- Yes --> G["Shorten candidate distance to nearby obstacle"]
+    F -- No --> I["Save safe distance for current ray"]
+    G --> I
+    I --> J{"End of iteration?"}
+    J -- No --> C
+    J -- Yes --> L["Pick direction with largest safe distance<br><br>Steer car toward chosen direction"]
+    L --> M["Repeat"]
     M --> B
 ```
 
