@@ -415,12 +415,13 @@ config:
   theme: redux
 ---
 flowchart TD
-    n1["3s LiPo Battery"] --> n3["5V 5A Buck<br>Converter"] & n4["Mini 360 Buck<br>Converter"] & n5["VNH2SP30<br>Motor Driver"]
-    n3 --> n6["Raspberry Pi 5"]
-    n6 --> n7["RP Lidar C1"] & n8["USB Camera"] & n9["Main PCB"]
-    n9 --> n10["ESP32<br>IMU<br>IR Sensors<br>OLED<br>Encoder"]
-    n4 --> n11["Servo"]
+    n1["3s LiPo Battery"] --> n3["5V 20A Buck<br>Converter"] & n4["5V 5A Buck<br>Converter"] & n5["VNH2SP30<br>Motor Driver"]
+    n3 --> n6["Raspberry Pi 5"] & n7["ESP32<br>&<br>Encoder"]
+    n6 --> n8["RP Lidar C1"] & n9["USB Camera"]
+    n4 -- Large Capacitors --> n10["Servo"]
+    n4 --> n11["IR Sensors<br>OLED<br>Buzzer"]
     n5 --> n12["Motor"]
+    n1 -. Voltage Feedback .-> n7
     n1@{ shape: rounded}
 ```
 ---
