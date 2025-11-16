@@ -160,12 +160,12 @@ void setup() {
         //bnoCalc();
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
     }
-    bnoCalcOffset(500);    // Adjust offset as soon as button is pressed
     while (digitalRead(BUTTON_PIN) == LOW) {
         //bnoCalc();
         tone(BUZZER_PIN, BUZZ_HIGH, 200);
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
     }
+    bnoCalcOffset(200);    // Adjust offset as soon as button is released
 
     Serial.println(F("Boot"));
     // command = "parkL";
