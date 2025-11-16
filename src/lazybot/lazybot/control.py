@@ -144,6 +144,7 @@ class ControlNode(Node):
     
     def cmd_callback(self, msg: String):
         command = msg.data.strip().lower()
+        self.get_logger().info(f"Received command: {command}")
         if command == "start":
             self.lapCount = 0
             self.reached = True

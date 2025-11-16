@@ -133,8 +133,6 @@ class SerNode(Node):
                 self.ser.write(v.to_bytes(1, 'little'))
                 return
         
-            v = int(self.thr * 50) + 100
-            self.ser.write(v.to_bytes(1, 'little'))
             self.send_val(15, int(self.thr * 100)+150)
             self.send_val(16, int(self.str * 100)+150)
             
