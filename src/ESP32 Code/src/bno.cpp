@@ -1,26 +1,23 @@
-#include <Arduino.h>
-#include <Wire.h>
-#include <Adafruit_BNO055.h>
-#include <Adafruit_Sensor.h>
-#include <utility/imumaths.h>
 #include "bno.h"
 
-// I2C pins
-#define I2C_SDA 21
-#define I2C_SCL 22
+#include <Adafruit_BNO055.h>
+#include <Adafruit_Sensor.h>
+#include <Arduino.h>
+#include <Wire.h>
+#include <utility/imumaths.h>
 
 // Sensor instance
-Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x29, &Wire); // change 0x28 <-> 0x29 if needed
+Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x29, &Wire);  // change 0x28 <-> 0x29 if needed
 
 // Shared variables
 volatile float _heading = 0.0;
 volatile float heading = 0.0;
-volatile float positionXY[2] = {0.0, 0.0}; // x, y
+volatile float positionXY[2] = {0.0, 0.0};  // x, y
 volatile float headingVel = 0.0;
 volatile float pollingRateBNO = 0.0;
 volatile unsigned long startTime = 0;
 
-static uint16_t sampleDelay = 10; // ms
+static uint16_t sampleDelay = 10;  // ms
 static double accelVelTransition = (double)sampleDelay / 1000.0;
 static double accelPosTransition = 0.5 * accelVelTransition * accelVelTransition;
 static double deg2rad = 0.01745329251;
@@ -31,16 +28,14 @@ uint32_t lastSampleMicros = 0;
 float prevA = 0;
 volatile float offs = 0;
 
-void initBNO()
-{
+void initBNO() {
     Wire.begin(I2C_SDA, I2C_SCL);
 
-    if (!bno.begin())
-    {
+    if (!bno.begin()) {
         while (1)
             delay(10);
     }
-    
+
     bno.setExtCrystalUse(true);
 
     bno.setMode(OPERATION_MODE_IMUPLUS);
@@ -67,14 +62,12 @@ void initBNO()
     delay(1000);
 }
 
-void bnoTask(void *pvParameters)
-{
+void bnoTask(void* pvParameters) {
     sensors_event_t orientationData, linearAccelData;
 
     unsigned long lastPacketTime = 0;
 
-    while (1)
-    {
+    while (1) {
         unsigned long tStart = micros();
 
         bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
@@ -91,34 +84,28 @@ void bnoTask(void *pvParameters)
 
         // Update polling rate
         unsigned long now = micros();
-        if (lastPacketTime > 0)
-        {
+        if (lastPacketTime > 0) {
             float deltaTime = (float)(now - lastPacketTime) / 1000000.0;
             pollingRateBNO = 1.0 / deltaTime;
         }
         lastPacketTime = now;
 
         // Debug print (every 500ms)
-        if (printCount * sampleDelay >= 500)
-        {
+        if (printCount * sampleDelay >= 500) {
             printCount = 0;
-        }
-        else
-        {
+        } else {
             printCount++;
         }
 
         // Keep timing consistent
-        while ((micros() - tStart) < (sampleDelay * 1000))
-        {
+        while ((micros() - tStart) < (sampleDelay * 1000)) {
             // wait
         }
-        vTaskDelay(1); // yield to other tasks
+        vTaskDelay(1);  // yield to other tasks
     }
 }
 
-void bnoCalc()
-{
+void bnoCalc() {
     imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
     float a = euler.x();
     float dA = a - prevA;
@@ -133,22 +120,20 @@ void bnoCalc()
     prevA = a;
 }
 
-void bnoCalcOffset(int dur){
+void bnoCalcOffset(int dur) {
     long _start = millis();
-    while(millis() - _start < dur){
+    while (millis() - _start < dur) {
         bnoCalc();
         vTaskDelay(sampleDelay / portTICK_PERIOD_MS);
     }
     offs = _heading;
 }
 
-double rad(float deg)
-{
+double rad(float deg) {
     return deg * deg2rad;
 }
 
-void startBNOTask()
-{
+void startBNOTask() {
     xTaskCreatePinnedToCore(
         bnoTask,
         "BNOTask",
@@ -156,6 +141,6 @@ void startBNOTask()
         NULL,
         5,
         NULL,
-        0 // Core 0
+        0  // Core 0
     );
 }
