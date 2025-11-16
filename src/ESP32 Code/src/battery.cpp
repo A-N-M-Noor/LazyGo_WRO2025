@@ -5,7 +5,7 @@
 #include "io_pins.h"
 
 // Pin and ADC configuration
-#define ADC_PIN 15                // GPIO15 (ADC2_CHANNEL_3)
+#define ADC_PIN 4                // GPIO4 (ADC2_CHANNEL_)
 #define SAMPLES 20                // Number of samples for averaging
 #define VREF 2.2                  // Default reference voltage in volts
 #define VOLTAGE_MULTIPLIER 10     // Calibrate this: Multiplier to scale battery voltage

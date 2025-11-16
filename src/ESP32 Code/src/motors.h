@@ -6,19 +6,19 @@
 #define SERVO_PIN 18
 #define CAM_SERVO_PIN 17
 #define CAM_SERVO_MIN_US 500
-#define CAM_SERVO_MAX_US 2400
-#define CAM_SERVO_CENTER_US 1450
+#define CAM_SERVO_MAX_US 2340
+#define CAM_SERVO_CENTER_US 1420
 
-#define SERVO_MIN_US 600      // steers robot to the right
-#define SERVO_MAX_US 2000     // steers robot to the left
-#define SERVO_CENTER_US 1300  // center position for servo (Adjust if needed)1125
+#define SERVO_MIN_US 950      // steers robot to the right
+#define SERVO_MAX_US 2250     // steers robot to the left
+#define SERVO_CENTER_US 1600  // center position for servo (Adjust if needed)
 
 #define MOTOR_IN1 26
 #define MOTOR_IN2 27
 #define MOTOR_PWM 25
 #define MOTOR_ENB 14
 
-#define ENCODER_A 12
+#define ENCODER_A 33
 #define ENCODER_B 13
 
 #define WHEEL_DIAMETER_CM 4.829

@@ -135,10 +135,10 @@ void setup() {
     motors.begin();
     initIO();
 
-    // while (Serial1.available() > 0)
-    // {
-    //     Serial1.read();
-    // }
+    while (Serial1.available() > 0)
+    {
+        Serial1.read();
+    }
 
     startSerialReadTask();  // Serial read task on Core 1
     motors.setServoUs(SERVO_CENTER_US);
@@ -162,6 +162,7 @@ void setup() {
         tone(BUZZER_PIN, BUZZ_HIGH, 1500);
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
     }
+
     Serial.println(F("Boot"));
     // command = "parkL";
     displayText("");
@@ -176,6 +177,13 @@ void setup() {
     startTime = millis();
     running = true;
 
+    motors.run(255);
+    delay(3000);
+    motors.setServoUs(SERVO_MAX_US);
+    delay(2000);
+    motors.setServoUs(SERVO_CENTER_US);
+    motors.run(0);
+    while(1);
 #if ENABLE_HW_TEST
     randomSeed(esp_random());
     while (true) {
