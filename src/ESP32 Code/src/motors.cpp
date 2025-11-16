@@ -64,7 +64,7 @@ void Motors::speedControlTask(void* pvParameters) {
             if (commanded_speed_mms == 0) {
                 digitalWrite(MOTOR_IN1, LOW);
                 digitalWrite(MOTOR_IN2, LOW);
-                ledcWrite(MOTOR_PWM_CHANNEL, 0);
+                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 0);
             } else {
                 if (commanded_speed_mms < 0) {
                     digitalWrite(MOTOR_IN1, HIGH);
@@ -73,7 +73,7 @@ void Motors::speedControlTask(void* pvParameters) {
                     digitalWrite(MOTOR_IN1, LOW);
                     digitalWrite(MOTOR_IN2, HIGH);
                 }
-                ledcWrite(MOTOR_PWM_CHANNEL, pwm_duty);
+                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, (pwm_duty / 255.0) * 100);
             }
         } else {
             // Speed control mode (or stopped)
@@ -84,11 +84,11 @@ void Motors::speedControlTask(void* pvParameters) {
                 motors->target_position_mm = motors->current_position_mm;
                 digitalWrite(MOTOR_IN1, LOW);
                 digitalWrite(MOTOR_IN2, LOW);
-                ledcWrite(MOTOR_PWM_CHANNEL, 255);  // Hard brake
+                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 100);  // Hard brake
             } else if (motors->target_speed_mms == 0) {
                 digitalWrite(MOTOR_IN1, LOW);
                 digitalWrite(MOTOR_IN2, LOW);
-                ledcWrite(MOTOR_PWM_CHANNEL, 0);
+        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 0);
             } else {
                 // Speed control
                 float target_speed = motors->target_speed_mms;
@@ -103,7 +103,7 @@ void Motors::speedControlTask(void* pvParameters) {
                     digitalWrite(MOTOR_IN1, LOW);
                     digitalWrite(MOTOR_IN2, HIGH);
                 }
-                ledcWrite(MOTOR_PWM_CHANNEL, pwm_duty);
+                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, (pwm_duty / 255.0) * 100);
             }
         }
 
@@ -155,10 +155,21 @@ void Motors::begin() {
     pinMode(ENCODER_B, INPUT);
     digitalWrite(MOTOR_ENB, HIGH);  // Enable motor driver
 
+    // Disaled ledcSetup/ledcAttachPin/ledcWrite
     // Configure motor PWM for 18kHz
-    ledcSetup(MOTOR_PWM_CHANNEL, MOTOR_PWM_FREQ, 8);  // Channel 0, 18kHz, 8-bit resolution
-    ledcAttachPin(MOTOR_PWM, MOTOR_PWM_CHANNEL);      // Attach PWM pin to channel 0
+    // ledcSetup(MOTOR_PWM_CHANNEL, MOTOR_PWM_FREQ, 8);  // Channel 0, 18kHz, 8-bit resolution
+    // ledcAttachPin(MOTOR_PWM, MOTOR_PWM_CHANNEL);      // Attach PWM pin to channel 0
     attachInterrupt(digitalPinToInterrupt(ENCODER_A), encoderISR, RISING);
+
+    // Add MCPWM for motor
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM2A, MOTOR_PWM);  // Use Timer 2
+    mcpwm_config_t motor_pwm = {
+        .frequency = 18000,  // 18kHz
+        .cmpr_a = 0,
+        .duty_mode = MCPWM_DUTY_MODE_0,
+        .counter_mode = MCPWM_UP_COUNTER,
+    };
+    mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_2, &motor_pwm);
 
     // Create speed control task pinned to core 0
     // xTaskCreatePinnedToCore(
@@ -207,13 +218,14 @@ void Motors::moveDistance(float cm, float speed_mms) {
     target_position_mm = current_position_mm + (cm * 10.0);  // Convert cm to mm and add to current position
     use_position_control = true;                             // Switch to position control
 }
+
 void Motors::run(int spd_vlu) {
     spd_vlu = (float)spd_vlu * spdMult;
 
     if (spd_vlu == 0) {
         digitalWrite(MOTOR_IN1, LOW);
         digitalWrite(MOTOR_IN2, LOW);
-        ledcWrite(MOTOR_PWM_CHANNEL, 0);
+        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 0);
     } else {
         if (spd_vlu < 0) {
             digitalWrite(MOTOR_IN1, HIGH);
@@ -222,7 +234,8 @@ void Motors::run(int spd_vlu) {
             digitalWrite(MOTOR_IN1, LOW);
             digitalWrite(MOTOR_IN2, HIGH);
         }
-        ledcWrite(MOTOR_PWM_CHANNEL, abs(spd_vlu));
+        float duty = abs(spd_vlu) / 255.0 * 100.0;  // 0–100%
+        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, duty);
     }
 }
 
@@ -238,7 +251,7 @@ void Motors::hardBreak() {
     use_position_control = false;              // Switch to speed control
     digitalWrite(MOTOR_IN1, LOW);
     digitalWrite(MOTOR_IN2, LOW);
-    ledcWrite(MOTOR_PWM_CHANNEL, 255);  // Hard brake
+    mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 100);  // Hard brake
 }
 
 long Motors::getEncoderCount() {

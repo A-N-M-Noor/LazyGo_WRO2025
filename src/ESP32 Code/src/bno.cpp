@@ -120,12 +120,20 @@ void bnoCalc() {
     prevA = a;
 }
 
-void bnoCalcOffset(int dur) {
-    long _start = millis();
-    while (millis() - _start < dur) {
+void bnoCalcTask(void* pvParameters) {
+    while(1) {
         bnoCalc();
         vTaskDelay(sampleDelay / portTICK_PERIOD_MS);
     }
+}
+
+void bnoCalcOffset(int dur) {
+    long _start = millis();
+    // while (millis() - _start < dur) {
+    //     bnoCalc();
+    //     vTaskDelay(sampleDelay / portTICK_PERIOD_MS);
+    // }
+    vTaskDelay(dur / portTICK_PERIOD_MS);   
     offs = _heading;
 }
 
@@ -137,6 +145,19 @@ void startBNOTask() {
     xTaskCreatePinnedToCore(
         bnoTask,
         "BNOTask",
+        4096,
+        NULL,
+        5,
+        NULL,
+        0  // Core 0
+    );
+}
+
+
+void startBNOCalcTask() {
+    xTaskCreatePinnedToCore(
+        bnoCalcTask,
+        "BNOCalcTask",
         4096,
         NULL,
         5,

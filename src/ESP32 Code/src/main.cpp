@@ -46,6 +46,10 @@ void srl() {
 
     while (Serial1.available()) {
         int v = Serial1.read();
+        if(v == 84){        // if 'T' is received
+            Serial.println("Yes, communication is ok!");
+            return;
+        }
         srlTmr = millis();
         if (v >= 15 && v < 50) {
             key = v;
@@ -119,6 +123,7 @@ void startSerialReadTask() {
 
 void setup() {
     initBNO();
+    startBNOCalcTask();
     initADC();
 
     Serial1.begin(115200, SERIAL_8N1, 23, 19);
@@ -129,8 +134,6 @@ void setup() {
     startOLEDDisplayTask();
     displayText("Wait...");
 
-    bnoCalc();
-    bnoCalcOffset(1500);
 
     motors.begin();
     initIO();
@@ -147,19 +150,20 @@ void setup() {
     // IO initialization (pin modes + startup tones) handled in initIO()
     displayText("All okay!");
     // Startup buzzer pattern
+    tone(BUZZER_PIN, BUZZ_LOW, 50);
+    tone(BUZZER_PIN, BUZZ_HIGH, 50);
     tone(BUZZER_PIN, BUZZ_LOW, 100);
     tone(BUZZER_PIN, BUZZ_HIGH, 100);
-    tone(BUZZER_PIN, BUZZ_LOW, 200);
-    tone(BUZZER_PIN, BUZZ_HIGH, 200);
     noTone(BUZZER_PIN);
     // motors.run(255);
     while (digitalRead(BUTTON_PIN) == HIGH) {
-        bnoCalc();
+        //bnoCalc();
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
     }
+    bnoCalcOffset(500);    // Adjust offset as soon as button is pressed
     while (digitalRead(BUTTON_PIN) == LOW) {
-        bnoCalc();
-        tone(BUZZER_PIN, BUZZ_HIGH, 1500);
+        //bnoCalc();
+        tone(BUZZER_PIN, BUZZ_HIGH, 200);
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
     }
 
@@ -177,13 +181,6 @@ void setup() {
     startTime = millis();
     running = true;
 
-    motors.run(255);
-    delay(3000);
-    motors.setServoUs(SERVO_MAX_US);
-    delay(2000);
-    motors.setServoUs(SERVO_CENTER_US);
-    motors.run(0);
-    while(1);
 #if ENABLE_HW_TEST
     randomSeed(esp_random());
     while (true) {
@@ -202,7 +199,7 @@ void setup() {
 }
 
 void paaark(int dir) {
-    bnoCalc();
+    //bnoCalc();
     float dr = fmod(heading, 360.0);
 
     float err = -dir * 90 + dr;
@@ -211,7 +208,7 @@ void paaark(int dir) {
     motors.setServoUs(SERVO_CENTER_US);
     move_pos(0.2);
     while (dr > -85 && dr < 85) {
-        bnoCalc();
+        //bnoCalc();
         odometry();
         err = -dir * 90 + dr;
         Serial1.println(err);
@@ -256,7 +253,7 @@ void loop() {
         posY = 0.0;
     }
     if (command == "passTurn") {
-        bnoCalc();
+        //bnoCalc();
         if (heading > 0) {
             turn_angle(135);
         } else {
@@ -271,7 +268,7 @@ void loop() {
     }
 
     if (command == "go") {
-        bnoCalc();
+        //bnoCalc();
         motors.run(spd);
         motors.setServoUs(str_angle);
         odometry();
