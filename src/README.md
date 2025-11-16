@@ -4,28 +4,28 @@ This directory contains all the codes of LazyBot (By Team LazyGo)
 File structure:
 ```
 src
-├── ESP32 Code                      (PlatformIO Project for the ESP32)
-│   └── src/                        (Contains the c++ code for esp32)
+├── ESP32 Code                          (PlatformIO Project for the ESP32)
+│   └── src/                            (Contains the c++ code for esp32)
 |
-├── lazy_interface/                 (ROS Package - Message Types)
-│   ├── msg/                        (Contains custom message types used by ROS to control the robot)
-│   └── srv/                        (Currently, we're not using any custom ROS services)
+├── lazy_interface/                     (ROS Package - Message Types)
+│   ├── msg/                            (Contains custom message types used by ROS to control the robot)
+│   └── srv/                            (Currently, we're not using any custom ROS services)
 |
-├── lazybot/                        (ROS Package - Control Package)
-│   ├── launch/                     (Contains launch files to launch necessary nodes together)
-|   |   ├── open.lazy_launch.py     (Launch file for open challenge)
-|   |   ├── robot.lazy_launch.py    (Launch file for obstacle challenge)
-│   |   └── sim.lazy_launch.py      (Launch file for simulation run)
-|   └── lazybot/                    (ROS Nodes - contains all the code files for control package)
+├── lazybot/                            (ROS Package - Control Package)
+│   ├── launch/                         (Contains launch files to launch necessary nodes together)
+|   |   ├── open.lazy_launch.py         (Launch file for open challenge)
+|   |   ├── robot.lazy_launch.py        (Launch file for obstacle challenge)
+│   |   └── sim.lazy_launch.py          (Launch file for simulation run)
+|   └── lazybot/                        (ROS Nodes - contains all the code files for control package)
 |
-└── lazysim/                        (ROS Package - Gazebo Simulation)
-    ├── config/                     (Configure files for the simulation)
-    |   └── track.yaml              (Configure the simulated track)
-    └── launch/                     (Contains launch files to launch necessary nodes together)
-        ├── control.launch.py       (ROS-Control package launcher: This is needed to control the robot in simulation world)
+└── lazysim/                            (ROS Package - Gazebo Simulation)
+    ├── config/                         (Configure files for the simulation)
+    |   └── track.yaml                  (Configure the simulated track)
+    └── launch/                         (Contains launch files to launch necessary nodes together)
+        ├── control.launch.py           (ROS-Control package launcher: This is needed to control the robot in simulation world)
         ├── gazebo.lazyBot.launch.py    (Launches the simulation world with robot model)
-        ├── lazySim.launch.py       (Only launches the robot model.)
-        └── rviz_lazySim.launch.py  (Launches RVIZ with appropriate topics and settings)
+        ├── lazySim.launch.py           (Only launches the robot model.)
+        └── rviz_lazySim.launch.py      (Launches RVIZ with appropriate topics and settings)
 ```
 
 ## Package Usage Guide
