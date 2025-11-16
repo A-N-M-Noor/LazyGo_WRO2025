@@ -61,7 +61,8 @@ def generate_launch_description():
                 )
             ),
             launch_arguments={
-                'serial_port': lidarPort
+                'serial_port': lidarPort,
+                'inverted': 'true',
             }.items()
         )
         ld.add_action(rplidar_launch)
