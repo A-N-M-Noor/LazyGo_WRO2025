@@ -22,13 +22,20 @@ def generate_launch_description():
     )
     disable_robot_publisher = LaunchConfiguration('disable_robot_publisher')
 
+    use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use simulation time (Gazebo / bag playback)'
+    )
+    use_sim_time = LaunchConfiguration('use_sim_time')
+
     package_directory = get_package_share_directory('lazysim')
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz',
         arguments=['-d', os.path.join(package_directory, 'config', 'lazySim.rviz'), '--ros-args', '--log-level', 'ERROR'],
-        # parameters=[{'use_sim_time': True}],
+        parameters=[{'use_sim_time': use_sim_time}],
         output='log',
         emulate_tty=False
     )
@@ -38,7 +45,7 @@ def generate_launch_description():
         executable='robot_state_publisher',
         parameters=[
             {'robot_description': Command(['xacro ', os.path.join(package_directory, 'description', 'lazyBot.xacro')])},
-            # {'use_sim_time': True}
+            {'use_sim_time': use_sim_time}
         ],
         condition=UnlessCondition(disable_robot_publisher)
     )
@@ -53,6 +60,7 @@ def generate_launch_description():
     return LaunchDescription([
         disable_state_publisher_arg,
         disable_robot_publisher_arg,
+        use_sim_time_arg,
         rviz_node,
         robot_publisher_node,
         joint_state_publisher
