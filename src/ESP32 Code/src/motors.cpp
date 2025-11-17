@@ -35,13 +35,14 @@ void Motors::speedControlTask(void* pvParameters) {
     extern const float TPM;  // ticks per meter
 
     // Controller parameters (tuned conservatively)
-    const TickType_t periodTicks = pdMS_TO_TICKS(20);  // 50 Hz control
-    const float dt = 0.020f;                           // 20 ms
-    const float kp = 0.006f;                           // proportional gain
-    const float ki = 0.25f;                            // integral gain (per second)
+    const TickType_t periodTicks = pdMS_TO_TICKS(80);  // 12.5 Hz control
+    const float dt = 0.080f;                           // 80 ms
+    const float kp = 0.010f;                           // proportional gain
+    const float ki = 0.12f;                            // integral gain (per second)
     const int maxPWM = 255;
     const int minPWM = 18;        // overcome static friction
-    const int slewPerCycle = 20;  // limit change per cycle
+    const int slewPerCycle = 60;  // limit change per cycle 
+    const float FF_GAIN = 0.0f;   // feedforward: gives a beginning push, set to 0.0 to disable, (0.10-0.40) might help with low speeds  but too much can make car jump
 
     TickType_t lastWake = xTaskGetTickCount();
     Motors* self = static_cast<Motors*>(pvParameters);
@@ -68,11 +69,12 @@ void Motors::speedControlTask(void* pvParameters) {
         if (integrator > 5000.0f) integrator = 5000.0f;
         if (integrator < -5000.0f) integrator = -5000.0f;
 
-        // Convert to PWM delta; ki applies per second, so scale by dt
-        float deltaPWM = kp * err + (ki * dt) * integrator;
-
-        // Incremental control to avoid jumps
-        int desiredPWM = cmdPWM + (int)deltaPWM;
+        // PI correction (integrator in mm*s)
+        float piTerm = kp * err + ki * integrator;
+        // Feedforward term based on desired speed
+        int ff = (int)lroundf(FF_GAIN * target_mms);  // signed
+        // Desired PWM = feedforward + PI correction
+        int desiredPWM = ff + (int)lroundf(piTerm);
 
         // Near-zero target -> stop cleanly
         if (fabsf(target_mms) < 3.0f) {
@@ -105,9 +107,9 @@ void Motors::speedControlTask(void* pvParameters) {
 }
 
 void Motors::begin() {
-    instance = this;               // Set the static instance pointer
-    encoderCount = 0;              // Initialize encoder count
-    target_speed_mms = 0;          // Initialize target speed
+    instance = this;       // Set the static instance pointer
+    encoderCount = 0;      // Initialize encoder count
+    target_speed_mms = 0;  // Initialize target speed
     // Position control removed
 
     // Configure MCPWM for steering servo (Timer 0, Operator A)
@@ -198,8 +200,7 @@ void Motors::setMotorSpeed(float speed_mms) {
 // Position control removed
 
 void Motors::run(int spd_vlu) {
-    spd_vlu = (float)spd_vlu * spdMult;
-
+    // Direct PWM command; do not scale or modify speed target here
     if (spd_vlu == 0) {
         digitalWrite(MOTOR_IN1, LOW);
         digitalWrite(MOTOR_IN2, LOW);
@@ -218,12 +219,12 @@ void Motors::run(int spd_vlu) {
 }
 
 void Motors::stop() {
-    target_speed_mms = 0;   // Signal task to stop
+    target_speed_mms = 0;  // Signal task to stop
     run(0);
 }
 
 void Motors::hardBreak() {
-    target_speed_mms = 0;   // Signal task to stop
+    target_speed_mms = 0;  // Signal task to stop
     digitalWrite(MOTOR_IN1, LOW);
     digitalWrite(MOTOR_IN2, LOW);
     mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 100);  // Hard brake

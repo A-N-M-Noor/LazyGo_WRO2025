@@ -17,13 +17,13 @@ extern const float TPM;  // Ticks per meter
 #define SERVO_MAX_US 2250     // steers robot to the left
 #define SERVO_CENTER_US 1600  // center position for servo (Adjust if needed)
 
-#define MOTOR_IN1 26
-#define MOTOR_IN2 27
+#define MOTOR_IN1 27
+#define MOTOR_IN2 26
 #define MOTOR_PWM 25
 #define MOTOR_ENB 14
 
-#define ENCODER_A 33
-#define ENCODER_B 13
+#define ENCODER_A 13
+#define ENCODER_B 33
 
 // Legacy wheel/encoder constants removed; we use TPM (ticks per meter)
 // #define MOTOR_PWM_FREQ 18000
