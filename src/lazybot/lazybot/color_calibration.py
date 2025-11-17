@@ -178,7 +178,7 @@ frmOptions = createFrame(pane, 3, "ew", columns=2, pack=False)
 threshLbl,      threshSlider =      createSlider(frmOptions, "Selection Threshold", (0, 80), _row = 0, _column = 0, default = 10)
 blurLbl,        blurSlider =        createSlider(frmOptions, "Blur Amount",         (0, 21), _row = 0, _column = 1, default=util.get_main_blur_val())
 maskBlurLbl,    maskBlurSlider =    createSlider(frmOptions, "Mask Blur Amount",    (0, 21), _row = 1, _column = 0, default = util.get_mask_blur_val())
-gammaLbl,       gammaSlider =       createSlider(frmOptions, "Gamma Correction",    (0,  3), _row = 1, _column = 1, default = util.get_gamma_val(), _res = 0.01)
+gammaLbl,       gammaSlider =       createSlider(frmOptions, "Gamma Correction",    (0.1,  3), _row = 1, _column = 1, default = util.get_gamma_val(), _res = 0.01)
 
 pane.updateContent([frmMenu, frmOptions])
 

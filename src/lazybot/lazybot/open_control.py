@@ -6,7 +6,7 @@ from geometry_msgs.msg import Vector3
 
 from std_msgs.msg import Float32, String, Int8MultiArray, Int8
 from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
-from math import pi, radians, degrees, sin, cos
+from math import pi, radians, degrees, sin, cos, sqrt
 import time
 
 class OpenNode(Node):
@@ -37,12 +37,12 @@ class OpenNode(Node):
         self.ranges = []
         self.ints = []
 
-        self.maxSpeed : float = 1.0
+        self.maxSpeed : float = 0.8
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0
         
-        self.front_dist_thresh = 0.6
+        self.front_dist_thresh = 0.7
 
         self.new_lidar_val = False
 
@@ -56,8 +56,10 @@ class OpenNode(Node):
         self.running = False
         self.endOffset = [0.0, 0.0]
 
-        self.get_logger().info('Open Control node has been started.')
+        self.get_logger().info(f'Open Control node has been started - with IS_SIM={self.IS_SIM}')
         self.lastTime = time.time()
+
+        self.lastTurnSpot = Vector3(x=100.0, y=100.0, z=0.0)
     
     def control_loop(self):
         if not self.running:
@@ -77,8 +79,9 @@ class OpenNode(Node):
         leftDist = self.get_dst(90)
         rightDist = self.get_dst(-90)
 
-        if(frontDist < self.front_dist_thresh and not self.turning):
-            pass
+        checkPointDist =  sqrt((self.pos.x - self.lastTurnSpot.x)**2 + (self.pos.y - self.lastTurnSpot.y)**2)
+
+        if(frontDist < self.front_dist_thresh and not self.turning and checkPointDist > 1.0):
             if(self.dir == 0):                
                 if(leftDist > rightDist):
                     self.dir = 1
@@ -94,6 +97,8 @@ class OpenNode(Node):
             
             self.turning = True
             self.get_logger().info(f"Section angle changed: {degrees(self.sectionAngle)}")
+            self.lastTurnSpot.x = self.pos.x
+            self.lastTurnSpot.y = self.pos.y
         elif(leftDist + rightDist < 1.1):            
             pos = leftDist - rightDist
             self.strAngle = self.clamp(

@@ -14,7 +14,7 @@ class Camera:
         self.cap.read()
         
         time.sleep(0.2)
-        self.set_camera_controls(device = src, exposure=300, gain=120, wb_temp=4500, saturation=50)
+        self.set_camera_controls(device = src, exposure=180, gain=120, wb_temp=4500, saturation=50)
         
         self.frame = None
         
@@ -31,7 +31,7 @@ class Camera:
             ["--set-ctrl=exposure_dynamic_framerate=0"],        # disable dynamic framerate
             [f"--set-ctrl=exposure_time_absolute={exposure}"],  # exposure value (set after manual mode)
             [f"--set-ctrl=gain={gain}"],                             # Lock gain to prevent auto-adjustment
-            [f"--set-ctrl=saturation={saturation}"],            # set saturation
+            # [f"--set-ctrl=saturation={saturation}"],            # set saturation
             ["--set-ctrl=white_balance_automatic=0"],           # disable auto WB
             [f"--set-ctrl=white_balance_temperature={wb_temp}"] # set WB manually
         ]

@@ -1,10 +1,10 @@
 # color space used for tuning
 color_space: HSV
 # blur on the main feed
-main_blur: 8
+main_blur: 4
 # blur on the mask to smooth it out
 mask_blur: 4
-gamma: 1.7
+gamma: 0.41999999999999993
 
 # color ranges
 colors:
@@ -12,8 +12,8 @@ colors:
         min: [0, 166, 65]
         max: [21, 206, 105]
     green:
-        min: [38, 33, 32]
-        max: [96, 110, 77]
+        min: [62, 122, 77]
+        max: [85, 252, 133]
     blue:
         min: [164, 109, 10]
         max: [15, 249, 150]

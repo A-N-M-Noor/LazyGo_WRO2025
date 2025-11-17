@@ -13,7 +13,8 @@ def generate_launch_description():
     control = Node(
         package='lazybot',
         executable='open_control',
-        name='open_control'
+        name='open_control',
+        parameters=[{'IS_SIM': False}]
     )
 
     serial = Node(
