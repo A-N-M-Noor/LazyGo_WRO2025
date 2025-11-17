@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+extern const float TPM;  // Ticks per meter
+
 #define SERVO_PIN 18
 #define CAM_SERVO_PIN 17
 #define CAM_SERVO_MIN_US 500
@@ -23,19 +25,15 @@
 #define ENCODER_A 33
 #define ENCODER_B 13
 
-#define WHEEL_DIAMETER_CM 4.829
-#define PULSES_PER_REVOLUTION 400  // Tune this to get correct distance movement
-#define MOTOR_PWM_FREQ 18000       // 18kHz PWM frequency to avoid noise
-#define MOTOR_PWM_CHANNEL 0
+// Legacy wheel/encoder constants removed; we use TPM (ticks per meter)
+// #define MOTOR_PWM_FREQ 18000
+// #define MOTOR_PWM_CHANNEL 0
 
 class Motors {
    private:
     // Servo servo;
     volatile long encoderCount;
-    float target_speed_mms;     // Target speed for PID control
-    float target_position_mm;   // Target position in millimeters
-    float current_position_mm;  // Current position in millimeters
-    bool use_position_control;  // Flag to select position or speed control
+    float target_speed_mms;     // Target speed for PI control (mm/s)
     static Motors* instance;    // Static pointer to the Motors instance
     static void IRAM_ATTR encoderISR();
     static void speedControlTask(void* pvParameters);  // FreeRTOS task for PID control
@@ -45,12 +43,10 @@ class Motors {
     void setServoUs(uint32_t pulse_width_us);  // Set servo pulse width in microseconds
     void setServoAngle(uint8_t angle0to100);   // Set servo angle from 0 to 100 (0% to 100%)
     void setCamServoUs(uint32_t pulse_width_us);
-    void setMotorSpeed(float speed_mms);           // Set motor speed in mm/s (positive for forward, negative for backward)
-    void moveDistance(float cm, float speed_mms);  // Move a distance in centimeters at a specified speed in mm/s
-    void stop();                                   // Stop the motors
-    void hardBreak();                              // Apply a hard brake to the motors
-    long getEncoderCount();                        // Get the current encoder count
-    float getCurrentPosition();                    // Get the current position in millimeters
+    void setMotorSpeed(float speed_mms);   // Set motor speed in mm/s (positive forward, negative reverse)
+    void stop();                           // Stop the motors (speed target = 0)
+    void hardBreak();                      // Apply a hard brake to the motors
+    long getEncoderCount();                // Get the current encoder count
     void run(int spd_vlu);
 };
 

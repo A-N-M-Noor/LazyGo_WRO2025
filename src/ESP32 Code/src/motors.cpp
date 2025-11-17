@@ -3,6 +3,7 @@
 #include <driver/mcpwm.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <math.h>
 
 extern float spdMult;
 // Initialize static member
@@ -19,8 +20,7 @@ void IRAM_ATTR Motors::encoderISR() {
             } else {
                 instance->encoderCount--;
             }
-            // Update current position in millimeters
-            instance->current_position_mm = (instance->encoderCount * PI * WHEEL_DIAMETER_CM * 10.0) / PULSES_PER_REVOLUTION;
+            // Position control removed; keep only encoder count
         }
     }
     lastInterruptTime = interruptTime;
@@ -28,91 +28,79 @@ void IRAM_ATTR Motors::encoderISR() {
 
 // FreeRTOS task for PID speed and position control
 void Motors::speedControlTask(void* pvParameters) {
-    Motors* motors = (Motors*)pvParameters;
-    const uint32_t sample_interval_ms = 100;  // Sample every 100 ms
-    const float kp_speed = 0.3;               // Proportional gain for speed control
-    const float kp_position = 0.5;            // Proportional gain for position control (tuned)
-    const float position_tolerance_mm = 1.0;  // Stop within 1 mm of target
-    float wheel_circumference_mm = PI * WHEEL_DIAMETER_CM * 10.0;
-    float pulses_per_mm = PULSES_PER_REVOLUTION / wheel_circumference_mm;
-    uint8_t pwm_duty = 128;  // Start with 50% duty cycle
-    long prev_encoder_count = 0;
-    unsigned long last_sample_time = millis();
+    // Simple PI speed controller using encoder feedback (mm/s)
+    // Runs periodically with minimal blocking via vTaskDelayUntil.
+
+    // Access global ticks-per-meter defined in main.cpp
+    extern const float TPM;  // ticks per meter
+
+    // Controller parameters (tuned conservatively)
+    const TickType_t periodTicks = pdMS_TO_TICKS(20);  // 50 Hz control
+    const float dt = 0.020f;                           // 20 ms
+    const float kp = 0.006f;                           // proportional gain
+    const float ki = 0.25f;                            // integral gain (per second)
+    const int maxPWM = 255;
+    const int minPWM = 18;        // overcome static friction
+    const int slewPerCycle = 20;  // limit change per cycle
+
+    TickType_t lastWake = xTaskGetTickCount();
+    Motors* self = static_cast<Motors*>(pvParameters);
+    long lastTicks = self->encoderCount;
+    float integrator = 0.0f;
+    int cmdPWM = 0;  // command in -255..255
 
     while (true) {
-        unsigned long current_time = millis();
-        unsigned long delta_time_ms = current_time - last_sample_time;
+        // Measure actual speed (mm/s)
+        long ticksNow = self->encoderCount;
+        long dTicks = ticksNow - lastTicks;
+        lastTicks = ticksNow;
 
-        // Calculate actual speed
-        long delta_pulses = motors->encoderCount - prev_encoder_count;
-        float actual_pulses_per_sec = (delta_pulses * 1000.0) / sample_interval_ms;
-        float actual_speed_mms = abs(actual_pulses_per_sec / pulses_per_mm);
+        float delta_m = (float)dTicks / TPM;        // meters in dt
+        float meas_mms = (delta_m * 1000.0f) / dt;  // mm/s
 
-        if (motors->use_position_control && abs(motors->target_position_mm - motors->current_position_mm) > position_tolerance_mm) {
-            // Position control mode
-            float position_error = motors->target_position_mm - motors->current_position_mm;
-            float commanded_speed_mms = kp_position * position_error;
-            // Limit commanded speed to avoid overshooting
-            commanded_speed_mms = constrain(commanded_speed_mms, -motors->target_speed_mms, motors->target_speed_mms);
+        // Target speed in mm/s (no position control)
+        float target_mms = self->target_speed_mms;
 
-            // Calculate speed error
-            float speed_error = commanded_speed_mms - actual_speed_mms;
-            int pwm_adjust = (int)(kp_speed * speed_error);
-            pwm_duty = constrain(pwm_duty + pwm_adjust, 0, 255);
+        // Basic PI control
+        float err = target_mms - meas_mms;
+        integrator += err * dt;  // integrate error (mm)
+        // Anti-windup clamp
+        if (integrator > 5000.0f) integrator = 5000.0f;
+        if (integrator < -5000.0f) integrator = -5000.0f;
 
-            // Apply direction and PWM
-            if (commanded_speed_mms == 0) {
-                digitalWrite(MOTOR_IN1, LOW);
-                digitalWrite(MOTOR_IN2, LOW);
-                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 0);
-            } else {
-                if (commanded_speed_mms < 0) {
-                    digitalWrite(MOTOR_IN1, HIGH);
-                    digitalWrite(MOTOR_IN2, LOW);
-                } else {
-                    digitalWrite(MOTOR_IN1, LOW);
-                    digitalWrite(MOTOR_IN2, HIGH);
-                }
-                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, (pwm_duty / 255.0) * 100);
-            }
-        } else {
-            // Speed control mode (or stopped)
-            if (motors->use_position_control) {
-                // Reached target position, apply hard brake
-                motors->use_position_control = false;
-                motors->target_speed_mms = 0;
-                motors->target_position_mm = motors->current_position_mm;
-                digitalWrite(MOTOR_IN1, LOW);
-                digitalWrite(MOTOR_IN2, LOW);
-                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 100);  // Hard brake
-            } else if (motors->target_speed_mms == 0) {
-                digitalWrite(MOTOR_IN1, LOW);
-                digitalWrite(MOTOR_IN2, LOW);
-        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 0);
-            } else {
-                // Speed control
-                float target_speed = motors->target_speed_mms;
-                float speed_error = (target_speed > 0 ? target_speed : -target_speed) - actual_speed_mms;
-                int pwm_adjust = (int)(kp_speed * speed_error);
-                pwm_duty = constrain(pwm_duty + pwm_adjust, 0, 255);
+        // Convert to PWM delta; ki applies per second, so scale by dt
+        float deltaPWM = kp * err + (ki * dt) * integrator;
 
-                if (motors->target_speed_mms < 0) {
-                    digitalWrite(MOTOR_IN1, HIGH);
-                    digitalWrite(MOTOR_IN2, LOW);
-                } else {
-                    digitalWrite(MOTOR_IN1, LOW);
-                    digitalWrite(MOTOR_IN2, HIGH);
-                }
-                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, (pwm_duty / 255.0) * 100);
-            }
+        // Incremental control to avoid jumps
+        int desiredPWM = cmdPWM + (int)deltaPWM;
+
+        // Near-zero target -> stop cleanly
+        if (fabsf(target_mms) < 3.0f) {
+            desiredPWM = 0;
+            integrator = 0;
         }
 
-        // Update state
-        prev_encoder_count = motors->encoderCount;
-        last_sample_time = current_time;
+        // Apply deadband when commanding motion
+        if (desiredPWM != 0) {
+            if (desiredPWM > 0 && desiredPWM < minPWM) desiredPWM = minPWM;
+            if (desiredPWM < 0 && desiredPWM > -minPWM) desiredPWM = -minPWM;
+        }
 
-        // Delay until next sample
-        vTaskDelay(pdMS_TO_TICKS(sample_interval_ms));
+        // Slew-rate limit
+        int deltaCmd = desiredPWM - cmdPWM;
+        if (deltaCmd > slewPerCycle) deltaCmd = slewPerCycle;
+        if (deltaCmd < -slewPerCycle) deltaCmd = -slewPerCycle;
+        cmdPWM += deltaCmd;
+
+        // Clamp to valid range
+        if (cmdPWM > maxPWM) cmdPWM = maxPWM;
+        if (cmdPWM < -maxPWM) cmdPWM = -maxPWM;
+
+        // Drive motor
+        self->run(cmdPWM);
+
+        // Keep timing stable without blocking other tasks
+        vTaskDelayUntil(&lastWake, periodTicks);
     }
 }
 
@@ -120,9 +108,7 @@ void Motors::begin() {
     instance = this;               // Set the static instance pointer
     encoderCount = 0;              // Initialize encoder count
     target_speed_mms = 0;          // Initialize target speed
-    target_position_mm = 0;        // Initialize target position
-    current_position_mm = 0;       // Initialize current position
-    use_position_control = false;  // Initialize to speed control
+    // Position control removed
 
     // Configure MCPWM for steering servo (Timer 0, Operator A)
     mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, SERVO_PIN);
@@ -172,15 +158,14 @@ void Motors::begin() {
     mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_2, &motor_pwm);
 
     // Create speed control task pinned to core 0
-    // xTaskCreatePinnedToCore(
-    //     speedControlTask,   // Task function
-    //     "SpeedControlTask", // Task name
-    //     4096,               // Stack size
-    //     this,               // Task parameter (pointer to Motors instance)
-    //     1,                  // Priority
-    //     NULL,               // Task handle
-    //     0                   // Core 0
-    // );
+    xTaskCreatePinnedToCore(
+        [](void* arg) { static_cast<Motors*>(arg)->speedControlTask(arg); },
+        "SpeedControlTask",
+        4096,
+        this,
+        1,
+        nullptr,
+        0);
 }
 
 void Motors::setServoUs(uint32_t pulse_width_us) {
@@ -208,16 +193,9 @@ void Motors::setCamServoUs(uint32_t pulse_width_us) {
 
 void Motors::setMotorSpeed(float speed_mms) {
     target_speed_mms = speed_mms;  // Update target speed for the task
-    use_position_control = false;  // Switch to speed control
 }
 
-void Motors::moveDistance(float cm, float speed_mms) {
-    if (speed_mms == 0)
-        return;                                              // Prevent movement if speed is 0
-    target_speed_mms = abs(speed_mms);                       // Set max speed for position control
-    target_position_mm = current_position_mm + (cm * 10.0);  // Convert cm to mm and add to current position
-    use_position_control = true;                             // Switch to position control
-}
+// Position control removed
 
 void Motors::run(int spd_vlu) {
     spd_vlu = (float)spd_vlu * spdMult;
@@ -240,15 +218,12 @@ void Motors::run(int spd_vlu) {
 }
 
 void Motors::stop() {
-    target_speed_mms = 0;                      // Signal task to stop
-    target_position_mm = current_position_mm;  // Disable position control
-    use_position_control = false;              // Switch to speed control
+    target_speed_mms = 0;   // Signal task to stop
+    run(0);
 }
 
 void Motors::hardBreak() {
-    target_speed_mms = 0;                      // Signal task to stop
-    target_position_mm = current_position_mm;  // Disable position control
-    use_position_control = false;              // Switch to speed control
+    target_speed_mms = 0;   // Signal task to stop
     digitalWrite(MOTOR_IN1, LOW);
     digitalWrite(MOTOR_IN2, LOW);
     mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 100);  // Hard brake
@@ -258,6 +233,4 @@ long Motors::getEncoderCount() {
     return encoderCount;
 }
 
-float Motors::getCurrentPosition() {
-    return current_position_mm;
-}
+// getCurrentPosition removed with position control

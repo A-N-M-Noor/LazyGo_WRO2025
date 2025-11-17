@@ -10,7 +10,6 @@
 
 // Declare external variables from main.cpp
 extern Motors motors;
-extern float TPM;  // Ticks per meter
 // extern float heading; // Removed to fix conflicting declaration error
 int parking_pwm = 60;
 

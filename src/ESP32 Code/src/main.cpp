@@ -12,7 +12,7 @@
 #define ENABLE_HW_TEST 0  // Set to 1 to enable hardware test mode
 #define COMM_SER Serial
 
-float TPM = 871.0;  // Ticks per meter for the wheel encoders
+const float TPM = 1775.0;  // Ticks per meter for the wheel encoders, defined here for convenience
 
 Motors motors;
 int cam_current = CAM_SERVO_CENTER_US;
