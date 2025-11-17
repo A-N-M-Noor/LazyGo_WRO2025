@@ -5,12 +5,12 @@
 #include "io_pins.h"
 
 // Pin and ADC configuration
-#define ADC_PIN 4                // GPIO4 (ADC2_CHANNEL_)
-#define SAMPLES 20                // Number of samples for averaging
-#define VREF 2.2                  // Default reference voltage in volts
-#define VOLTAGE_MULTIPLIER 10     // Calibrate this: Multiplier to scale battery voltage
-#define LOW_VOLTAGE_LIMIT 10.5    // Low voltage threshold in volts
-#define UPDATE_INTERVAL 2 * 1000  // 60 seconds in milliseconds
+#define ADC_PIN 4                   // GPIO4 (ADC2_CHANNEL_)
+#define SAMPLES 20                  // Number of samples for averaging
+#define VREF 2.2                    // Default reference voltage in volts
+#define VOLTAGE_MULTIPLIER 9.58202  // Calibrate this: Multiplier to scale battery voltage
+#define LOW_VOLTAGE_LIMIT 10.5      // Low voltage threshold in volts
+#define UPDATE_INTERVAL 2 * 1000    // 60 seconds in milliseconds
 
 // Global variables
 bool batteryLow = false;

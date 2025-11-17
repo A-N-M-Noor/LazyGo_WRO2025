@@ -13,9 +13,9 @@
 #define IR4_PIN 35
 
 // Buzzer tones
-#define BUZZ_LOW 1000
-#define BUZZ_MID 2000
-#define BUZZ_HIGH 4000
+#define BUZZ_LOW 264
+#define BUZZ_MID 464
+#define BUZZ_HIGH 824
 
 // Initializes GPIO directions and does basic startup indications
 void initIO();

@@ -12,6 +12,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x29, &Wire);  // change 0x28 <-> 0x29
 // Shared variables
 volatile float _heading = 0.0;
 volatile float heading = 0.0;
+volatile float heading_norm = 0.0;
 volatile float positionXY[2] = {0.0, 0.0};  // x, y
 volatile float headingVel = 0.0;
 volatile float pollingRateBNO = 0.0;
@@ -116,7 +117,11 @@ void bnoCalc() {
 
     _heading += dA;
     heading = _heading - offs;
+    heading_norm = fmod(heading, 360);
 
+    if (heading_norm < 0) {
+        heading_norm += 360;
+    }
     prevA = a;
 }
 

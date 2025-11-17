@@ -9,6 +9,7 @@
 
 // Shared variables (safe to read from other tasks)
 extern volatile float heading;           // Heading (deg), offset-corrected
+extern volatile float heading_norm;      // Heading - Normalized between 0 to 360
 extern volatile float offs;              // Heading offset (deg)
 extern volatile float positionXY[2];     // x, y position estimate
 extern volatile float headingVel;        // Speed along heading

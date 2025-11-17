@@ -9,9 +9,10 @@
 #include "motors.h"
 #include "parking_operations.h"
 
-#define ENABLE_HW_TEST 1
+#define ENABLE_HW_TEST 0  // Set to 1 to enable hardware test mode
+#define COMM_SER Serial
 
-float TPM = 1955.0;  // Ticks per meter for the wheel encoders
+float TPM = 871.0;  // Ticks per meter for the wheel encoders
 
 Motors motors;
 int cam_current = CAM_SERVO_CENTER_US;
@@ -41,21 +42,13 @@ int key = 0;
 void srl() {
     if (running) {
         Serial.printf("[%f,%f,%f]\n", -posY, posX, -heading);
-        Serial1.printf("[%f,%f,%f]\n", -posY, posX, -heading);
+        COMM_SER.printf("[%f,%f,%f]\n", -posY, posX, -heading);
     }
 
-    while (Serial1.available()) {
-        int v = Serial1.read();
-        if(v == 84){        // if 'T' is received
-            Serial.println("Yes, communication is ok!");
-            return;
-        }
+    while (COMM_SER.available()) {
+        int v = COMM_SER.read();
         srlTmr = millis();
-        if (v >= 15 && v < 50) {
-            key = v;
-        }
-
-        else if (v == 1) {
+        if (v == 1) {
             command = "right45";
         } else if (v == 2) {
             command = "left45";
@@ -70,6 +63,9 @@ void srl() {
         } else if (v == 7) {
             command = "parkL";
         }
+        else if (v < 50) {
+            key = v;
+        }
 
         if (key != 0 && v >= 50) {
             if (key == 15) {
@@ -79,9 +75,9 @@ void srl() {
                 str_angle = map(v, 50, 250, SERVO_MIN_US, SERVO_MAX_US);
             }
             if (key == 17) {
-                int ang = v - 50;
+                int ang = constrain(v - 50, CAM_SERVO_ANGLE_MIN, CAM_SERVO_ANGLE_MAX);
 
-                int t_us = map(ang, 0, 180, CAM_SERVO_MIN_US, CAM_SERVO_MAX_US);
+                int t_us = map(ang, CAM_SERVO_ANGLE_MIN, CAM_SERVO_ANGLE_MAX, CAM_SERVO_MIN_US, CAM_SERVO_MAX_US);
                 motors.setCamServoUs(t_us);
             }
             key = 0;
@@ -134,19 +130,18 @@ void setup() {
     startOLEDDisplayTask();
     displayText("Wait...");
 
-
     motors.begin();
     initIO();
 
-    while (Serial1.available() > 0)
+    while (COMM_SER.available() > 0)
     {
-        Serial1.read();
+        COMM_SER.read();
     }
 
     startSerialReadTask();  // Serial read task on Core 1
     motors.setServoUs(SERVO_CENTER_US);
     motors.setCamServoUs(CAM_SERVO_CENTER_US);
-
+    bnoCalcOffset(1500);
     // IO initialization (pin modes + startup tones) handled in initIO()
     displayText("All okay!");
     // Startup buzzer pattern
@@ -181,21 +176,21 @@ void setup() {
     startTime = millis();
     running = true;
 
-#if ENABLE_HW_TEST
-    randomSeed(esp_random());
-    while (true) {
-        motors.run(random(-255, 256));
-        motors.setServoUs(random(SERVO_MIN_US, SERVO_MAX_US + 1));
-        motors.setCamServoUs(random(CAM_SERVO_MIN_US, CAM_SERVO_MAX_US + 1));
-        if (random(0, 1000) < 50) {
-            tone(BUZZER_PIN, BUZZ_LOW, 500);
-            digitalWrite(STATUS_LED, HIGH);
-            delay(random(300, 800));
-            digitalWrite(STATUS_LED, LOW);
+    #if ENABLE_HW_TEST
+        randomSeed(esp_random());
+        while (true) {
+            motors.run(random(-255, 256));
+            motors.setServoUs(random(SERVO_MIN_US, SERVO_MAX_US + 1));
+            motors.setCamServoUs(random(CAM_SERVO_MIN_US, CAM_SERVO_MAX_US + 1));
+            if (random(0, 1000) < 50) {
+                tone(BUZZER_PIN, BUZZ_LOW, 500);
+                digitalWrite(STATUS_LED, HIGH);
+                delay(random(300, 800));
+                digitalWrite(STATUS_LED, LOW);
+            }
+            vTaskDelay(random(300, 1500) / portTICK_PERIOD_MS);
         }
-        vTaskDelay(random(300, 1500) / portTICK_PERIOD_MS);
-    }
-#endif
+    #endif
 }
 
 void paaark(int dir) {
@@ -211,7 +206,7 @@ void paaark(int dir) {
         //bnoCalc();
         odometry();
         err = -dir * 90 + dr;
-        Serial1.println(err);
+        COMM_SER.println(err);
         if (frd) {
             turn_angle(target);
         } else {
@@ -232,14 +227,14 @@ void loop() {
         turn_angle(45);
         command = "none";
         Serial.println("Turned");
-        Serial1.println("Turned");
+        COMM_SER.println("Turned");
     }
 
     if (command == "left45") {
         turn_angle(-45);
         command = "none";
         Serial.println("Turned");
-        Serial1.println("Turned");
+        COMM_SER.println("Turned");
     }
 
     if (command == "straight") {
@@ -248,7 +243,7 @@ void loop() {
         turn_angle(0);
         command = "none";
         Serial.println("Done");
-        Serial1.println("Done");
+        COMM_SER.println("Done");
         posX = 0.0;
         posY = 0.0;
     }
@@ -262,7 +257,7 @@ void loop() {
         turn_angle(0);
         command = "none";
         Serial.println("Done");
-        Serial1.println("Done");
+        COMM_SER.println("Done");
         posX = 0.0;
         posY = 0.0;
     }

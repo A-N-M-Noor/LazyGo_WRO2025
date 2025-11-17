@@ -8,6 +8,8 @@
 #define CAM_SERVO_MIN_US 500
 #define CAM_SERVO_MAX_US 2340
 #define CAM_SERVO_CENTER_US 1420
+#define CAM_SERVO_ANGLE_MIN 19
+#define CAM_SERVO_ANGLE_MAX 161
 
 #define SERVO_MIN_US 950      // steers robot to the right
 #define SERVO_MAX_US 2250     // steers robot to the left
