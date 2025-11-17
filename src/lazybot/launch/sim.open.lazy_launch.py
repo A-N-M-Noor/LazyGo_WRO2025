@@ -13,7 +13,7 @@ def generate_launch_description():
         package='lazybot',
         executable='open_control',
         name='open_control',
-        parameters=[{'use_sim_time': True}],
+        parameters=[{'use_sim_time': True, 'IS_SIM': True}],
     )
     
     debug = Node(

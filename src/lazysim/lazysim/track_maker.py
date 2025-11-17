@@ -73,9 +73,10 @@ class TrackMaker(Node):
 
         self.count = 1
         
-        for tower in self.settings['towers']:
-            self.get_logger().info(f"Spawning tower: {tower}")
-            self.spawn_tower(tower)
+        if(self.settings['objects'] == True):
+            for tower in self.settings['towers']:
+                self.get_logger().info(f"Spawning tower: {tower}")
+                self.spawn_tower(tower)
             
         self.spawn_parking(self.settings['parking'])
         self.set_pose('lazyBot', self.settings['start']['pos']['x'], self.settings['start']['pos']['y'], 0.0, self.settings['start']['angle'])

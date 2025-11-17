@@ -12,6 +12,9 @@ import time
 class ControlNode(Node):
     def __init__(self):
         super().__init__('control')
+
+        self.declare_parameter('IS_SIM', False)
+
         self.cmd_sub = self.create_subscription(String, '/cmd', self.cmd_callback, 10)
         self.cmd_pub = self.create_publisher(String, '/cmd', 10)
         
@@ -30,7 +33,7 @@ class ControlNode(Node):
         self.create_timer(0.025, self.odom_loop)
         self.create_timer(0.025, self.control_loop)
 
-        self.IS_SIM = False
+        self.IS_SIM = self.get_parameter('IS_SIM').get_parameter_value().bool_value
         self.IS_OPEN = False
         
         self.dir = 1 #CCW

@@ -12,6 +12,8 @@ import time
 class OpenNode(Node):
     def __init__(self):
         super().__init__('open_control')
+
+        self.declare_parameter('IS_SIM', False)
         
         self.cmd_sub = self.create_subscription(String, '/cmd', self.cmd_callback, 10)
         self.cmd_pub = self.create_publisher(String, '/cmd', 10)
@@ -25,7 +27,7 @@ class OpenNode(Node):
         self.create_timer(0.025, self.odom_loop)
         self.create_timer(0.025, self.control_loop)
 
-        self.IS_SIM = False
+        self.IS_SIM = self.get_parameter('IS_SIM').get_parameter_value().bool_value
         
         self.dir = 0 #CCW : 1 ; CW : -1 ; None : 0
         
@@ -35,12 +37,12 @@ class OpenNode(Node):
         self.ranges = []
         self.ints = []
 
-        self.maxSpeed : float = 0.65
+        self.maxSpeed : float = 1.0
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0
         
-        self.front_dist_thresh = 0.25
+        self.front_dist_thresh = 0.6
 
         self.new_lidar_val = False
 
@@ -63,16 +65,20 @@ class OpenNode(Node):
             return
         
         err = self.sectionAngle - self.pos.z
-        if(abs(err) < 30):
+        if(abs(err) < radians(20)):
             self.turning = False
+        
         sA = self.remap(err, -radians(90), radians(90), -self.strRange, self.strRange)
+        if(self.turning):
+            sA *= 20
         self.strAngle = self.clamp(sA, -self.strRange, self.strRange)
         
         frontDist = self.get_dst(0)
-        leftDist = self.get_dst(-90)
-        rightDist = self.get_dst(90)
-        
-        if(frontDist < self.front_dist_thresh):
+        leftDist = self.get_dst(90)
+        rightDist = self.get_dst(-90)
+
+        if(frontDist < self.front_dist_thresh and not self.turning):
+            pass
             if(self.dir == 0):                
                 if(leftDist > rightDist):
                     self.dir = 1
@@ -88,10 +94,10 @@ class OpenNode(Node):
             
             self.turning = True
             self.get_logger().info(f"Section angle changed: {degrees(self.sectionAngle)}")
-        else:            
+        elif(leftDist + rightDist < 1.1):            
             pos = leftDist - rightDist
             self.strAngle = self.clamp(
-                val = self.remap(pos, -0.5, 0.5, -self.strRange/2, self.strRange/2), 
+                val = self.remap(pos, -0.5, 0.5, -self.strRange/20, self.strRange/20), 
                 mini = -self.strRange/2,
                 maxi = self.strRange/2
             )
@@ -121,20 +127,18 @@ class OpenNode(Node):
             self.get_logger().info("Moving on...")
             self.reached = False
         
-        if self.lapCount >= self.targetLap:
-            self.speedCap = 0.35
-            
+        if self.lapCount >= self.targetLap:            
             self.running = False
             self.get_logger().info("Reached the destination, stopping the robot.")
             self.pubDrive(disable=True)
             return
         
-        if abs(self.pos.z - self.sectionAngle) > radians(80):
-            if(self.pos.z > self.sectionAngle):
-                self.sectionAngle = self.sectionAngle + pi/2
-            else:
-                self.sectionAngle = self.sectionAngle - pi/2
-            self.get_logger().info(f"Section angle changed: {degrees(self.sectionAngle)}")
+        # if abs(self.pos.z - self.sectionAngle) > radians(80):
+        #     if(self.pos.z > self.sectionAngle):
+        #         self.sectionAngle = self.sectionAngle + pi/2
+        #     else:
+        #         self.sectionAngle = self.sectionAngle - pi/2
+        #     self.get_logger().info(f"Section angle changed: {degrees(self.sectionAngle)}")
     
     def pos_callback(self, msg: Vector3):
         self.pos.x = msg.x
@@ -149,7 +153,7 @@ class OpenNode(Node):
             self.running = True
             self.gotWallD = False
             self.get_logger().info("Starting the robot.")
-            self.cmd_pub(String(data="start_open"))
+            self.cmd_pub.publish(String(data="start_open"))
         elif command == "stop":
             self.running = False
             self.get_logger().info("Stopping the robot.")
@@ -161,6 +165,8 @@ class OpenNode(Node):
 
         self.ranges = msg.ranges
         self.ints = msg.intensities
+
+        print(msg.ranges)
         
         if not self.running:
             return
@@ -179,6 +185,7 @@ class OpenNode(Node):
             self.get_logger().info(f"Wall Distance: {self.ranges[wi]:.2f}, End Offset: {self.endOffset}")
             
             self.gotWallD = True
+            self.sectionAngle = self.pos.z
             
             isInside = abs(self.pos.x) < 0.75 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
             
@@ -190,7 +197,7 @@ class OpenNode(Node):
     def fix_missing(self, i):
         if(i < 0 or i >= len(self.ints)):
             return 0
-        if(self.ints[i] > 0.05 and self.ranges[i] <= 3.0):
+        if( self.IS_SIM or self.ints[i] > 0.05 and self.ranges[i] <= 3.0 ):
             return self.ranges[i]
         first = i
         last = i
