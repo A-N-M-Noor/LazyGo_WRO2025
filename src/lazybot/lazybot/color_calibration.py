@@ -325,21 +325,32 @@ class CameraNode(Node):
             self.get_logger().error(f'Camera error: {str(e)}')
         return False
     
+    def getInRange(self, chn, minVal, maxVal, _max = 179):
+        if(minVal <= maxVal):
+            return cv2.inRange(chn, minVal, maxVal)
+        
+        msk = cv2.bitwise_or(cv2.inRange(chn, minVal, _max), cv2.inRange(chn, 0, maxVal))
+        return msk
     
-    def getCollage(self, frame):
+    def getCollage(self, frame, cnt):
         _frm = util.process_mask(frame)[0]
         if _frm is None:
             return None
         h, w = _frm.shape[:2]
+
+        cpFrm = frame.copy()
+        cv2.drawContours(cpFrm, cnt, -1, (0,255,0), 2)
+
         # Resize the frame to half its width and height
-        main = cv2.resize(frame.copy(), (w // 2, h // 2))
+        main = cv2.resize(cpFrm, (w // 2, h // 2))
+
         view = cv2.resize(_frm, (w // 2, h // 2))
                 
         ch1, ch2, ch3 = cv2.split(view)
         
-        msk1 = cv2.inRange(ch1, H_min.get(), H_max.get())
-        msk2 = cv2.inRange(ch2, S_min.get(), S_max.get())
-        msk3 = cv2.inRange(ch3, V_min.get(), V_max.get())
+        msk1 = self.getInRange(ch1, H_min.get(), H_max.get())
+        msk2 = self.getInRange(ch2, S_min.get(), S_max.get())
+        msk3 = self.getInRange(ch3, V_min.get(), V_max.get())
         
 
         # Create a blank canvas of the original size
@@ -348,7 +359,7 @@ class CameraNode(Node):
         # Place the small images in each quadrant
         collage[0:h//2, 0:w//2] = main
         # Top-right: Channel 1 (e.g., Hue/L) as grayscale
-        collage[0:h//2, w//2:w] = cv2.bitwise_and(cv2.merge([ch1, ch1, ch1]), cv2.merge([ch1, ch1, ch1]), mask=msk1)
+        collage[0:h//2, w//2:w] = cv2.bitwise_and(cv2.merge([msk1, msk1, msk1]), cv2.merge([msk1, msk1, msk1]), mask=msk1)
         # Bottom-left: Channel 2 (e.g., Saturation/A) as grayscale
         collage[h//2:h, 0:w//2] = cv2.bitwise_and(cv2.merge([ch2, ch2, ch2]), cv2.merge([ch2, ch2, ch2]), mask=msk2)
         # Bottom-right: Channel 3 (e.g., Value/B) as grayscale
@@ -376,17 +387,19 @@ class CameraNode(Node):
                 cv2.imshow("Processed Mask", thresh)
             elif(cv2.getWindowProperty("Processed Mask", cv2.WND_PROP_VISIBLE) == 1):
                 cv2.destroyWindow("Processed Mask")
-                
+            
+            cnt = util.get_contours(thresh)
+
+            if(swContour.get() == 1):
+                cv2.drawContours(frame, cnt, -1, (0,255,0), 2)
+            
             if(swCollage.get() == 1):
-                collage = self.getCollage(frame)
+                collage = self.getCollage(frame, cnt)
                 if(collage is not None):
                     cv2.imshow("Collage", collage)
             elif(cv2.getWindowProperty("Collage", cv2.WND_PROP_VISIBLE) == 1):
                 cv2.destroyWindow("Collage")
 
-            if(swContour.get() == 1):
-                cnt = util.get_contours(thresh)
-                cv2.drawContours(frame, cnt, -1, (0,255,0), 2)
             
             cv2.imshow("Camera Image", frame)
 
