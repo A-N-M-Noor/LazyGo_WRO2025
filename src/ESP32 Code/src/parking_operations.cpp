@@ -11,7 +11,7 @@
 // Declare external variables from main.cpp
 extern Motors motors;
 // extern float heading; // Removed to fix conflicting declaration error
-int parking_pwm = 60;
+int parking_speed = 90;
 
 // Declare external functions from main.cpp
 extern void bnoCalc();
@@ -38,7 +38,7 @@ void turn_angle(float target_angle) {
         // srl();
 
         error = target_angle - heading;
-        motors.run(parking_pwm);
+        motors.setMotorSpeed(parking_speed);
         if (error > 0) {
             motors.setServoUs(SERVO_MIN_US);  // Turn right
         } else {
@@ -48,10 +48,10 @@ void turn_angle(float target_angle) {
         delay(10);
     }
     // if(abs(initErr) > 30){
-    motors.run(-parking_pwm);
+    motors.setMotorSpeed(-parking_speed);
     delay(80);
     // }
-    motors.run(0);
+    motors.setMotorSpeed(0);
 }
 
 void turn_angle_opp(float target_angle) {
@@ -73,7 +73,7 @@ void turn_angle_opp(float target_angle) {
         // srl();
 
         error = target_angle - heading;
-        motors.run(-parking_pwm);
+        motors.setMotorSpeed(-parking_speed);
         if (error < 0) {
             motors.setServoUs(SERVO_MIN_US);  // Turn right
         } else {
@@ -82,9 +82,9 @@ void turn_angle_opp(float target_angle) {
 
         delay(10);
     }
-    motors.run(parking_pwm);
+    motors.setMotorSpeed(parking_speed);
     delay(80);
-    motors.run(0);
+    motors.setMotorSpeed(0);
 }
 
 void move_pos(float distance) {
@@ -96,9 +96,9 @@ void move_pos(float distance) {
     // srl();
 
     if (tick_target > tick_now) {
-        motors.run(parking_pwm);  // Forward
+        motors.setMotorSpeed(parking_speed);  // Forward
     } else {
-        motors.run(-parking_pwm);  // Backward
+        motors.setMotorSpeed(-parking_speed);  // Backward
     }
 
     while (abs(tick_target - motors.getEncoderCount()) > 10) {
@@ -108,9 +108,9 @@ void move_pos(float distance) {
         delay(20);
     }
 
-    motors.run(-parking_pwm);
+    motors.setMotorSpeed(-parking_speed);
     delay(80);
-    motors.run(0);
+    motors.setMotorSpeed(0);
 }
 
 void head_into() {
@@ -124,7 +124,7 @@ void head_into() {
         trg = -360 * 3;
     }
 
-    motors.run(parking_pwm);
+    motors.setMotorSpeed(parking_speed);
     long tmr = millis();
 
     while (true) {

@@ -69,7 +69,7 @@ void srl() {
 
         if (key != 0 && v >= 50) {
             if (key == 15) {
-                spd = map(v, 50, 250, -255, 255);
+                spd = map(v, 50, 250, -600, 600);
             }
             if (key == 16) {
                 str_angle = map(v, 50, 250, SERVO_MIN_US, SERVO_MAX_US);
@@ -144,12 +144,11 @@ void setup() {
     // IO initialization (pin modes + startup tones) handled in initIO()
     displayText("All okay!");
     // Startup buzzer pattern
-    tone(BUZZER_PIN, BUZZ_LOW, 50);
-    tone(BUZZER_PIN, BUZZ_HIGH, 50);
-    tone(BUZZER_PIN, BUZZ_LOW, 100);
-    tone(BUZZER_PIN, BUZZ_HIGH, 100);
+    tone(BUZZER_PIN, BUZZ_LOW, 250);
+    tone(BUZZER_PIN, BUZZ_HIGH, 250);
+    tone(BUZZER_PIN, BUZZ_LOW, 500);
+    tone(BUZZER_PIN, BUZZ_HIGH, 500);
     noTone(BUZZER_PIN);
-    // motors.run(255);
     while (digitalRead(BUTTON_PIN) == HIGH) {
         //bnoCalc();
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
@@ -165,7 +164,7 @@ void setup() {
     // command = "parkL";
     displayText("");
     motors.setServoUs(SERVO_CENTER_US);         // Center servo position
-    motors.run(0);                              // Stop motors initially
+    motors.setMotorSpeed(0);                              // Stop motors initially
     lastEncoderPos = motors.getEncoderCount();  // Initialize last encoder position
     headingPrev = heading;                      // Initialize previous angle
     posX = 0.0;                                 // Initialize position X
@@ -216,7 +215,7 @@ void paaark(int dir) {
         delay(10);
     }
     command = "into";
-    motors.run(0);
+    motors.setMotorSpeed(0);
     motors.setServoUs(SERVO_CENTER_US);
 }
 
@@ -263,7 +262,7 @@ void loop() {
 
     if (command == "go") {
         //bnoCalc();
-        motors.run(spd);
+        motors.setMotorSpeed(spd);
         motors.setServoUs(str_angle);
         odometry();
         vTaskDelay(10 / portTICK_PERIOD_MS);  // IMPORTANT: Yield to other tasks for 100 milliseconds
@@ -281,7 +280,7 @@ void loop() {
         command = "none";
     }
     if (command == "none") {
-        motors.run(0);
+        motors.setMotorSpeed(0);
         motors.setServoUs(SERVO_CENTER_US);
     }
 }

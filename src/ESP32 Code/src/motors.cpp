@@ -37,11 +37,11 @@ void Motors::speedControlTask(void* pvParameters) {
     // Controller parameters (tuned conservatively)
     const TickType_t periodTicks = pdMS_TO_TICKS(80);  // 12.5 Hz control
     const float dt = 0.080f;                           // 80 ms
-    const float kp = 0.010f;                           // proportional gain
-    const float ki = 0.12f;                            // integral gain (per second)
+    const float kp = 0.04f;                           // proportional gain
+    const float ki = 0.35f;                            // integral gain (per second)
     const int maxPWM = 255;
     const int minPWM = 18;        // overcome static friction
-    const int slewPerCycle = 60;  // limit change per cycle 
+    const int slewPerCycle = 200;  // limit change per cycle 
     const float FF_GAIN = 0.0f;   // feedforward: gives a beginning push, set to 0.0 to disable, (0.10-0.40) might help with low speeds  but too much can make car jump
 
     TickType_t lastWake = xTaskGetTickCount();
