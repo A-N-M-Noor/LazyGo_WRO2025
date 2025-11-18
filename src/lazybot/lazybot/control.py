@@ -79,6 +79,7 @@ class ControlNode(Node):
         self.targetLap = 3
         self.running = False
         self.endOffset = [0.0, 1.5]
+        self.cornerPOS = [(0.0, 1.0), (0.0, -1.0), (2.0, 1.0), (2.0, -1.0), (-2.0, 1.0), (-2.0, -1.0)]
 
         self.objs = []
         self.cont_stack = []
@@ -231,12 +232,11 @@ class ControlNode(Node):
             self.targetD = maxD
             
             corner = False
+
+            inCorner = self.isInCorner()
             
-            if(self.get_dst(-90) + self.get_dst(90) > 1.3):
-                corner = self.prevent_full_turn(self.objs[0] if self.objs else None)
-                
-            if(not corner):
-                corner = -self.prevent_corner(self.objs[0] if self.objs else None)
+            if(inCorner):
+                corner = self.corner_handling(self.objs[0] if self.objs else None)
             
             self.targetAng = degrees(self.targetAng)
             
@@ -255,53 +255,43 @@ class ControlNode(Node):
             self.pubDebugPoint()
             self.new_lidar_val = False
 
-    def prevent_full_turn(self, obj):
-        if(self.IS_OPEN):
-            return False
+    def corner_handling(self, obj):
         if(obj is None):
-            return False
-        ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
-        return degrees(obj['ang'] + ang)
-    
-    def prevent_corner(self, obj):
-        if(self.IS_OPEN):
-            return False
-        rel_sec = self.sectionAngle - self.pos.z
-        
-        if(self.targetD < 1.2 and (obj is None or abs(obj['ang']) > radians(60))):
-            
-            if(rel_sec*self.dir > 0):
+            if(self.get_dst(0) < 0.5):
                 return self.dir*90.0
+        else:
+            ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
+            return degrees(obj['ang'] + ang)
         
         return False
-    # def prevent_corner_and_turn(self, obj):
-    #     return False
 
-    #     targetI = self.a2i(radians(self.targetAng))
-    #     frontI = self.a2i(0.0)
-        
-    #     if(targetI < 0 or targetI >= len(self.ranges)):
+    # def prevent_full_turn(self, obj):
+    #     if(self.IS_OPEN):
     #         return False
-        
-    #     self.ranges[targetI] = self.fix_missing(targetI)
-    #     self.ranges[frontI] = self.fix_missing(frontI)
-
+    #     if(obj is None):
+    #         return False
+    #     ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
+    #     return degrees(obj['ang'] + ang)
+    
+    # def prevent_corner(self, obj):
+    #     if(self.IS_OPEN):
+    #         return False
     #     rel_sec = self.sectionAngle - self.pos.z
-    #     rel_target = self.targetAng - rel_sec
         
-    #     if(self.dir == 1):
-    #         if(self.closest == "G" and obj is not None):
-    #             if(rel_target > pi/4 and self.targetD > 0.8 and obj['dst'] < 0.8):
-    #                 self.targetAng = obj['ang'] + self.clearance_ang(obj['dst'])
-    #                 self.get_logger().info(f"\n>>> a{self.targetAng:.2f}, rs{degrees(rel_sec):.2f}, rt{degrees(rel_target):.2f}, d{self.targetD:.2f}, od{obj['dst']:.2f}, oa{degrees(obj['ang']):.2f}, ta:{degrees(self.targetAng):.2f}")
-    #                 return False
+    #     if(self.targetD < 1.2 and (obj is None or abs(obj['ang']) > radians(60))):
+            
+    #         if(rel_sec*self.dir > 0):
+    #             return self.dir*90.0
         
-    #     if(self.ranges[targetI] > 0.8 and self.ranges[frontI] > 0.30):
-    #         return False
-        
-    #     if obj is None or abs(obj['ang']) > radians(60):
-    #         return self.dir
-        
+    #     return False
+    
+    def isInCorner(self):
+        for corner in self.cornerPOS:
+            isIn = abs(self.pos.x - corner[0]) < 0.5 and abs(self.pos.y - corner[1]) < 0.5
+            if isIn:
+                return True
+        return False
+    
     def pos_callback(self, msg: Vector3):
         self.pos.x = msg.x
         self.pos.y = msg.y
