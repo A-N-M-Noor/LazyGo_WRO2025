@@ -124,7 +124,6 @@ void setup() {
 
     Serial1.begin(115200, SERIAL_8N1, 23, 19);
     Serial.begin(115200);
-    // while (!Serial)
 
     initOLED();
     startOLEDDisplayTask();
