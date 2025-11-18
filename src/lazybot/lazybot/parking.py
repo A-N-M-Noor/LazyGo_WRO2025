@@ -21,6 +21,7 @@ class Parking(Node):
         
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
         self.pos_sub = self.create_subscription(Vector3, '/lazypos', self.pos_callback, 10)
+        self.offs_pub = self.create_publisher(Vector3, '/initial_offset', 10)
         
         self.debug_sub = self.create_subscription(BotDebugInfo, '/lazybot/debug', self.debug_callback, 10)
         
@@ -72,6 +73,31 @@ class Parking(Node):
                     self.obj = clr
                 self.set_state_table(self.obj)
             
+            if(self.state == "Offset_Calc"):
+                time.sleep(1.0)
+                l = self.get_dst(90)
+                r = self.get_dst(-90)
+                offx = 0.0
+                offy = 0.0
+
+                if(self.park_dir == "R"):
+                    offx = r - 0.5
+                else:
+                    offx = 0.5 - l
+                offy = 1.5 - self.get_dst(0)
+
+                f = self.get_dst(0)
+                self.state = "Idle"
+                self.park_dir = "_"            
+                self.send_c(5)
+                self.cmd_pub.publish(String(data="start"))
+                self.initial_offset = Vector3()
+                self.initial_offset.x = offy
+                self.initial_offset.y = offx
+                self.initial_offset.z = 0.0
+                self.offs_pub.publish(self.initial_offset)
+                self.get_logger().info(f"Initial Offset set to: x={offx:.2f}, y={offy:.2f}")
+            
             time.sleep(0.1)
     
     def set_state_table(self, obj):
@@ -104,10 +130,7 @@ class Parking(Node):
         if(msg.data == "Turned"):
             self.state = "Turned"
         if(msg.data == "Done"):
-            self.state = "Idle"
-            self.park_dir = "_"
-            self.send_c(5)
-            self.cmd_pub.publish(String(data="start"))
+            self.state = "Offset_Calc"
     
     def lidar_callback(self, msg: LaserScan):
         self.angMin = msg.angle_min

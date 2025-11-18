@@ -20,6 +20,7 @@ class SerNode(Node):
         self.thr_sub = self.create_subscription(Float32, '/throttle', self.thr_callback, 1)
         self.str_sub = self.create_subscription(Float32, '/steer', self.steer_callback, 1)
         self.cam_sub = self.create_subscription(Int8, '/cam_servo', self.cam_callback, 1)
+        self.offs_sub = self.create_subscription(Vector3, '/initial_offset', self.offs_callback, 10)
         
         self.esp_cmd_sub = self.create_subscription(Int8, '/esp_cmd', self.esp_cmd_callback, 1)
 
@@ -28,6 +29,9 @@ class SerNode(Node):
         self.cam = 0.0
         self.ser = None
         self.isDone = False
+
+        self.offx = 0.0
+        self.offy = 0.0
         
         self.establish_ser()
             
@@ -41,6 +45,10 @@ class SerNode(Node):
         else:
             self.get_logger().error('Failed to establish serial connection to ESP32')
 
+    def offs_callback(self, msg: Vector3):
+        self.offx = msg.x
+        self.offy = msg.y
+        self.get_logger().info(f'Received initial offset: x={self.offx}, y={self.offy}')
     
     def cmd_callback(self, msg: String):
         if(msg.data == "completeR"):
@@ -176,8 +184,8 @@ class SerNode(Node):
                                     y = float(parts[1])
                                     theta = float(parts[2])
                                     pos_msg = Vector3()
-                                    pos_msg.x = x
-                                    pos_msg.y = y
+                                    pos_msg.x = x + self.offx
+                                    pos_msg.y = y + self.offy
                                     pos_msg.z = radians(theta)
                                     self.pos_pub.publish(pos_msg)
                                 else:
