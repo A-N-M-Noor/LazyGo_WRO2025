@@ -186,6 +186,7 @@ class SerNode(Node):
                                     pos_msg = Vector3()
                                     pos_msg.x = x + self.offx
                                     pos_msg.y = y + self.offy
+                                    # self.get_logger().info(f"publishing msg {pos_msg.x}, {pos_msg.y}")
                                     pos_msg.z = radians(theta)
                                     self.pos_pub.publish(pos_msg)
                                 else:

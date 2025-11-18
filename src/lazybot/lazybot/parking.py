@@ -77,26 +77,27 @@ class Parking(Node):
                 time.sleep(1.0)
                 l = self.get_dst(90)
                 r = self.get_dst(-90)
+                f = self.get_dst(0)
                 offx = 0.0
                 offy = 0.0
 
                 if(self.park_dir == "R"):
                     offx = r - 0.5
                 else:
-                    offx = 0.5 - l
-                offy = 1.5 - self.get_dst(0)
+                    offx = l - 0.5
+                
+                offy = 1.5 - f
 
-                f = self.get_dst(0)
                 self.state = "Idle"
                 self.park_dir = "_"            
                 self.send_c(5)
                 self.cmd_pub.publish(String(data="start"))
                 self.initial_offset = Vector3()
-                self.initial_offset.x = offy
-                self.initial_offset.y = offx
+                self.initial_offset.x = offx
+                self.initial_offset.y = offy
                 self.initial_offset.z = 0.0
                 self.offs_pub.publish(self.initial_offset)
-                self.get_logger().info(f"Initial Offset set to: x={offx:.2f}, y={offy:.2f}")
+                self.get_logger().info(f"Initial Offset set to: x={offx:.2f}, y={offy:.2f}, f={f:.2f}")
             
             time.sleep(0.1)
     

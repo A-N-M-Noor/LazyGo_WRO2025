@@ -78,7 +78,7 @@ class ControlNode(Node):
         self.lapCount = 0
         self.targetLap = 3
         self.running = False
-        self.endOffset = [0.0, 0.0]
+        self.endOffset = [0.0, 1.5]
 
         self.objs = []
         self.cont_stack = []
@@ -109,7 +109,7 @@ class ControlNode(Node):
         if not self.running or not self.gotWallD:
             self.pubDrive(disable=True)
             return
-        isInside = abs(self.pos.x) < 0.75 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
+        isInside = abs(self.pos.x) < 0.5 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
         if not self.reached:
             if isInside:
                 self.reached = True
@@ -191,8 +191,8 @@ class ControlNode(Node):
                 self.ranges[wi] = self.fix_missing(wi)
                 self.ints[wi] = 1.0
             
-            self.endOffset[0] = self.ranges[wi] - 1.5
-            self.endOffset[1] = self.ranges[wi] - 0.5
+            # self.endOffset[0] = self.ranges[wi] - 1.5
+            # self.endOffset[1] = self.ranges[wi] - 0.5
             
             self.get_logger().info(f"Wall Distance: {self.ranges[wi]:.2f}, End Offset: {self.endOffset}")
             
@@ -236,7 +236,7 @@ class ControlNode(Node):
                 corner = self.prevent_full_turn(self.objs[0] if self.objs else None)
                 
             if(not corner):
-                corner = self.prevent_corner(self.objs[0] if self.objs else None)
+                corner = -self.prevent_corner(self.objs[0] if self.objs else None)
             
             self.targetAng = degrees(self.targetAng)
             
