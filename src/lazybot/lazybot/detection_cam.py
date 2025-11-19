@@ -21,6 +21,7 @@ class Detect(Node):
         self.compressed = True
         
         self.cmd_pub = self.create_publisher(String, 'cmd', 10)
+        self.cmd_sub = self.create_subscription(String, 'cmd', self.cmd_callback, 10)
         self.cam = Camera("/dev/v4l/by-id/usb-046d_081b_61C8A860-video-index0")
         
         self.obj_pub = self.create_publisher(DetectionTowerList, 'lazy_towers', 3)
@@ -59,6 +60,10 @@ class Detect(Node):
 
         self.get_logger().info('DetectionNode started, waiting for images...')
 
+    def cmd_callback(self, msg: String):
+        if(msg.data == "CONF_CAM"):
+            self.sent_img_conf = False
+    
     def mouseClick(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
             if len(self.objs) > 0:

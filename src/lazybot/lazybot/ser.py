@@ -180,6 +180,9 @@ class SerNode(Node):
                             self.pub_cmd("Done")
                             self.isDone = True
                         
+                        if data == "CONF_CAM":
+                            self.pub_cmd("CONF_CAM")
+                        
                         if data.startswith('[') and data.endswith(']'):
                             try:
                                 parts = data[1:-1].split(',')

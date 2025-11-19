@@ -44,8 +44,10 @@ class ControlNode(Node):
         self.ranges = []
         self.ints = []
 
-        self.maxSpeed : float = 0.65
+        self.maxSpeed : float = 0.70
         self.speedCap : float = 0.45
+        self.targetCap : float = 0.45
+        self.speedCapRng = [0.40, 0.65]
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0
@@ -78,7 +80,7 @@ class ControlNode(Node):
         self.lapCount = 0
         self.targetLap = 3
         self.running = False
-        self.endOffset = [0.0, 1.5]
+        self.endOffset = [0.0, 1.0]
         self.cornerPOS = [(0.0, 1.0), (0.0, -1.0), (2.0, 1.0), (2.0, -1.0), (-2.0, 1.0), (-2.0, -1.0)]
 
         self.objs = []
@@ -110,7 +112,7 @@ class ControlNode(Node):
         if not self.running or not self.gotWallD:
             self.pubDrive(disable=True)
             return
-        isInside = abs(self.pos.x) < 0.5 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
+        isInside = abs(self.pos.x) < 0.6 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
         if not self.reached:
             if isInside:
                 self.reached = True
@@ -170,9 +172,6 @@ class ControlNode(Node):
         
     def lidar_callback(self, msg: LaserScan):
         self.new_lidar_val = True
-        
-        self.dt = time.time() - self.lastTime
-        self.lastTime = time.time()
 
         self.angMin = msg.angle_min
         self.angMax = msg.angle_max
@@ -201,7 +200,7 @@ class ControlNode(Node):
             
             isInside = abs(self.pos.x) < 0.75 and self.pos.y > self.endOffset[0] and self.pos.y < self.endOffset[1]
             
-            if not isInside:
+            if not isInside and self.pos.y < 0.5:
                 self.lapCount = -1
                 self.get_logger().info(f"Robot is outside the area, setting lap count to {self.lapCount}.")
 
@@ -210,6 +209,9 @@ class ControlNode(Node):
             if(not self.new_lidar_val):
                 time.sleep(0.01)
                 continue
+
+            self.dt = time.time() - self.lastTime
+            self.lastTime = time.time()
 
             self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
 
@@ -233,11 +235,18 @@ class ControlNode(Node):
             
             corner = False
 
-            inCorner = self.isInCorner()
-            
-            if(inCorner):
+            if(self.isInCorner(0.75)):
                 corner = self.corner_handling(self.objs[0] if self.objs else None)
             
+
+            self.targetCap = self.speedCapRng[1]
+            if(self.isInCorner(0.15)):
+                self.targetCap = self.speedCapRng[0]
+            if(self.targetCap < self.speedCap):
+                self.speedCap = self.targetCap
+            else:
+                self.speedCap = self.lerp(self.speedCap, self.targetCap, min(self.dt*5, 1.0))
+
             self.targetAng = degrees(self.targetAng)
             
             if(corner and not self.IS_OPEN):
@@ -257,7 +266,7 @@ class ControlNode(Node):
 
     def corner_handling(self, obj):
         if(obj is None):
-            if(self.get_dst(0) < 0.5):
+            if(self.get_dst(0) < 0.6):
                 return self.dir*90.0
         else:
             ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
@@ -285,9 +294,9 @@ class ControlNode(Node):
         
     #     return False
     
-    def isInCorner(self):
+    def isInCorner(self, bleeding = 0.0):
         for corner in self.cornerPOS:
-            isIn = abs(self.pos.x - corner[0]) < 0.5 and abs(self.pos.y - corner[1]) < 0.5
+            isIn = abs(self.pos.x - corner[0]) < 0.50 + bleeding and abs(self.pos.y - corner[1]) < 0.50 + bleeding
             if isIn:
                 return True
         return False

@@ -66,7 +66,7 @@ class Parking(Node):
                     self.state = "TurningLeft"
             
             if(self.state == "Turned"):
-                time.sleep(3.0)
+                time.sleep(0.5)
                 clr = "N"
                 if(len(self.objs) > 0):
                     clr = self.objs[0]["color"]
