@@ -20,6 +20,7 @@ class Detect(Node):
         
         self.compressed = True
         
+        self.cmd_pub = self.create_publisher(String, 'cmd', 10)
         self.cam = Camera("/dev/v4l/by-id/usb-046d_081b_61C8A860-video-index0")
         
         self.obj_pub = self.create_publisher(DetectionTowerList, 'lazy_towers', 3)
@@ -29,7 +30,8 @@ class Detect(Node):
         self.frame = None
         self.image = np.zeros((480, 640, 3), dtype=np.uint8)
         self.image.fill(255)
-        
+        self.sent_img_conf = False
+
         self.imsg = None
         self.lastImgTime = None
         self.lastProcTime = None
@@ -67,6 +69,10 @@ class Detect(Node):
         if(frame is None):
             self.get_logger().error("No Frame")
             return
+
+        if(not self.sent_img_conf):
+            self.cmd_pub.publish(String(data="CAM_OK"))
+            self.sent_img_conf = True
 
         self.frame = frame
         self.objs = []

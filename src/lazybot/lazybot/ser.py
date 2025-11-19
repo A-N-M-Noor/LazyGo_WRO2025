@@ -52,16 +52,19 @@ class SerNode(Node):
     
     def cmd_callback(self, msg: String):
         if(msg.data == "completeR"):
-            self.send_val(6, 100)
+            self.send_val(6)
             self.isDone = True
         elif(msg.data == "completeL"):
-            self.send_val(7, 100)
+            self.send_val(7)
             self.isDone = True
         elif(msg.data == "start_open"):
             self.cmd_pub.publish(String(data="start"))
-            self.send_val(5, 100)
+            self.send_val(5)
             self.get_logger().info('Sent start command to ESP32')
             self.isDone = True
+        elif(msg.data == "CAM_OK"):
+            self.get_logger().info('Received CAM_OK command')
+            self.send_val(49)
     
     def printSerialDetails(self, port):
         print(f'Port device: {port.device}')
@@ -96,13 +99,14 @@ class SerNode(Node):
                 else:
                     self.get_logger().info(f'Skipping non-USB port: {port.device}')
 
-    def send_val(self, k, v):
+    def send_val(self, k, v = None):
         if self.ser is None or not self.ser.is_open:
             self.get_logger().error('Serial connection is not available.')
             return
         try:
             self.ser.write(k.to_bytes(1, 'little'))
-            self.ser.write(v.to_bytes(1, 'little'))
+            if v is not None:
+                self.ser.write(v.to_bytes(1, 'little'))
         except Exception as e:
             self.get_logger().error(f'Error writing to serial: {e}')
     
