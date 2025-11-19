@@ -65,7 +65,7 @@ class Parking(Node):
                     self.send_c(2)
                     self.state = "TurningLeft"
             
-            if(self.state == "Turned"):
+            elif(self.state == "Turned"):
                 time.sleep(0.5)
                 clr = "N"
                 if(len(self.objs) > 0):
@@ -73,7 +73,7 @@ class Parking(Node):
                     self.obj = clr
                 self.set_state_table(self.obj)
             
-            if(self.state == "Offset_Calc"):
+            elif(self.state == "Offset_Calc"):
                 time.sleep(1.0)
                 l = self.get_dst(90)
                 r = self.get_dst(-90)
@@ -99,23 +99,25 @@ class Parking(Node):
                 self.get_logger().info(f"Initial Offset set to: x={offx:.2f}, y={offy:.2f}, f={f:.2f}")
             
 
-            if(self.state == "RunEnd"):
+            elif(self.state == "RunEnd"):
                 self.send_c(6)
                 self.state = "Idle"
             
-            if(self.state == "Oriented"):
+            elif(self.state == "Oriented"):
                 f = self.get_dst(0)
                 tomove = f - 0.95
+                self.get_logger().info(f"Oriented: Dist: {f}, Moving {tomove:.2f} m")
                 self.cmd_pub.publish(String(data=f"MOVE:{tomove:.2f}"))
                 self.state = "Idle"
-            if(self.state == "ParkReady"):
+            elif(self.state == "ParkReady"):
                 if(self.park_dir == "R"):
                     self.send_c(8)
                 else:
                     self.send_c(9)
                 self.state = "Idle"
             
-            if(self.state == "Inside"):
+            elif(self.state == "Inside"):
+                self.get_logger().info("Deciding exit direction")
                 l = self.get_dst(90)
                 r = self.get_dst(-90)
 
