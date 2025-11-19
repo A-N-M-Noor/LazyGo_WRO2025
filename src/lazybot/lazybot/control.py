@@ -78,7 +78,7 @@ class ControlNode(Node):
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
-        self.targetLap = 3
+        self.targetLap = 1
         self.running = False
         self.endOffset = [0.0, 1.0]
         self.cornerPOS = [(0.0, 1.0), (0.0, -1.0), (2.0, 1.0), (2.0, -1.0), (-2.0, 1.0), (-2.0, -1.0)]
@@ -126,20 +126,12 @@ class ControlNode(Node):
         if self.lapCount >= self.targetLap:
             self.speedCap = 0.35
             
-            self.running = False
-            self.get_logger().info("Reached the destination, stopping the robot.")
-            self.pubDrive(disable=True)
-            return
-            
-            # if(abs(self.pos.y) < 0.05):
-            #     self.running = False
-            #     self.get_logger().info("Reached the destination, stopping the robot.")
-            #     self.pubDrive(disable=True)
-            #     if(self.dir == 1):
-            #         self.cmd_pub.publish(String(data="completeR"))
-            #     else:
-            #         self.cmd_pub.publish(String(data="completeL"))
-            #     return
+            if(self.pos.y > 0.2):
+                self.running = False
+                self.get_logger().info("Reached the destination, stopping the robot.")
+                self.pubDrive(disable=True)
+                self.cmd_pub.publish(String(data="RunEnd"))
+                return
         
         if abs(self.pos.z - self.sectionAngle) > radians(80):
             if(self.pos.z > self.sectionAngle):

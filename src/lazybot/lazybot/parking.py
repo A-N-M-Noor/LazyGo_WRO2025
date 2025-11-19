@@ -38,7 +38,7 @@ class Parking(Node):
         self.pos = Vector3()
         
         self.state = "Idle"
-        self.park_dir = "_"
+        self.park_dir = "R"
         
         self.parking_thread = Thread(target=self.parking_loop)
         self.parking_thread.daemon = True
@@ -88,8 +88,7 @@ class Parking(Node):
                 
                 offy = 1.5 - f
 
-                self.state = "Idle"
-                self.park_dir = "_"            
+                self.state = "Idle"          
                 self.send_c(5)
                 self.cmd_pub.publish(String(data="start"))
                 self.initial_offset = Vector3()
@@ -99,6 +98,32 @@ class Parking(Node):
                 self.offs_pub.publish(self.initial_offset)
                 self.get_logger().info(f"Initial Offset set to: x={offx:.2f}, y={offy:.2f}, f={f:.2f}")
             
+
+            if(self.state == "RunEnd"):
+                self.send_c(6)
+                self.state = "Idle"
+            
+            if(self.state == "Oriented"):
+                f = self.get_dst(0)
+                tomove = f - 0.95
+                self.cmd_pub.publish(String(data=f"MOVE:{tomove:.2f}"))
+                self.state = "Idle"
+            if(self.state == "ParkReady"):
+                if(self.park_dir == "R"):
+                    self.send_c(8)
+                else:
+                    self.send_c(9)
+                self.state = "Idle"
+            
+            if(self.state == "Inside"):
+                l = self.get_dst(90)
+                r = self.get_dst(-90)
+
+                if(r > l):
+                    self.send_c(10)
+                else:
+                    self.send_c(11)
+                self.state = "Idle"
             time.sleep(0.1)
     
     def set_state_table(self, obj):
@@ -132,6 +157,14 @@ class Parking(Node):
             self.state = "Turned"
         if(msg.data == "Done"):
             self.state = "Offset_Calc"
+        if(msg.data == "RunEnd"):
+            self.state = "RunEnd"
+        if(msg.data == "Oriented"):
+            self.state = "Oriented"
+        if(msg.data == "ParkReady"):
+            self.state = "ParkReady"
+        if(msg.data == "Inside"):
+            self.state = "Inside"
     
     def lidar_callback(self, msg: LaserScan):
         self.angMin = msg.angle_min

@@ -51,20 +51,31 @@ class SerNode(Node):
         self.get_logger().info(f'Received initial offset: x={self.offx}, y={self.offy}')
     
     def cmd_callback(self, msg: String):
-        if(msg.data == "completeR"):
-            self.send_val(6)
-            self.isDone = True
-        elif(msg.data == "completeL"):
-            self.send_val(7)
+        if(msg.data == "RunEnd"):
             self.isDone = True
         elif(msg.data == "start_open"):
             self.cmd_pub.publish(String(data="start"))
             self.send_val(5)
             self.get_logger().info('Sent start command to ESP32')
             self.isDone = True
+        
         elif(msg.data == "CAM_OK"):
             self.get_logger().info('Received CAM_OK command')
             self.send_val(49)
+        
+        elif(msg.data.startswith("MOVE:")):
+            try:
+                distance = float(msg.data.split(":")[1])
+                move_val = int(distance * 100)  # Convert to cm
+                if(move_val < -50):
+                    move_val = -50
+                if(move_val > 50):
+                    move_val = 50
+                self.send_val(7, move_val*2 + 150)
+                self.get_logger().info(f'Sent MOVE command with distance: {distance} m')
+            except ValueError:
+                self.get_logger().error(f'Invalid MOVE command format: {msg.data}')
+
     
     def printSerialDetails(self, port):
         print(f'Port device: {port.device}')
@@ -142,8 +153,7 @@ class SerNode(Node):
             return
         try:
             if(not self.isDone):
-                v = 10
-                self.ser.write(v.to_bytes(1, 'little'))
+                self.send_val(48)
                 return
         
             self.send_val(15, int(self.thr * 100)+150)
@@ -179,7 +189,19 @@ class SerNode(Node):
                             self.get_logger().info('Done Bot')
                             self.pub_cmd("Done")
                             self.isDone = True
+
+                        if data == "Oriented":
+                            self.get_logger().info('Oriented Bot')
+                            self.pub_cmd("Oriented")
                         
+                        if data == "ParkReady":
+                            self.get_logger().info('ParkReady Bot')
+                            self.pub_cmd("ParkReady")
+                        
+                        if data == "Inside":
+                            self.get_logger().info('Inside Bot')
+                            self.pub_cmd("Inside")
+                            
                         if data == "CONF_CAM":
                             self.pub_cmd("CONF_CAM")
                         
