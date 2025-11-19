@@ -71,8 +71,9 @@ class SerNode(Node):
                     move_val = -50
                 if(move_val > 50):
                     move_val = 50
-                self.send_val(7, move_val*2 + 150)
-                self.get_logger().info(f'Sent MOVE command with distance: {distance} m')
+                move_val = move_val*2 + 150
+                self.send_val(7, move_val)
+                self.get_logger().info(f'Sent MOVE command with distance: {move_val}')
             except ValueError:
                 self.get_logger().error(f'Invalid MOVE command format: {msg.data}')
 
