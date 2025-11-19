@@ -62,6 +62,8 @@ void srl() {
             command = "parkR";
         } else if (v == 7) {
             command = "parkL";
+        } else if (v == 49) {
+            tone(BUZZER_PIN, BUZZ_MID, 250);
         }
         else if (v < 50) {
             key = v;
@@ -144,10 +146,8 @@ void setup() {
     // IO initialization (pin modes + startup tones) handled in initIO()
     displayText("All okay!");
     // Startup buzzer pattern
-    tone(BUZZER_PIN, BUZZ_LOW, 250);
     tone(BUZZER_PIN, BUZZ_HIGH, 250);
-    tone(BUZZER_PIN, BUZZ_LOW, 500);
-    tone(BUZZER_PIN, BUZZ_HIGH, 500);
+    tone(BUZZER_PIN, BUZZ_MID, 250);
     noTone(BUZZER_PIN);
     while (digitalRead(BUTTON_PIN) == HIGH) {
         //bnoCalc();
@@ -155,11 +155,12 @@ void setup() {
     }
     while (digitalRead(BUTTON_PIN) == LOW) {
         //bnoCalc();
-        tone(BUZZER_PIN, BUZZ_HIGH, 200);
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
     }
     bnoCalcOffset(200);    // Adjust offset as soon as button is released
-
+    
+    tone(BUZZER_PIN, BUZZ_HIGH, 500);
+    
     Serial.println(F("Boot"));
     // command = "parkL";
     displayText("");
