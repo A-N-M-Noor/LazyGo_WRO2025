@@ -6,7 +6,7 @@ from geometry_msgs.msg import Vector3
 
 from std_msgs.msg import Float32, Float32MultiArray, String, Int8MultiArray, Int8
 from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
-from math import pi, radians, degrees, sin, cos
+from math import pi, radians, degrees, sin, cos, inf
 import time
 
 class ControlNode(Node):
@@ -212,10 +212,15 @@ class ControlNode(Node):
             if(self.pos.y < 0.5 and self.pos.y > -0.5 and abs(self.pos.x) < 0.5):
                 self.castR = self.castRange[2]
 
+
+            self.objs = []
+            self.cont_stack = []
+            self.findOBJs()
+            self.objs.sort(key=lambda x: x["dst"], reverse=False)
+
             self.pubObjData()
 
             maxD, tA = self.getMaxDOBJ()
-            self.objs.sort(key=lambda x: x["dst"], reverse=False)
 
             
             for obj in self.objs:
@@ -251,6 +256,7 @@ class ControlNode(Node):
                 self.targetAng = corner
 
 
+            
             self.targetAng = self.dangerSense(self.targetAng)
 
             sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
@@ -310,14 +316,13 @@ class ControlNode(Node):
         
         chkRng = self.indRng(-self.lookRng, self.lookRng)
 
-        self.objs = []
-        self.cont_stack = []
-
         remove = "None" 
         if self.closest == "G":
             remove = "Right"
+            chkRng[0] = self.objs[0]["index"] if len(self.objs) > 0 else chkRng[0]
         elif self.closest == "R":
             remove = "Left"
+            chkRng[1] = self.objs[0]["index"] if len(self.objs) > 0 else chkRng[1]
         
         for i in range(chkRng[0], chkRng[1], self.skip1):
             if(self.IS_SIM): self.ints[i] = 1.0
@@ -334,18 +339,19 @@ class ControlNode(Node):
                 _max = dt
                 
             
-            objectFound = self.detectContrast(i)
+            # # objectFound = self.detectContrast(i)
+            # objectFound = self.objs[0] if len(self.objs) > 0 else None
             
-            if objectFound:
-                # if abs(_max["ang"]) > pi/3:
-                #     if self.prevent_full_turn(_max):
-                #         self.get_logger().info(f"Preventing full turn: {_max['ang']}")
-                #         _max = _prev_max.copy()
+            # if objectFound:
+            #     # if abs(_max["ang"]) > pi/3:
+            #     #     if self.prevent_full_turn(_max):
+            #     #         self.get_logger().info(f"Preventing full turn: {_max['ang']}")
+            #     #         _max = _prev_max.copy()
 
-                if remove == "Right":
-                    _max = dt
-                if remove == "Left":
-                    return _max["dst"], _max["ang"]
+            #     if remove == "Right":
+            #         _max = dt
+            #     if remove == "Left":
+            #         return _max["dst"], _max["ang"]
         return _max["dst"], _max["ang"]
     
     # def prevent_full_turn(self, target):
@@ -355,7 +361,11 @@ class ControlNode(Node):
     #     if(self.dir == 1 and rel_target > pi/4 and target["dst"] > 0.8):
     #         self.get_logger().info(f"\n>>> a{degrees(target['ang']):.2f}, rs{degrees(rel_sec):.2f}, rt{degrees(rel_target):.2f}, d{target['dst']:.2f}")
     #         return True
-    
+    def findOBJs(self):
+        chkRng = self.indRng(-self.lookRng, self.lookRng)
+        for i in range(chkRng[0], chkRng[1]):
+            self.detectContrast(i)
+            
     def detectContrast(self, i):
         if(self.IS_OPEN):
             return False
@@ -453,18 +463,19 @@ class ControlNode(Node):
         found_obst = False
         obsAng = 0.0
         for i in range(len(self.ranges)):
-            if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
+            if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0 or self.ranges[i] == inf):
                 continue
-            if(self.ranges[i] < self.dangerDist):
+            
+            chckRng = self.indRng(-self.lookRng, self.lookRng)
+
+            if(not found_obst and self.ranges[i] < self.dangerDist):
                 ang = degrees(self.i2a(i))
                 if(ang > self.dangerAng[0] and ang < self.dangerAng[1]):
                     found_obst = True
                     obsAng = ang
-                    break
                 if(ang > -self.dangerAng[1] and ang < -self.dangerAng[0]):
                     found_obst = True
                     obsAng = ang
-                    break
         if(found_obst):
             if(tAng*obsAng > 0):
                 # self.get_logger().info(f"Dangerous obstacle detected at {obsAng:.2f}°, adjusting target angle from {tAng:.2f}° to {tAng/3:.2f}°")
