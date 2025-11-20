@@ -26,6 +26,10 @@ void IRAM_ATTR Motors::encoderISR() {
     lastInterruptTime = interruptTime;
 }
 
+void Motors::control_enabled(bool en){
+    do_control = en;
+}
+
 // FreeRTOS task for PID speed and position control
 void Motors::speedControlTask(void* pvParameters) {
     // Simple PI speed controller using encoder feedback (mm/s)
@@ -51,6 +55,10 @@ void Motors::speedControlTask(void* pvParameters) {
     int cmdPWM = 0;  // command in -255..255
 
     while (true) {
+        if(!self->do_control){
+            vTaskDelay(periodTicks);
+            continue;
+        }
         // Measure actual speed (mm/s)
         long ticksNow = self->encoderCount;
         long dTicks = ticksNow - lastTicks;
@@ -110,6 +118,7 @@ void Motors::begin() {
     instance = this;       // Set the static instance pointer
     encoderCount = 0;      // Initialize encoder count
     target_speed_mms = 0;  // Initialize target speed
+    do_control = true;
     // Position control removed
 
     // Configure MCPWM for steering servo (Timer 0, Operator A)
@@ -195,6 +204,9 @@ void Motors::setCamServoUs(uint32_t pulse_width_us) {
 
 void Motors::setMotorSpeed(float speed_mms) {
     target_speed_mms = speed_mms;  // Update target speed for the task
+    if(speed_mms == 0){
+        hardBreak();
+    }
 }
 
 // Position control removed
@@ -222,6 +234,13 @@ void Motors::stop() {
     target_speed_mms = 0;  // Signal task to stop
     run(0);
 }
+
+// void Motors::hardBreak() {
+//     target_speed_mms = 0;  // Signal task to stop
+//     digitalWrite(MOTOR_IN1, LOW);
+//     digitalWrite(MOTOR_IN2, LOW);
+//     mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_2, MCPWM_OPR_A, 100);  // Hard brake
+// }
 
 void Motors::hardBreak() {
     target_speed_mms = 0;  // Signal task to stop

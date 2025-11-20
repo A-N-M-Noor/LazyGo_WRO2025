@@ -7,6 +7,7 @@
 #define BUTTON_PIN 0
 #define STATUS_LED 2
 #define BUZZER_PIN 16
+#define IR_EN 32
 #define IR1_PIN 36
 #define IR2_PIN 39
 #define IR3_PIN 34

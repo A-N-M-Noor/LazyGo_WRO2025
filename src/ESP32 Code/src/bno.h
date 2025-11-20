@@ -23,6 +23,7 @@ void startBNOCalcTask();
 void bnoCalc();
 void bnoCalcOffset(int dur);
 void bnoCalcTask(void* pvParameters);
+void bnoResetNormalize();
 // Optional: low-level polling task (created by startBNOTask)
 void bnoTask(void* pvParameters);
 double rad(float deg);

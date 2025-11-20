@@ -122,7 +122,17 @@ void bnoCalc() {
     if (heading_norm < 0) {
         heading_norm += 360;
     }
+    if(heading_norm > 180){
+        heading_norm -= 360;
+    }
     prevA = a;
+}
+
+void bnoResetNormalize(){
+    heading = heading_norm;
+    if(heading > 180){
+        heading -= 360;
+    }
 }
 
 void bnoCalcTask(void* pvParameters) {

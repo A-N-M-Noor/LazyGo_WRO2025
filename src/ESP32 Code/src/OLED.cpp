@@ -14,6 +14,9 @@ extern float posY;
 extern Motors motors;
 extern String command;
 
+extern float IR_VAL_3;
+extern float IR_VAL_4;
+
 // Declare global distance sensor variables defined elsewhere
 // extern int distLeft;
 // extern int distRight;
@@ -27,7 +30,7 @@ String disp;
 unsigned int seconds = 0;
 
 // OLED object (128x64 SSD1306, I2C)
-U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
 
 void initOLED() {
     u8g2.begin();
@@ -66,10 +69,17 @@ void displayTask(void* pvParameters) {
 
             u8g2.setFont(u8g2_font_ncenB10_tr);
             char headingBuf[16];
-            snprintf(headingBuf, sizeof(headingBuf), "%.2f°", heading);
+            snprintf(headingBuf, sizeof(headingBuf), "%.2f", heading);
             int headingWidth = u8g2.getStrWidth(headingBuf);
             u8g2.drawStr((128 - headingWidth) / 2, 20, headingBuf);
 
+            u8g2.setFont(u8g2_font_4x6_tf);
+            char _headingBuf[16];
+            snprintf(_headingBuf, sizeof(_headingBuf), "%.2f", heading_norm);
+            headingWidth = u8g2.getStrWidth(_headingBuf);
+            u8g2.drawStr((128 - headingWidth), 60, _headingBuf);
+
+            u8g2.setFont(u8g2_font_ncenB10_tr);
             if (disp == "All okay!") {
                 char encBuf[20];
                 snprintf(encBuf, sizeof(encBuf), "%d", motors.getEncoderCount());
@@ -100,6 +110,11 @@ void displayTask(void* pvParameters) {
                 // ----------------UPDATE PRINT LOCATION AFTER TESTING:------------------
                 u8g2.drawStr(128 - warnWidth, 60, warn);
             }
+
+            char irBuf[20];
+            snprintf(irBuf, sizeof(irBuf), "IR3: %d IR4: %d", int(IR_VAL_3), int(IR_VAL_4));
+            int irWidth = u8g2.getStrWidth(irBuf);
+            u8g2.drawStr((128 - irWidth) / 2, 50, irBuf);
 
             u8g2.sendBuffer();
             lastDisplayUpdate = currentTime;

@@ -6,6 +6,8 @@ void initIO() {
     pinMode(BUZZER_PIN, OUTPUT);
 
     pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+    pinMode(IR_EN, OUTPUT);
     pinMode(IR1_PIN, INPUT);
     pinMode(IR2_PIN, INPUT);
     pinMode(IR3_PIN, INPUT);
