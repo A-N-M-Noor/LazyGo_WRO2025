@@ -364,8 +364,10 @@ class ControlNode(Node):
     def findOBJs(self):
         chkRng = self.indRng(-self.lookRng, self.lookRng)
         for i in range(chkRng[0], chkRng[1]):
+            if(self.ranges[i] == inf or self.ints[i] <= 0.05):
+                continue
             self.detectContrast(i)
-            
+
     def detectContrast(self, i):
         if(self.IS_OPEN):
             return False
