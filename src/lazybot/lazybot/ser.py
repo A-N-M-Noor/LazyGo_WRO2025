@@ -63,7 +63,8 @@ class SerNode(Node):
             self.send_val(5)
             self.get_logger().info('Sent start command to ESP32')
             self.isDone = True
-        
+        elif(msg.data == "Cornering"):
+            self.send_val(47)
         elif(msg.data == "CAM_OK"):
             self.get_logger().info('Received CAM_OK command')
             self.send_val(49)
@@ -83,13 +84,17 @@ class SerNode(Node):
                 self.get_logger().error(f'Invalid MOVE command format: {msg.data}')
 
     def dir_dst_callback(self, msg: Int16MultiArray):
-        if len(msg.data) == 3:
-            l = min(msg.data[0], 200)
-            f = min(msg.data[1], 200)
-            r = min(msg.data[2], 200)
+        if len(msg.data) == 5:
+            l  = min(msg.data[0], 200)
+            fl = min(msg.data[1], 200)
+            f  = min(msg.data[2], 200)
+            fr = min(msg.data[3], 200)
+            r  = min(msg.data[4], 200)
             self.send_val(31, l+50)
-            self.send_val(32, f+50)
-            self.send_val(33, r+50)
+            self.send_val(32, fl+50)
+            self.send_val(33, f+50)
+            self.send_val(34, fr+50)
+            self.send_val(35, r+50)
     
     def printSerialDetails(self, port):
         print(f'Port device: {port.device}')

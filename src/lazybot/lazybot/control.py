@@ -80,7 +80,7 @@ class ControlNode(Node):
         self.lapCount = 0
         self.targetLap = 1
         self.running = False
-        self.endOffset = [0.0, 1.5]
+        self.endOffset = [-0.5, 1.5]
         self.cornerPOS = [(0.0, 1.0), (0.0, -1.0), (2.0, 1.0), (2.0, -1.0), (-2.0, 1.0), (-2.0, -1.0)]
 
         self.objs = []
@@ -126,7 +126,7 @@ class ControlNode(Node):
         if self.lapCount >= self.targetLap:
             self.speedCap = 0.35
             
-            if(self.pos.y > 0.35):
+            if(self.pos.y > 0.07):
                 self.running = False
                 self.get_logger().info("Reached the destination, stopping the robot.")
                 self.pubDrive(disable=True)
@@ -232,7 +232,8 @@ class ControlNode(Node):
             
             corner = False
 
-            if(self.isInCorner(0.75)):
+            if(self.isInCorner(0.75) and self.running):
+                self.cmd_pub.publish(String(data="Cornering"))
                 corner = self.corner_handling(self.objs[0] if self.objs else None)
             
 
@@ -367,7 +368,7 @@ class ControlNode(Node):
                 pop = self.cont_stack.pop()
                 mid = (i + pop) // 2
                 sz = self.ranges[mid] * abs(i-pop)*self.angInc
-                if( sz > 0.02 and sz < 0.1):
+                if( sz > 0.02 and sz < 0.12):
                     ang = self.i2a(mid)
                     obj = {
                         "index": mid,

@@ -7,7 +7,7 @@ from geometry_msgs.msg import Vector3
 from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 
 from std_msgs.msg import String, Int8, Int16MultiArray
-from math import pi, radians, degrees, sin, cos
+from math import pi, radians, degrees, sin, cos, inf
 import time
 
 class Parking(Node):
@@ -73,6 +73,8 @@ class Parking(Node):
                 clr = "N"
                 if(len(self.objs) > 0):
                     clr = self.objs[0]["color"]
+                    # if(self.objs[0]["dst"] > 0.5):
+                    #     clr = "N"
                     self.obj = clr
                 self.set_state_table(self.obj)
             
@@ -93,7 +95,7 @@ class Parking(Node):
 
                 self.state = "Idle"          
                 self.send_c(5)
-                self.cmd_pub.publish(String(data="start"))
+                # self.cmd_pub.publish(String(data="start"))
                 self.initial_offset = Vector3()
                 self.initial_offset.x = offx
                 self.initial_offset.y = offy
@@ -104,19 +106,9 @@ class Parking(Node):
 
             elif(self.state == "RunEnd"):
                 if(self.park_dir == "R"):
-                    self.get_logger().info("Parking Area on Right")
-                    if(self.pos.x < 0):
-                        self.get_logger().info("PosX is negative")
-                        self.send_c(6)  # Park Right but Move first
-                    else:
-                        self.send_c(7)  # Directly Park Right
+                    self.send_c(6)  # Park Right but Move first
                 else:
-                    self.get_logger().info("Parking Area on Left")
-                    if(self.pos.x > 0):
-                        self.get_logger().info("PosX is positive")
-                        self.send_c(8)  # Park Left but Move first
-                    else:
-                        self.send_c(9)  # Directly Park Left
+                    self.send_c(8)  # Park Left but Move first
                 self.state = "ParkingInit"
             
             # elif(self.state == "Oriented"):
@@ -194,13 +186,15 @@ class Parking(Node):
         self.ranges = msg.ranges
         self.ints = msg.intensities
 
-        if(self.state != "ParkingInit"):
+        if(self.state == "ParkingInit"):
             l = self.get_dst(90)
+            fl = self.get_dst(45)
             f = self.get_dst(0)
+            fr = self.get_dst(-45)
             r = self.get_dst(-90)
 
             msg = Int16MultiArray()
-            msg.data = [int(l*100), int(f*100), int(r*100)]
+            msg.data = [int(l*100), int(fl*100), int(f*100), int(fr*100), int(r*100)]
             self.dir_dst_pub.publish(msg)
     
     def debug_callback(self, msg: BotDebugInfo):        
@@ -223,8 +217,38 @@ class Parking(Node):
     
     def get_dst(self, ang):
         i = self.a2i(radians(ang))
-        return self.ranges[i]
+        return self.fix_missing(i)
     
+    def fix_missing(self, i):
+        if(i < 0 or i >= len(self.ints)):
+            return 0
+        if(self.ints[i] > 0.05 and self.ranges[i] <= 3.0 and self.ranges[i] != inf):
+            return self.ranges[i]
+        
+        if(self.ranges[i] == inf):
+            return 0
+        return self.ranges[i]
+
+        first = i
+        last = i
+        while(first > 0 and (self.ints[first] == 0.0 or self.ranges[first] > 3.0 or self.ranges[first] == inf)):
+            first -= 1
+            if(first < 0):
+                first = 0
+                break
+        while(last < len(self.ints) and (self.ints[last] == 0.0 or self.ranges[last] > 3.0 or self.ranges[last] == inf)):
+            last += 1
+            if(last >= len(self.ints)):
+                last = len(self.ints) - 1
+                break
+        
+        if(self.ints[first] == 0.0 or self.ints[last] == 0.0):
+            return 0
+        if(first == last):
+            return self.ranges[first]
+        
+        return self.lerp(self.ranges[first], self.ranges[last], (i-first)/(last-first))
+
     def i2a(self, i, deg = False):
         if deg:
             return degrees(self.angMin + self.angInc*i)
