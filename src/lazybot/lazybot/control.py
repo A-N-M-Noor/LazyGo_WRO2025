@@ -62,7 +62,7 @@ class ControlNode(Node):
         self.dangerAng = [25.0, 90.0]
 
         self.new_lidar_val = False
-        self.castRange = [0.13, 0.16]
+        self.castRange = [0.13, 0.16, 0.20]
         self.castR = 0.25
         self.lookRng = radians(80.0)
         self.lookRngS = radians(130.0)
@@ -80,7 +80,7 @@ class ControlNode(Node):
         self.lapCount = 0
         self.targetLap = 1
         self.running = False
-        self.endOffset = [0.0, 1.0]
+        self.endOffset = [0.0, 1.5]
         self.cornerPOS = [(0.0, 1.0), (0.0, -1.0), (2.0, 1.0), (2.0, -1.0), (-2.0, 1.0), (-2.0, -1.0)]
 
         self.objs = []
@@ -126,10 +126,12 @@ class ControlNode(Node):
         if self.lapCount >= self.targetLap:
             self.speedCap = 0.35
             
-            if(self.pos.y > 0.2):
+            if(self.pos.y > 0.35):
                 self.running = False
                 self.get_logger().info("Reached the destination, stopping the robot.")
                 self.pubDrive(disable=True)
+                self.cmd_pub.publish(String(data="NormalizeIMU"))
+                time.sleep(1.0)
                 self.cmd_pub.publish(String(data="RunEnd"))
                 return
         
@@ -206,6 +208,9 @@ class ControlNode(Node):
             self.lastTime = time.time()
 
             self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
+
+            if(self.pos.y < 0.5 and self.pos.y > -0.5 and abs(self.pos.x) < 0.5):
+                self.castR = self.castRange[2]
 
             self.pubObjData()
 

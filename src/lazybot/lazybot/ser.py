@@ -53,6 +53,9 @@ class SerNode(Node):
     def cmd_callback(self, msg: String):
         if(msg.data == "RunEnd"):
             self.isDone = True
+        elif(msg.data == "NormalizeIMU"):
+            self.send_val(30)
+            self.get_logger().info('Sent NormalizeIMU command to ESP32')
         elif(msg.data == "start_open"):
             self.cmd_pub.publish(String(data="start"))
             self.send_val(5)
@@ -67,11 +70,11 @@ class SerNode(Node):
             try:
                 distance = float(msg.data.split(":")[1])
                 move_val = int(distance * 100)  # Convert to cm
-                if(move_val < -50):
-                    move_val = -50
-                if(move_val > 50):
-                    move_val = 50
-                move_val = move_val*2 + 150
+                if(move_val < -100):
+                    move_val = -100
+                if(move_val > 100):
+                    move_val = 100
+                move_val = move_val + 150
                 self.send_val(7, move_val)
                 self.get_logger().info(f'Sent MOVE command with distance: {move_val}')
             except ValueError:
@@ -130,6 +133,7 @@ class SerNode(Node):
             v = int(msg.data)
             if(v >= 0 and v <= 49):
                 self.ser.write(msg.data.to_bytes(1, 'little'))
+                self.get_logger().info(f"Sent byte {v} to ESP Side")
         except Exception as e:
             self.get_logger().error(f'Error writing to serial: {e}')
     
@@ -205,6 +209,9 @@ class SerNode(Node):
                             
                         if data == "CONF_CAM":
                             self.pub_cmd("CONF_CAM")
+                        
+                        if data.startswith('>'):
+                            self.get_logger().info("Got Print: \n" + data)
                         
                         if data.startswith('[') and data.endswith(']'):
                             try:

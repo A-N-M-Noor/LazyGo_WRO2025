@@ -38,7 +38,9 @@ class Parking(Node):
         self.pos = Vector3()
         
         self.state = "Idle"
-        self.park_dir = "R"
+        self.park_dir = "_"
+        self.parking_offs_rng = [0.95, 1.45]
+        self.parking_offs = self.parking_offs_rng[0]
         
         self.parking_thread = Thread(target=self.parking_loop)
         self.parking_thread.daemon = True
@@ -105,7 +107,9 @@ class Parking(Node):
             
             elif(self.state == "Oriented"):
                 f = self.get_dst(0)
-                tomove = f - 0.95
+                
+                tomove = f - self.parking_offs
+
                 self.get_logger().info(f"Oriented: Dist: {f}, Moving {tomove:.2f} m")
                 self.cmd_pub.publish(String(data=f"MOVE:{tomove:.2f}"))
                 self.state = "Idle"
@@ -121,10 +125,11 @@ class Parking(Node):
                 l = self.get_dst(90)
                 r = self.get_dst(-90)
 
-                if(r > l):
-                    self.send_c(10)
-                else:
-                    self.send_c(11)
+                c_val = 11
+                if(r < l):
+                    c_val = 10
+                self.send_c(c_val)
+                self.get_logger().info(f"Exiting parking to the {'right' if c_val == 10 else 'left'}")
                 self.state = "Idle"
             time.sleep(0.1)
     

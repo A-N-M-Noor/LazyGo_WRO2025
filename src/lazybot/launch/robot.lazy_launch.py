@@ -67,7 +67,7 @@ def generate_launch_description():
         )
         ld.add_action(rplidar_launch)
 
-    # ld.add_action(control)
+    ld.add_action(control)
     ld.add_action(parking)
     ld.add_action(serial)
     ld.add_action(
