@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, String, Int8
+from std_msgs.msg import Float32, String, Int8, Int16MultiArray
 from geometry_msgs.msg import Vector3
 
 from math import radians
@@ -22,6 +22,7 @@ class SerNode(Node):
         self.cam_sub = self.create_subscription(Int8, '/cam_servo', self.cam_callback, 1)
         self.offs_sub = self.create_subscription(Vector3, '/initial_offset', self.offs_callback, 10)
         
+        self.dir_dst_sub = self.create_subscription(Int16MultiArray, '/dir_dst', self.dir_dst_callback, 1)
         self.esp_cmd_sub = self.create_subscription(Int8, '/esp_cmd', self.esp_cmd_callback, 1)
 
         self.thr = 0.0
@@ -52,6 +53,7 @@ class SerNode(Node):
     
     def cmd_callback(self, msg: String):
         if(msg.data == "RunEnd"):
+            self.send_val(30)
             self.isDone = True
         elif(msg.data == "NormalizeIMU"):
             self.send_val(30)
@@ -80,6 +82,14 @@ class SerNode(Node):
             except ValueError:
                 self.get_logger().error(f'Invalid MOVE command format: {msg.data}')
 
+    def dir_dst_callback(self, msg: Int16MultiArray):
+        if len(msg.data) == 3:
+            l = min(msg.data[0], 200)
+            f = min(msg.data[1], 200)
+            r = min(msg.data[2], 200)
+            self.send_val(31, l+50)
+            self.send_val(32, f+50)
+            self.send_val(33, r+50)
     
     def printSerialDetails(self, port):
         print(f'Port device: {port.device}')

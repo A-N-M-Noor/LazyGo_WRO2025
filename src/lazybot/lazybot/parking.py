@@ -6,7 +6,7 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Vector3
 from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 
-from std_msgs.msg import String, Int8
+from std_msgs.msg import String, Int8, Int16MultiArray
 from math import pi, radians, degrees, sin, cos
 import time
 
@@ -20,6 +20,7 @@ class Parking(Node):
         self.cmd_pub = self.create_publisher(String, '/cmd', 10)
         
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, 1)
+        self.dir_dst_pub = self.create_publisher(Int16MultiArray, '/dir_dst', 1)
         self.pos_sub = self.create_subscription(Vector3, '/lazypos', self.pos_callback, 10)
         self.offs_pub = self.create_publisher(Vector3, '/initial_offset', 10)
         
@@ -86,7 +87,7 @@ class Parking(Node):
                 if(self.park_dir == "R"):
                     offx = r - 0.5
                 else:
-                    offx = l - 0.5
+                    offx = 0.5 - l
                 
                 offy = 1.5 - f
 
@@ -102,35 +103,48 @@ class Parking(Node):
             
 
             elif(self.state == "RunEnd"):
-                self.send_c(6)
-                self.state = "Idle"
-            
-            elif(self.state == "Oriented"):
-                f = self.get_dst(0)
-                
-                tomove = f - self.parking_offs
-
-                self.get_logger().info(f"Oriented: Dist: {f}, Moving {tomove:.2f} m")
-                self.cmd_pub.publish(String(data=f"MOVE:{tomove:.2f}"))
-                self.state = "Idle"
-            elif(self.state == "ParkReady"):
                 if(self.park_dir == "R"):
-                    self.send_c(8)
+                    self.get_logger().info("Parking Area on Right")
+                    if(self.pos.x < 0):
+                        self.get_logger().info("PosX is negative")
+                        self.send_c(6)  # Park Right but Move first
+                    else:
+                        self.send_c(7)  # Directly Park Right
                 else:
-                    self.send_c(9)
-                self.state = "Idle"
+                    self.get_logger().info("Parking Area on Left")
+                    if(self.pos.x > 0):
+                        self.get_logger().info("PosX is positive")
+                        self.send_c(8)  # Park Left but Move first
+                    else:
+                        self.send_c(9)  # Directly Park Left
+                self.state = "ParkingInit"
             
-            elif(self.state == "Inside"):
-                self.get_logger().info("Deciding exit direction")
-                l = self.get_dst(90)
-                r = self.get_dst(-90)
+            # elif(self.state == "Oriented"):
+            #     f = self.get_dst(0)
+                
+            #     tomove = f - self.parking_offs
 
-                c_val = 11
-                if(r < l):
-                    c_val = 10
-                self.send_c(c_val)
-                self.get_logger().info(f"Exiting parking to the {'right' if c_val == 10 else 'left'}")
-                self.state = "Idle"
+            #     self.get_logger().info(f"Oriented: Dist: {f}, Moving {tomove:.2f} m")
+            #     self.cmd_pub.publish(String(data=f"MOVE:{tomove:.2f}"))
+            #     self.state = "Idle"
+            # elif(self.state == "ParkReady"):
+            #     if(self.park_dir == "R"):
+            #         self.send_c(8)
+            #     else:
+            #         self.send_c(9)
+            #     self.state = "Idle"
+            
+            # elif(self.state == "Inside"):
+            #     self.get_logger().info("Deciding exit direction")
+            #     l = self.get_dst(90)
+            #     r = self.get_dst(-90)
+
+            #     c_val = 11
+            #     if(r < l):
+            #         c_val = 10
+            #     self.send_c(c_val)
+            #     self.get_logger().info(f"Exiting parking to the {'right' if c_val == 10 else 'left'}")
+            #     self.state = "Idle"
             time.sleep(0.1)
     
     def set_state_table(self, obj):
@@ -166,12 +180,12 @@ class Parking(Node):
             self.state = "Offset_Calc"
         if(msg.data == "RunEnd"):
             self.state = "RunEnd"
-        if(msg.data == "Oriented"):
-            self.state = "Oriented"
-        if(msg.data == "ParkReady"):
-            self.state = "ParkReady"
-        if(msg.data == "Inside"):
-            self.state = "Inside"
+        # if(msg.data == "Oriented"):
+        #     self.state = "Oriented"
+        # if(msg.data == "ParkReady"):
+        #     self.state = "ParkReady"
+        # if(msg.data == "Inside"):
+        #     self.state = "Inside"
     
     def lidar_callback(self, msg: LaserScan):
         self.angMin = msg.angle_min
@@ -179,6 +193,15 @@ class Parking(Node):
         self.angInc = msg.angle_increment
         self.ranges = msg.ranges
         self.ints = msg.intensities
+
+        if(self.state != "ParkingInit"):
+            l = self.get_dst(90)
+            f = self.get_dst(0)
+            r = self.get_dst(-90)
+
+            msg = Int16MultiArray()
+            msg.data = [int(l*100), int(f*100), int(r*100)]
+            self.dir_dst_pub.publish(msg)
     
     def debug_callback(self, msg: BotDebugInfo):        
         self.objs = []
