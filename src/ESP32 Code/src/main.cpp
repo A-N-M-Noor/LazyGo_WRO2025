@@ -10,7 +10,7 @@
 #include "parking_operations.h"
 
 #define ENABLE_HW_TEST 0  // Set to 1 to enable hardware test mode
-#define COMM_SER Serial
+#define COMM_SER Serial1
 
 bool IR_Enabled = false;
 float IR_VAL_3 = 4096;
@@ -36,7 +36,7 @@ float posX = 0.0, posY = 0.0;
 float sectionHeading = 0.0;
 int dstL = 0, dstFL = 0, dstF = 0, dstFR = 0, dstR = 0;
 float moveSideDist = 35.0;
-float parkFrontDist[] = {85, 155};
+float parkFrontDist[] = {85, 150};
 bool park_is_back = false;
 bool turning = false;
 int turnCount = 0;
@@ -203,7 +203,7 @@ void setup() {
     startBNOCalcTask();
     initADC();
 
-    Serial1.begin(115200, SERIAL_8N1, 23, 19);
+    Serial1.begin(115200, SERIAL_8N1, 19, 23);
     Serial.begin(115200);
     enableIR();
     initOLED();
@@ -283,13 +283,21 @@ void paark(int dir){
 
     motors.setServoUs(SERVO_CENTER_US);
     vTaskDelay(50 / portTICK_PERIOD_MS);
-    move_pos(0.03, 0.0);
+    move_pos(0.15, 0.0);
+    // turn_angle_opp(22.5*dir);
+    // turn_angle(45*dir);
+    // turn_angle_opp(67.5*dir);
+    // turn_angle(75*dir);
+    // turn_angle_opp(90*dir);
+    // turn_angle(90*dir);
 
-    turn_angle(45*dir);
-    // setUseIR(true);
-    turn_angle_opp(85*dir);
-    // setUseIR(false);
+    turn_angle_opp(15*dir);
+    turn_angle(30*dir);
+    turn_angle_opp(45*dir);
+    turn_angle(60*dir);
+    turn_angle_opp(75*dir);
     turn_angle(90*dir);
+    turn_angle_opp(90*dir);
     motors.setMotorSpeed(0);
     motors.setServoUs(SERVO_CENTER_US);
 }
@@ -409,7 +417,7 @@ void loop() {
 
         turn_angle_opp(90);
         turn_angle_opp(90);
-        move_pos(-0.35, 90.0);
+        move_pos(-0.32, 90.0);
 
         vTaskDelay(100 / portTICK_PERIOD_MS);
         if(dstL > dstR){
@@ -444,7 +452,7 @@ void loop() {
 
         turn_angle_opp(-90);
         turn_angle_opp(-90);
-        move_pos(-0.35, -90.0);
+        move_pos(-0.32, -90.0);
 
         vTaskDelay(100 / portTICK_PERIOD_MS);
         if(dstL > dstR){
