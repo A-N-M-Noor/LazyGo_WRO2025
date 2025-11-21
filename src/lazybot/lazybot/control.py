@@ -44,10 +44,10 @@ class ControlNode(Node):
         self.ranges = []
         self.ints = []
 
-        self.maxSpeed : float = 0.70
-        self.speedCap : float = 0.45
-        self.targetCap : float = 0.45
-        self.speedCapRng = [0.40, 0.65]
+        self.maxSpeed : float = 0.60
+        self.speedCap : float = 0.40
+        self.targetCap : float = 0.40
+        self.speedCapRng = [0.30, 0.45]
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0
@@ -62,7 +62,7 @@ class ControlNode(Node):
         self.dangerAng = [25.0, 90.0]
 
         self.new_lidar_val = False
-        self.castRange = [0.13, 0.16, 0.20]
+        self.castRange = [0.13, 0.16]
         self.castR = 0.25
         self.lookRng = radians(80.0)
         self.lookRngS = radians(130.0)
@@ -78,9 +78,9 @@ class ControlNode(Node):
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
-        self.targetLap = 1
+        self.targetLap = 3
         self.running = False
-        self.endOffset = [0.0, 1.5]
+        self.endOffset = [-0.5, 1.5]
         self.cornerPOS = [(0.0, 1.0), (0.0, -1.0), (2.0, 1.0), (2.0, -1.0), (-2.0, 1.0), (-2.0, -1.0)]
 
         self.objs = []
@@ -126,7 +126,7 @@ class ControlNode(Node):
         if self.lapCount >= self.targetLap:
             self.speedCap = 0.35
             
-            if(self.pos.y > 0.35):
+            if(self.pos.y > 0.07):
                 self.running = False
                 self.get_logger().info("Reached the destination, stopping the robot.")
                 self.pubDrive(disable=True)
@@ -209,9 +209,6 @@ class ControlNode(Node):
 
             self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
 
-            if(self.pos.y < 0.5 and self.pos.y > -0.5 and abs(self.pos.x) < 0.5):
-                self.castR = self.castRange[2]
-
             self.pubObjData()
 
             maxD, tA = self.getMaxDOBJ()
@@ -263,7 +260,7 @@ class ControlNode(Node):
 
     def corner_handling(self, obj):
         if(obj is None):
-            if(self.get_dst(0) < 0.6):
+            if(self.get_dst(0) < 0.75):
                 return self.dir*90.0
         else:
             ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)

@@ -73,8 +73,8 @@ class Parking(Node):
                 clr = "N"
                 if(len(self.objs) > 0):
                     clr = self.objs[0]["color"]
-                    # if(self.objs[0]["dst"] > 0.5):
-                    #     clr = "N"
+                    if(self.objs[0]["dst"] > 0.5):
+                        clr = "N"
                     self.obj = clr
                 self.set_state_table(self.obj)
             
@@ -95,7 +95,7 @@ class Parking(Node):
 
                 self.state = "Idle"          
                 self.send_c(5)
-                # self.cmd_pub.publish(String(data="start"))
+                self.cmd_pub.publish(String(data="start"))
                 self.initial_offset = Vector3()
                 self.initial_offset.x = offx
                 self.initial_offset.y = offy
