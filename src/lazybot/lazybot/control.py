@@ -78,7 +78,7 @@ class ControlNode(Node):
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
-        self.targetLap = 3
+        self.targetLap = 1
         self.running = False
         self.endOffset = [-0.5, 1.5]
         self.cornerPOS = [(0.0, 1.0), (0.0, -1.0), (2.0, 1.0), (2.0, -1.0), (-2.0, 1.0), (-2.0, -1.0)]
