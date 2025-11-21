@@ -30,6 +30,10 @@ void Motors::control_enabled(bool en){
     do_control = en;
 }
 
+void Motors::hardbreak_enabled(bool en){
+    hardbreak_en = en;
+}
+
 // FreeRTOS task for PID speed and position control
 void Motors::speedControlTask(void* pvParameters) {
     // Simple PI speed controller using encoder feedback (mm/s)
@@ -119,6 +123,7 @@ void Motors::begin() {
     encoderCount = 0;      // Initialize encoder count
     target_speed_mms = 0;  // Initialize target speed
     do_control = true;
+    hardbreak_en = false;
     // Position control removed
 
     // Configure MCPWM for steering servo (Timer 0, Operator A)
@@ -203,6 +208,13 @@ void Motors::setCamServoUs(uint32_t pulse_width_us) {
 }
 
 void Motors::setMotorSpeed(float speed_mms) {
+    if(speed_mms < target_speed_mms - 150 && hardbreak_en){
+        control_enabled(false);
+        run(-255);
+        delay(50);
+        run(0);
+        control_enabled(true);
+    }
     target_speed_mms = speed_mms;  // Update target speed for the task
     if(speed_mms == 0){
         hardBreak();

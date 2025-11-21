@@ -35,6 +35,7 @@ class Motors {
     volatile long encoderCount;
     float target_speed_mms;     // Target speed for PI control (mm/s)
     bool do_control;            // Enable/disable speed control
+    bool hardbreak_en = false;   // Enable/disable hard braking
     static Motors* instance;    // Static pointer to the Motors instance
     static void IRAM_ATTR encoderISR();
     static void speedControlTask(void* pvParameters);  // FreeRTOS task for PID control
@@ -50,6 +51,7 @@ class Motors {
     long getEncoderCount();                // Get the current encoder count
     void run(int spd_vlu);
     void control_enabled(bool en);
+    void hardbreak_enabled(bool en);
 };
 
 #endif

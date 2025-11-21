@@ -103,6 +103,13 @@ void turn_angle_opp(float target_angle) {
 }
 
 void move_pos_func(float distance, float trg_ang) {
+    if(distance > 0 && distance < 0.05){
+        motors.control_enabled(false);
+        motors.run(255);
+        delay(50);
+        motors.run(0);
+        motors.control_enabled(true);
+    }
     int dir = 1;
 
     int tick_now = motors.getEncoderCount();

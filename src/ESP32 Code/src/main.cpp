@@ -36,7 +36,7 @@ float posX = 0.0, posY = 0.0;
 float sectionHeading = 0.0;
 int dstL = 0, dstFL = 0, dstF = 0, dstFR = 0, dstR = 0;
 float moveSideDist = 35.0;
-float parkFrontDist[] = {85, 125};
+float parkFrontDist[] = {85, 155};
 bool park_is_back = false;
 bool turning = false;
 int turnCount = 0;
@@ -96,9 +96,11 @@ void srl() {
         else if (v == 6) {
             setCommand("moveRight","srl:6");
             park_is_back = false;
+            motors.hardbreak_enabled(false);
         } else if (v == 8) {
             setCommand("moveLeft","srl:8");
             park_is_back = true;
+            motors.hardbreak_enabled(false);
         } 
         
         
@@ -281,7 +283,7 @@ void paark(int dir){
 
     motors.setServoUs(SERVO_CENTER_US);
     vTaskDelay(50 / portTICK_PERIOD_MS);
-    // move_pos(0.1);
+    move_pos(0.03, 0.0);
 
     turn_angle(45*dir);
     // setUseIR(true);
@@ -323,6 +325,7 @@ void loop() {
         COMM_SER.println("Done");
         posX = 0.0;
         posY = 0.0;
+        motors.hardbreak_enabled(true);
     }
     if (command == "passTurn") {
         //bnoCalc();
@@ -336,6 +339,7 @@ void loop() {
         COMM_SER.println("Done");
         posX = 0.0;
         posY = 0.0;
+        motors.hardbreak_enabled(true);
     }
 
     if (command == "go") {
@@ -396,6 +400,11 @@ void loop() {
 
         toMove = dstF - parkFrontDist[park_is_back ? 1 : 0];
         move_pos(toMove/100, 0.0);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+
+        toMove = dstF - parkFrontDist[park_is_back ? 1 : 0];
+        move_pos(toMove/100, 0.0);
+
         displayText("Initializing Parking");
 
         turn_angle_opp(90);
@@ -424,6 +433,10 @@ void loop() {
         move_pos(toMove/100, 0.0);
         vTaskDelay(500 / portTICK_PERIOD_MS);
 
+
+        toMove = dstF - parkFrontDist[park_is_back ? 1 : 0];
+        move_pos(toMove/100, 0.0);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
 
         toMove = dstF - parkFrontDist[park_is_back ? 1 : 0];
         move_pos(toMove/100, 0.0);
