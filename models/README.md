@@ -18,50 +18,50 @@ Here is our Onshape project link:  [Onshape CAD Project](https://cad.onshape.com
 
 ### Modular Three-Stage Structure
 
+ <img src="../assets/STAGE 1.png" align="right" width="300" />
+ 
 To maximize maintainability and simplify repairs, the robot is constructed in **three stacked stages**:
 
 
+ 
 #### Stage 1 – Base Chassis
 - Drive motors and actuators  
 - Battery compartment  
 - Low center of gravity for stability  
 
-**Image Placeholder:**  
-`![Base Chassis](images/stage1_base.jpg)`
 
 ---
 
-#### Stage 2 – Control Platform
+<img src="../assets/STAGE 2.png" align="right" width="300" />
+
+#### Stage 2 – Control Platform 
 - Raspberry Pi main computing unit  
 - 5V 5A buck converter  
-- Reserved front clearance for LiDAR 
-- Motor driver mounted beneath the plate  
+- Reserved front clearance for LiDAR
+- Motor driver mounted beneath the plate
 
-**Image Placeholder:**  
-`![Control Platform](images/stage2_control.jpg)`
 
 ---
 
 #### Stage 3 – Electronics & Interface Layer
-- Custom PCB with secondary microcontroller  
+- Custom PCB with secondary microcontroller  <img src="../assets/STAGE 3.png" align="right" width="300" /> 
 - IMU and onboard OLED display  
 - 3D-printed protective shell that:
   - holds the LiDAR upside-down at **5 cm height** for accurate wall and obstacle sensing  
   - protects the electronics  
   - enhances the robot’s appearance  
 
-**Image Placeholder:**  
-`![Electronics Layer](images/stage3_electronics.jpg)`
-
+---
 ---
 
-### Camera Head & User Interaction
+### Camera Head 
+<p align="center">
+ <img src="../assets/Animation.gif"  width="500" /> 
+</p>
 
 Mounted at the top is a **servo-controlled camera**, giving the robot a dynamic, head-like field of view.  
 For a tactile interaction point, we incorporated a **mechanical switch** as the main start trigger.
 
-**Image Placeholder:**  
-`![Camera Head](images/camera_servo.jpg)`
 
 ---
 
