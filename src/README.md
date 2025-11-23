@@ -155,6 +155,50 @@ After detecting the towers, the robot needs to avoid them. The robot needs to mo
 #### Parking
 We thought parking would be very difficult. But it was pretty simple. Moving out o the parking spot was very straight-forward. Although we had to choose the path based on the color of the first object, it wasn fairly simple. However, moving into the parking spot after the run ends, and being parallel on top of that was no simple matter. But, we already had Odometry data, motor's encoder data and IMU's orientation data. All we had to do was to first align the robot in a specific arrangement with the parking spot and run a predetermined movement sequence. And that's all it took to complete the parking.
 
+Here's how it works:
+<table>
+    <tr>
+        <td align="center">
+            <img src="../assets/Parking Algo/Step1.png" alt="Step-One" width="375">
+        </td>
+        <td align="center">
+            <img src="../assets/Parking Algo/Step2.png" alt="Step-Two" width="375">
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><sub>The robot stops using the obometry values.</sub></td>
+        <td align="center"><sub>The robot turns such a way that it remains around 40cm away from the parking adjacent wall</sub></td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td align="center">
+            <img src="../assets/Parking Algo/Step3.png" alt="Step-Three" width="375">
+        </td>
+        <td align="center">
+            <img src="../assets/Parking Algo/Step4.png" alt="Step-Four" width="375">
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><sub>The robot moves to a certain position in front of the parking.</sub></td>
+        <td align="center"><sub>The robot directly moves into the parking spot</sub></td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td align="center">
+            <img src="../assets/Parking Algo/Step5.png" alt="Step-Three" width="375">
+        </td>
+        <td align="center">
+            <img src="../assets/Parking Algo/Step6.png" alt="Step-Four" width="375">
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><sub>From there, it moves back and forth...</sub></td>
+        <td align="center"><sub>...Untill it is completely straight.</sub></td>
+    </tr>
+</table>
 
 ### Camera Placement
 
