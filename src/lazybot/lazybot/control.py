@@ -43,6 +43,10 @@ class ControlNode(Node):
         self.lidar = LidarHandler()
 
         self.speedBoost = 1.0
+        self.boostMax = 1.25
+        self.boostAngleThresh = 7.5
+        self.boostDistThresh = 1.10
+
         self.maxSpeed : float = 0.60
         self.speedCap : float = 0.40
         self.targetCap : float = 0.40
@@ -77,7 +81,7 @@ class ControlNode(Node):
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
-        self.targetLap = 1
+        self.targetLap = 3
         self.running = False
         self.endOffset = [-0.5, 1.5]
         self.cornerPOS = [(0.0, 1.0), (0.0, -1.0), (2.0, 1.0), (2.0, -1.0), (-2.0, 1.0), (-2.0, -1.0)]
@@ -239,8 +243,10 @@ class ControlNode(Node):
             self.targetAng = self.dangerSense(self.targetAng)
 
             self.speedBoost = 1.0
-            if(abs(self.targetAng)  < 5 and maxD > 0.30):
-                self.speedBoost = 2.0
+            marchingHit = self.marching(self.lidar.a2i(self.targetAng, degrees=True), R=self.castR/2)
+            hitD = marchingHit['dst']
+            if(abs(self.targetAng)  < self.boostAngleThresh and hitD > self.boostDistThresh):
+                self.speedBoost = self.boostMax
                 self.get_logger().info("Boosting!")
             
             sAng = remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
@@ -338,7 +344,10 @@ class ControlNode(Node):
                     return obj
         return False
 
-    def marching(self, indx):
+    def marching(self, indx, R = None):
+        if R is None:
+            R = self.castR
+
         rng = [indx-self.prec*self.skip2, indx+self.prec*self.skip2]
 
         targetRay = {
@@ -355,7 +364,7 @@ class ControlNode(Node):
                     "ang": self.lidar.i2a(i)
                 }
 
-                hit = self.hitC(targetRay, ray, self.castR)
+                hit = self.hitC(targetRay, ray, R)
                 if(hit):
                     if(hit < _min["dst"]):
                         _min = {
@@ -406,7 +415,7 @@ class ControlNode(Node):
             self.speed = 0.0
             self.strAngle = 0.0
         throttle_msg = Float32()
-        throttle_msg.data = clamp(self.speed, -self.speedCap, self.speedCap)
+        throttle_msg.data = clamp(self.speed, -self.speedCap*self.speedBoost, self.speedCap*self.speedBoost)
         self.throttle_pub.publish(throttle_msg)
 
         steer_msg = Float32()

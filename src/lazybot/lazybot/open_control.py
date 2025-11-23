@@ -82,6 +82,7 @@ class OpenNode(Node):
         checkPointDist =  sqrt((self.pos.x - self.lastTurnSpot.x)**2 + (self.pos.y - self.lastTurnSpot.y)**2)
 
         if(frontDist < self.front_dist_thresh and not self.turning and checkPointDist > 1.0):
+            self.get_logger().info(f"Front: {frontDist:.2f}, Left: {leftDist:.2f}, Right: {rightDist:.2f}")
             if(self.dir == 0):                
                 if(leftDist > rightDist):
                     self.dir = 1
@@ -154,6 +155,9 @@ class OpenNode(Node):
         command = msg.data.strip().lower()
         if command == "boot":
             self.lapCount = 0
+            self.dir = 0
+            self.turning = False
+            self.sectionAngle = 0.0
             self.reached = True
             self.running = True
             self.gotWallD = False
@@ -162,6 +166,7 @@ class OpenNode(Node):
         elif command == "stop":
             self.running = False
             self.get_logger().info("Stopping the robot.")
+            self.dir = 0
     
     def lidar_callback(self, msg: LaserScan):
         self.angMin = msg.angle_min

@@ -254,5 +254,7 @@ class LidarHandler:
     def indRng(self, Min, Max):
         return [self.a2i(Min), self.a2i(Max)]
 
-    def a2i(self, ang):
+    def a2i(self, ang, degrees = False):
+        if degrees:
+            ang = radians(ang)
         return round((ang -self.angMin) / self.angInc)
