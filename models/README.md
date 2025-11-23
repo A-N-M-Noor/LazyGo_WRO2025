@@ -9,7 +9,7 @@ To reach this goal, we combined a **differential drive system** with **Ackermann
 The robot fits within a **20 cm × 10 cm footprint** with a **wheelbase of 11.5 cm**, and through geometric steering-angle calculations, we successfully achieved a **turning radius below 15 cm**.
 
 ---
-<p align="center"><img src="../assets/ackerman.png" height="400"  /><img src="../assets/ackerman2.png" height="400" /> <p/>
+<p align="center"><img src="../assets/ackerman.png" height="400"  /><img src="../assets/44.png" height="400" /> <p/>
 The Ackermann geometry was designed by projecting steering-axis and wheel-intersection lines and shaping the linkage based on the resulting steering angles.
 
 Here is our Onshape project link:  [Onshape CAD Project](https://cad.onshape.com/documents/0ec023d9700593bfeebabdea/w/02e5710fbedd7baee1480c4a/e/63f1a3919addf09c73a6e4d6?renderMode=0&uiState=692353830b89481e7565ca33)
