@@ -2,55 +2,56 @@
 #define MOTORS_H
 
 #include <Arduino.h>
-// #include <ESP32Servo.h>
 
-#define SERVO_PIN 23
+extern const float TPM;  // Ticks per meter
+
+#define SERVO_PIN 18
 #define CAM_SERVO_PIN 17
 #define CAM_SERVO_MIN_US 500
-#define CAM_SERVO_MAX_US 2400
-#define CAM_SERVO_CENTER_US 1450
+#define CAM_SERVO_MAX_US 2340
+#define CAM_SERVO_CENTER_US 1420
+#define CAM_SERVO_ANGLE_MIN 19
+#define CAM_SERVO_ANGLE_MAX 161
 
-#define SERVO_MIN_US 600   // steers robot to the right
-#define SERVO_MAX_US 2000  // steers robot to the left
-#define SERVO_CENTER_US 1300 // center position for servo (Adjust if needed)1125
+#define SERVO_MIN_US 950      // steers robot to the right
+#define SERVO_MAX_US 2250     // steers robot to the left
+#define SERVO_CENTER_US 1600  // center position for servo (Adjust if needed)
 
-#define MOTOR_IN1 26
-#define MOTOR_IN2 27
+#define MOTOR_IN1 27
+#define MOTOR_IN2 26
 #define MOTOR_PWM 25
 #define MOTOR_ENB 14
 
-#define ENCODER_A 19
-#define ENCODER_B 18
+#define ENCODER_A 13
+#define ENCODER_B 33
 
-#define WHEEL_DIAMETER_CM 4.829    
-#define PULSES_PER_REVOLUTION 400  // Tune this to get correct distance movement
-#define MOTOR_PWM_FREQ 18000        // 18kHz PWM frequency to avoid noise
-#define MOTOR_PWM_CHANNEL 0 
+// Legacy wheel/encoder constants removed; we use TPM (ticks per meter)
+// #define MOTOR_PWM_FREQ 18000
+// #define MOTOR_PWM_CHANNEL 0
 
 class Motors {
-private:
+   private:
     // Servo servo;
     volatile long encoderCount;
-    float target_speed_mms; // Target speed for PID control
-    float target_position_mm; // Target position in millimeters
-    float current_position_mm; // Current position in millimeters
-    bool use_position_control; // Flag to select position or speed control
-    static Motors* instance;  // Static pointer to the Motors instance
+    float target_speed_mms;     // Target speed for PI control (mm/s)
+    bool do_control;            // Enable/disable speed control
+    bool hardbreak_en = false;   // Enable/disable hard braking
+    static Motors* instance;    // Static pointer to the Motors instance
     static void IRAM_ATTR encoderISR();
-    static void speedControlTask(void* pvParameters); // FreeRTOS task for PID control
+    static void speedControlTask(void* pvParameters);  // FreeRTOS task for PID control
 
-public:
+   public:
     void begin();
-    void setServoUs(uint32_t pulse_width_us);   // Set servo pulse width in microseconds
-    void setServoAngle(uint8_t angle0to100);    // Set servo angle from 0 to 100 (0% to 100%)
+    void setServoUs(uint32_t pulse_width_us);  // Set servo pulse width in microseconds
+    void setServoAngle(uint8_t angle0to100);   // Set servo angle from 0 to 100 (0% to 100%)
     void setCamServoUs(uint32_t pulse_width_us);
-    void setMotorSpeed(float speed_mms); // Set motor speed in mm/s (positive for forward, negative for backward)
-    void moveDistance(float cm, float speed_mms); // Move a distance in centimeters at a specified speed in mm/s
-    void stop();    // Stop the motors
-    void hardBreak();       // Apply a hard brake to the motors
-    long getEncoderCount();     // Get the current encoder count
-    float getCurrentPosition();     // Get the current position in millimeters
+    void setMotorSpeed(float speed_mms);   // Set motor speed in mm/s (positive forward, negative reverse)
+    void stop();                           // Stop the motors (speed target = 0)
+    void hardBreak();                      // Apply a hard brake to the motors
+    long getEncoderCount();                // Get the current encoder count
     void run(int spd_vlu);
+    void control_enabled(bool en);
+    void hardbreak_enabled(bool en);
 };
 
 #endif
