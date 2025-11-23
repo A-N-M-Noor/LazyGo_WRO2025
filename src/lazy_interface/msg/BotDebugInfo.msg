@@ -12,3 +12,6 @@ float32[] danger_angles
 
 # Debug information for the lidar system
 lazy_interface/LidarTowerInfo[] towers
+
+# Debug information for the object pool 
+lazy_interface/GlobalTowerInfo[] towerpool

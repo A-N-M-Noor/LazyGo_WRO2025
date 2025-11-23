@@ -4,8 +4,9 @@ from sensor_msgs.msg import PointCloud, ChannelFloat32
 from geometry_msgs.msg import Point32, Vector3, TransformStamped, Quaternion, Vector3
 from tf2_ros import TransformBroadcaster
 from nav_msgs.msg import Odometry
-from lazy_interface.msg import BotDebugInfo
+from lazy_interface.msg import BotDebugInfo, LidarTowerInfo, GlobalTowerInfo
 from math import pi, radians, degrees, sin, cos
+from lazybot.helper.util import global2local
 
 def yaw_to_quaternion(yaw):
     q = Quaternion()
@@ -21,6 +22,7 @@ class DebugNode(Node):
         self.pos_sub = self.create_subscription(Vector3, '/lazypos', self.pos_callback, 10)
         
         self.pubDebug = self.create_publisher(PointCloud, '/target_point', 10)
+        self.pubCache = self.create_publisher(PointCloud, '/cached_object', 10)
         self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
         self.tf_broadcaster = TransformBroadcaster(self)
         
@@ -39,6 +41,7 @@ class DebugNode(Node):
         self.datass = []
         
         self.objs = []
+        self.obj_cache = []
         
         self.pubOdom()
     
@@ -60,6 +63,15 @@ class DebugNode(Node):
                         "y": tower.y
                     })
         
+        self.obj_cache = []
+        for tower in msg.towerpool:
+            self.obj_cache.append({
+                        "color": tower.color,
+                        "index": tower.index,
+                        "x": tower.x,
+                        "y": tower.y
+                    })
+        
         self.pubDebugPoint()
     
     def pos_callback(self, msg: Vector3):
@@ -72,6 +84,8 @@ class DebugNode(Node):
         
         q = yaw_to_quaternion(self.pos.z - pi/2)
         x, y, z = self.pos.x, -self.pos.y, 0.0
+
+        # self.get_logger().info(f"Publishing odom at x: {x}, y: {y}, yaw: {self.pos.z}")
         
         t = TransformStamped()
         t.header.stamp = current_time
@@ -157,14 +171,29 @@ class DebugNode(Node):
                     targetPnts.channels[0].values.append(0.2)
                 else:
                     targetPnts.channels[0].values.append(0.6)
-
-        for i in range(len(self.datass)):
-            targetPnts.points.append(Point32(x=self.datass[i][0], y=self.datass[i][1], z=0.0))
-            targetPnts.channels[0].values.append(self.datass[i][2])
+        
+        circle_points = 12
+        circle_radius = 0.09
+        for obj in self.obj_cache:
+            cx, cy = obj["x"], obj["y"]
+            for j in range(circle_points):
+                if(obj['color'] == "C"):
+                    circle_radius = 0.18
+                else:
+                    circle_radius = 0.09
+                theta = 2 * pi * j / circle_points
+                x = cx + circle_radius * cos(theta)
+                y = cy + circle_radius * sin(theta)
+                targetPnts.points.append(Point32(x=x, y=y, z=0.0))
+                if(obj['color'] == "R"):
+                    targetPnts.channels[0].values.append(0.0)
+                elif(obj['color'] == "G"):
+                    targetPnts.channels[0].values.append(0.2)
+                else:
+                    targetPnts.channels[0].values.append(0.6)
 
         self.pubDebug.publish(targetPnts)
-
-
+        
 def main(args=None):
     rclpy.init(args=args)
     node = DebugNode()

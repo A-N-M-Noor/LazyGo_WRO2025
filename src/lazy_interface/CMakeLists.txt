@@ -13,6 +13,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/DetectionTowerInfo.msg"
   "msg/DetectionTowerList.msg"
   "msg/LidarTowerInfo.msg"
+  "msg/GlobalTowerInfo.msg"
   "msg/LidarTowerList.msg"
   "msg/BotDebugInfo.msg"
   "msg/BotLidarInfo.msg"

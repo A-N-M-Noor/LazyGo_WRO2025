@@ -3,6 +3,10 @@ import numpy as np
 import pathlib
 import ruamel.yaml
 
+from math import pi, radians, degrees, sin, cos, sqrt, inf
+from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Vector3
+
 directory = pathlib.Path("~/WRO_25_ws/src/lazybot/lazybot").expanduser()
 config_dir = directory / 'configure'
 color_calib_file_cam = config_dir / 'color_data.yaml'
@@ -98,50 +102,15 @@ def make_mask(_hsv, rngMin, rngMax):
 
     return mask
 
-# def process_mask(frame, rng, maskBlr=0, crop = None, hsv = None):
-#     frm = frame.copy()
-#     if(crop is not None):
-#         frm = frm[crop[0]:crop[1], :]
-#     if hsv is None:
-#         hsv = cv2.cvtColor(frm, cv2.COLOR_BGR2HSV)
-        
-
-#     mask = make_mask(hsv, rng[0], rng[1])
-#     blrMask = blur(mask, maskBlr)
-#     _, thresh = cv2.threshold(blrMask, 127, 255, cv2.THRESH_BINARY)
-    
-#     return hsv, blrMask, thresh
-
 def set_space(scp):
     if scp in color_spaces:
         color_calib_data['color_space'] = scp
 
 def preprocess_image(img, clip_limit=3.0, tile_grid_size=(8,8), gamma=1.5, blr=0):
-    
-    # # Convert to LAB color space for CLAHE
-    # lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-    # l, a, b = cv2.split(lab)
-
-    # # Apply CLAHE to L channel
-    # clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
-    # cl = clahe.apply(l)
-
-    # # Merge back and convert to BGR
-    # limg = cv2.merge((cl, a, b))
-    # clahe_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
-    
-    # Apply gamma correction
     invGamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(256)]).astype("uint8")
     gamma_img = cv2.LUT(img, table)
     
-    # # Histogram equalization
-    # # Convert to YUV color space for better histogram equalization
-    # yuv = cv2.cvtColor(gamma_img, cv2.COLOR_BGR2YUV)
-    # yuv[:,:,0] = cv2.equalizeHist(yuv[:,:,0])  # Equalize Y channel
-    # hist_eq_img = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
-
-    # Apply blur if specified
     ret_img = gamma_img
     blr = int(blr)
     if blr > 0:
@@ -180,5 +149,110 @@ def get_contours(mask):
     cnt, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]
     return cnt
     
-def clamp(_num, min_value = 0, max_value = 255):
-    return max(min(_num, max_value), min_value)
+# def clamp(_num, min_value = 0, max_value = 255):
+#     return max(min(_num, max_value), min_value)
+
+def dist(x1, y1, x2, y2):
+    return sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
+def local2global(robot_pos: Vector3, local_x, local_y):
+    x = robot_pos.x
+    y = robot_pos.y
+    a = robot_pos.z
+    global_x = x + local_x * cos(a) - local_y * sin(a)
+    global_y = y + local_x * sin(a) + local_y * cos(a)
+
+    return global_x, global_y
+
+def global2local(robot_pos: Vector3, global_x, global_y):
+    dx = global_x - robot_pos.x
+    dy = global_y - robot_pos.y
+
+    local_x =  dx * cos(robot_pos.z) + dy * sin(robot_pos.z)
+    local_y = dx * sin(robot_pos.z) + dy * cos(robot_pos.z)
+
+    return local_x, local_y
+
+
+def clamp(val, mini = 0, maxi = 255):
+        tMin = mini
+        tMax = maxi
+        if (mini > maxi):
+            tMin = maxi
+            tMax = mini
+        if (val < tMin):
+            return tMin
+        if (val > tMax):
+            return tMax
+        return val
+            
+def remap(old_val, old_min, old_max, new_min, new_max):
+    newVal = (new_max - new_min)*(old_val - old_min) / (old_max - old_min) + new_min
+    return clamp(newVal, new_min, new_max)
+
+def lerp(a, b, t):
+    return clamp(a + (b - a) * t, a, b)
+
+def norm_ang(a):
+        return (a + pi) % (2 * pi) - pi
+
+
+
+class LidarHandler:
+    def __init__(self):
+        self.angMin = -pi
+        self.angMax = pi
+        self.angInc = radians(0.5)
+        self.ranges = []
+        self.ints = []
+    
+
+    def set_laser_vals(self, scan: LaserScan):
+        self.angMin = scan.angle_min
+        self.angMax = scan.angle_max
+        self.angInc = scan.angle_increment
+        self.ranges = scan.ranges
+        self.ints = scan.intensities
+    
+    def fix_missing(self, i):
+        if(i < 0 or i >= len(self.ints)):
+            return 0
+        if(self.ints[i] > 0.05 and self.ranges[i] <= 3.0):
+            return self.ranges[i]
+        first = i
+        last = i
+        while(first > 0 and (self.ints[first] == 0.0 or self.ranges[first] > 3.0)):
+            first -= 1
+            if(first < 0):
+                first = 0
+                break
+        while(last < len(self.ints) and (self.ints[last] == 0.0 or self.ranges[last] > 3.0)):
+            last += 1
+            if(last >= len(self.ints)):
+                last = len(self.ints) - 1
+                break
+        
+        if(self.ints[first] == 0.0 or self.ints[last] == 0.0):
+            return 0
+        if(first == last):
+            return self.ranges[first]
+        
+        return lerp(self.ranges[first], self.ranges[last], (i-first)/(last-first))
+    
+    def get_dst(self, ang):
+        i = self.a2i(radians(ang))
+        if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
+            self.ranges[i] = self.fix_missing(i)
+            self.ints[i] = 1.0
+        return self.ranges[i]
+    
+    def i2a(self, i, deg = False):
+        if deg:
+            return degrees(self.angMin + self.angInc*i)
+        return self.angMin + self.angInc*i
+    
+    def indRng(self, Min, Max):
+        return [self.a2i(Min), self.a2i(Max)]
+
+    def a2i(self, ang):
+        return round((ang -self.angMin) / self.angInc)

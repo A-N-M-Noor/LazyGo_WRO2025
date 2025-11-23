@@ -9,6 +9,7 @@ from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 from std_msgs.msg import String, Int8, Int16MultiArray
 from math import pi, radians, degrees, sin, cos, inf
 import time
+from lazybot.helper.util import clamp, remap, lerp, norm_ang
 
 class Parking(Node):
     def __init__(self):
@@ -247,7 +248,7 @@ class Parking(Node):
         if(first == last):
             return self.ranges[first]
         
-        return self.lerp(self.ranges[first], self.ranges[last], (i-first)/(last-first))
+        return lerp(self.ranges[first], self.ranges[last], (i-first)/(last-first))
 
     def i2a(self, i, deg = False):
         if deg:
@@ -259,28 +260,6 @@ class Parking(Node):
 
     def a2i(self, ang):
         return round((ang -self.angMin) / self.angInc)
-
-    def clamp(self, val, mini, maxi):
-        tMin = mini
-        tMax = maxi
-        if (mini > maxi):
-            tMin = maxi
-            tMax = mini
-        if (val < tMin):
-            return tMin
-        if (val > tMax):
-            return tMax
-        return val
-            
-    def remap(self, old_val, old_min, old_max, new_min, new_max):
-        newVal = (new_max - new_min)*(old_val - old_min) / (old_max - old_min) + new_min
-        return self.clamp(newVal, new_min, new_max)
-
-    def lerp(self, a, b, t):
-        return self.clamp(a + (b - a) * t, a, b)
-    
-    def norm_ang(self, a):
-        return (a + pi) % (2 * pi) - pi
 
 def main(args=None):
     rclpy.init(args=args)

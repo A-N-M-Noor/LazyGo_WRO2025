@@ -9,6 +9,8 @@ from lazy_interface.msg import BotDebugInfo, LidarTowerInfo
 from math import pi, radians, degrees, sin, cos
 import time
 
+from lazybot.helper.util import LidarHandler, clamp, remap, lerp, norm_ang
+
 class ControlNode(Node):
     def __init__(self):
         super().__init__('control')
@@ -38,12 +40,9 @@ class ControlNode(Node):
         
         self.dir = 1 #CCW
         
-        self.angMin = -pi
-        self.angMax = pi
-        self.angInc = radians(0.5)
-        self.ranges = []
-        self.ints = []
+        self.lidar = LidarHandler()
 
+        self.speedBoost = 1.0
         self.maxSpeed : float = 0.60
         self.speedCap : float = 0.40
         self.targetCap : float = 0.40
@@ -166,26 +165,20 @@ class ControlNode(Node):
         
     def lidar_callback(self, msg: LaserScan):
         self.new_lidar_val = True
-
-        self.angMin = msg.angle_min
-        self.angMax = msg.angle_max
-        self.angInc = msg.angle_increment
-
-        self.ranges = msg.ranges
-        self.ints = msg.intensities
+        self.lidar.set_laser_vals(msg)
         
         if not self.running:
             return
         
         if(not self.gotWallD):
-            wi = self.a2i(0.0)
-            if(self.IS_SIM): self.ints[wi] = 1.0
+            wi = self.lidar.a2i(0.0)
+            if(self.IS_SIM): self.lidar.ints[wi] = 1.0
             
-            if(self.ints[wi] <= 0.1 or self.ranges[wi] > 3.0):
-                self.ranges[wi] = self.fix_missing(wi)
-                self.ints[wi] = 1.0
+            if(self.lidar.ints[wi] <= 0.1 or self.lidar.ranges[wi] > 3.0):
+                self.lidar.ranges[wi] = self.lidar.fix_missing(wi)
+                self.lidar.ints[wi] = 1.0
             
-            self.get_logger().info(f"Wall Distance: {self.ranges[wi]:.2f}, End Offset: {self.endOffset}")
+            self.get_logger().info(f"Wall Distance: {self.lidar.ranges[wi]:.2f}, End Offset: {self.endOffset}")
             
             self.gotWallD = True
             
@@ -204,7 +197,7 @@ class ControlNode(Node):
             self.dt = time.time() - self.lastTime
             self.lastTime = time.time()
 
-            self.castR = self.remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
+            self.castR = remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
 
             self.pubObjData()
 
@@ -220,15 +213,14 @@ class ControlNode(Node):
                     break
             
             delta = abs(tA-self.targetAng)
-            self.targetAng = tA if(delta > 0.5) else self.lerp(self.targetAng, tA, 35*self.dt)
-            self.targetAng = self.lerp(self.targetAng, tA, 0.1)
+            self.targetAng = tA if(delta > 0.5) else lerp(self.targetAng, tA, 35*self.dt)
+            self.targetAng = lerp(self.targetAng, tA, 0.1)
             self.targetD = maxD
             
             corner = False
 
             if(self.isInCorner(0.75)):
                 corner = self.corner_handling(self.objs[0] if self.objs else None)
-            
 
             self.targetCap = self.speedCapRng[1]
             if(self.isInCorner(0.15)):
@@ -236,7 +228,7 @@ class ControlNode(Node):
             if(self.targetCap < self.speedCap):
                 self.speedCap = self.targetCap
             else:
-                self.speedCap = self.lerp(self.speedCap, self.targetCap, min(self.dt*5, 1.0))
+                self.speedCap = lerp(self.speedCap, self.targetCap, min(self.dt*5, 1.0))
 
             self.targetAng = degrees(self.targetAng)
             
@@ -246,18 +238,23 @@ class ControlNode(Node):
 
             self.targetAng = self.dangerSense(self.targetAng)
 
-            sAng = self.remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
-            self.strAngle = self.lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
+            self.speedBoost = 1.0
+            if(abs(self.targetAng)  < 5 and maxD > 0.30):
+                self.speedBoost = 2.0
+                self.get_logger().info("Boosting!")
             
-            mult2 = self.remap(maxD, 1.0, 2.0, 0.65, 1.0)
+            sAng = remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
+            self.strAngle = lerp(self.strAngle, sAng, min(self.dt*5, 1.0)) if self.IS_SIM else sAng
+            
+            mult2 = remap(maxD, 1.0, 2.0, 0.65, 1.0)
 
-            self.speed = self.maxSpeed * mult2
+            self.speed = self.maxSpeed * mult2 * self.speedBoost
             self.pubDebugPoint()
             self.new_lidar_val = False
 
     def corner_handling(self, obj):
         if(obj is None):
-            if(self.get_dst(0) < 0.75):
+            if(self.lidar.get_dst(0) < 0.75):
                 return self.dir*90.0
         else:
             ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
@@ -280,7 +277,7 @@ class ControlNode(Node):
     def getMaxDOBJ(self):
         _max = {"dst": 0, "ang": 0}
         
-        chkRng = self.indRng(-self.lookRng, self.lookRng)
+        chkRng = self.lidar.indRng(-self.lookRng, self.lookRng)
 
         self.objs = []
         self.cont_stack = []
@@ -292,12 +289,12 @@ class ControlNode(Node):
             remove = "Left"
         
         for i in range(chkRng[0], chkRng[1], self.skip1):
-            if(self.IS_SIM): self.ints[i] = 1.0
-            if(self.ints[i] <= 0.1 or self.ranges[i] > 3.0):
-                self.ranges[i] = self.fix_missing(i)
-                self.ints[i] = 1.0
+            if(self.IS_SIM): self.lidar.ints[i] = 1.0
+            if(self.lidar.ints[i] <= 0.1 or self.lidar.ranges[i] > 3.0):
+                self.lidar.ranges[i] = self.lidar.fix_missing(i)
+                self.lidar.ints[i] = 1.0
 
-            if(i < 1 or i >= len(self.ranges) or self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
+            if(i < 1 or i >= len(self.lidar.ranges) or self.lidar.ints[i] <= 0.05 or self.lidar.ranges[i] > 3.0):
                 continue
             
             dt = self.marching(i)
@@ -318,7 +315,7 @@ class ControlNode(Node):
     def detectContrast(self, i):
         if(self.IS_OPEN):
             return False
-        slope = (self.ranges[i] - self.ranges[i-self.skip1])
+        slope = (self.lidar.ranges[i] - self.lidar.ranges[i-self.skip1])
         
         if(slope < -0.15):
             self.cont_stack.append(i)
@@ -326,16 +323,16 @@ class ControlNode(Node):
             if(len(self.cont_stack) > 0):
                 pop = self.cont_stack.pop()
                 mid = (i + pop) // 2
-                sz = self.ranges[mid] * abs(i-pop)*self.angInc
+                sz = self.lidar.ranges[mid] * abs(i-pop)*self.lidar.angInc
                 if( sz > 0.02 and sz < 0.1):
-                    ang = self.i2a(mid)
+                    ang = self.lidar.i2a(mid)
                     obj = {
                         "index": mid,
                         "ang": ang,
-                        "dst": self.ranges[mid],
-                        "x": self.ranges[mid] * cos(ang),
-                        "y": self.ranges[mid] * sin(ang),
-                        "intensity": self.ints[mid]
+                        "dst": self.lidar.ranges[mid],
+                        "x": self.lidar.ranges[mid] * cos(ang),
+                        "y": self.lidar.ranges[mid] * sin(ang),
+                        "intensity": self.lidar.ints[mid]
                     }
                     self.objs.append(obj)
                     return obj
@@ -345,17 +342,17 @@ class ControlNode(Node):
         rng = [indx-self.prec*self.skip2, indx+self.prec*self.skip2]
 
         targetRay = {
-            "dst": self.ranges[indx],
-            "ang": self.i2a(indx)
+            "dst": self.lidar.ranges[indx],
+            "ang": self.lidar.i2a(indx)
         }
         
         _min = {"dst": 1000, "ang": 0}
         for i in range(rng[0], rng[1], self.skip2):
-            if(self.IS_SIM): self.ints[i] = 1.0
-            if(i >= 0 and i < len(self.ranges)):
+            if(self.IS_SIM): self.lidar.ints[i] = 1.0
+            if(i >= 0 and i < len(self.lidar.ranges)):
                 ray = {
-                    "dst": self.ranges[i],
-                    "ang": self.i2a(i)
+                    "dst": self.lidar.ranges[i],
+                    "ang": self.lidar.i2a(i)
                 }
 
                 hit = self.hitC(targetRay, ray, self.castR)
@@ -369,31 +366,6 @@ class ControlNode(Node):
             return {"dst": targetRay["dst"], "ang": targetRay["ang"]}
         else:
             return {"dst": _min["dst"], "ang": _min["ang"]}
-    
-    def fix_missing(self, i):
-        if(i < 0 or i >= len(self.ints)):
-            return 0
-        if(self.ints[i] > 0.05 and self.ranges[i] <= 3.0):
-            return self.ranges[i]
-        first = i
-        last = i
-        while(first > 0 and (self.ints[first] == 0.0 or self.ranges[first] > 3.0)):
-            first -= 1
-            if(first < 0):
-                first = 0
-                break
-        while(last < len(self.ints) and (self.ints[last] == 0.0 or self.ranges[last] > 3.0)):
-            last += 1
-            if(last >= len(self.ints)):
-                last = len(self.ints) - 1
-                break
-        
-        if(self.ints[first] == 0.0 or self.ints[last] == 0.0):
-            return 0
-        if(first == last):
-            return self.ranges[first]
-        
-        return self.lerp(self.ranges[first], self.ranges[last], (i-first)/(last-first))
 
     def hitC(self, rayPnt, checkPnt, R):
         dTheta = abs(rayPnt["ang"] - checkPnt["ang"])     
@@ -411,11 +383,11 @@ class ControlNode(Node):
     def dangerSense(self, tAng):
         found_obst = False
         obsAng = 0.0
-        for i in range(len(self.ranges)):
-            if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
+        for i in range(len(self.lidar.ranges)):
+            if(self.lidar.ints[i] <= 0.05 or self.lidar.ranges[i] > 3.0):
                 continue
-            if(self.ranges[i] < self.dangerDist):
-                ang = degrees(self.i2a(i))
+            if(self.lidar.ranges[i] < self.dangerDist):
+                ang = degrees(self.lidar.i2a(i))
                 if(ang > self.dangerAng[0] and ang < self.dangerAng[1]):
                     found_obst = True
                     obsAng = ang
@@ -434,7 +406,7 @@ class ControlNode(Node):
             self.speed = 0.0
             self.strAngle = 0.0
         throttle_msg = Float32()
-        throttle_msg.data = self.clamp(self.speed, -self.speedCap, self.speedCap)
+        throttle_msg.data = clamp(self.speed, -self.speedCap, self.speedCap)
         self.throttle_pub.publish(throttle_msg)
 
         steer_msg = Float32()
@@ -468,46 +440,7 @@ class ControlNode(Node):
             tower.y = obj["y"]
             msg.towers.append(tower)
         self.pubDebug.publish(msg)
-
-    def get_dst(self, ang):
-        i = self.a2i(radians(ang))
-        if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
-            self.ranges[i] = self.fix_missing(i)
-            self.ints[i] = 1.0
-        return self.ranges[i]
     
-    def i2a(self, i, deg = False):
-        if deg:
-            return degrees(self.angMin + self.angInc*i)
-        return self.angMin + self.angInc*i
-    
-    def indRng(self, Min, Max):
-        return [self.a2i(Min), self.a2i(Max)]
-
-    def a2i(self, ang):
-        return round((ang -self.angMin) / self.angInc)
-
-    def clamp(self, val, mini, maxi):
-        tMin = mini
-        tMax = maxi
-        if (mini > maxi):
-            tMin = maxi
-            tMax = mini
-        if (val < tMin):
-            return tMin
-        if (val > tMax):
-            return tMax
-        return val
-            
-    def remap(self, old_val, old_min, old_max, new_min, new_max):
-        newVal = (new_max - new_min)*(old_val - old_min) / (old_max - old_min) + new_min
-        return self.clamp(newVal, new_min, new_max)
-
-    def lerp(self, a, b, t):
-        return self.clamp(a + (b - a) * t, a, b)
-    
-    def norm_ang(self, a):
-        return (a + pi) % (2 * pi) - pi
 
 def main(args=None):
     rclpy.init(args=args)
