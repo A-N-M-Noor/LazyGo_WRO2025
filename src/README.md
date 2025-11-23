@@ -31,12 +31,33 @@ src
 # Software Decisions
 
 This time, software wise, we focused on a few specific aspects of the robot. Even though each member worked in different areas, we all had some goals in mind. For the software part, we wanted to make sure of the following things:
-- **Reliability:** The robot should be very reliable. It cannot behave randomly on different times. Even if the robot doesn't work the issues should be reproducable. Hence, we decided to use ROS2 because it enabled us to test individual parts of the robot and merge them into a robust piece of software.
+- **Reliability:** The robot should be very reliable. It cannot behave randomly on different times. Even if the robot doesn't work the issues should be reproducable. Hence, we decided to use ROS2 because it enabled us to test individual parts of the robot and merge them into a robust piece of software. More on this [later...](#why-ros2)
 - **Accurate Range Sensor:** The distance calculations must be accurate and reliable in order for the softwer to meet our requirements. We need something more reliable that ultrasonic distance sensors. Therefore, we decided upon using a LiDAR. We choose RPLiDAR C1 because, well, it was the cheapest option! But considering the price, it performs really well. The output point cloude is very clean and noise free. Only issue is that the scan rate is only 10Hz. But overall we believe it was a good decision. ROS2 was useful here as well as RPLiDAR has a existing ROS Package to use their LiDARs.
 - **Odometry:** We wanted to have accurate odometry calculation for the robot's movement. This was done using a fusion of IMU sensor values and motor encoder values. The detailed [algorithm](#odometry) is explained below.
 - **ESP32 as a 2nd Brain:** We cannot directly control the actuators from the Raspberry Pi. A regular microcontroller gives way more control over its GPIO pins than a Pi does. Currently, we are extensively using the ESP32 microcontroller's Free RTOS feature to manage different tasks like keeping serial communication, reading sensor data, showing debug info on an OLED display etc. Even though we initially wanted to use an ESP32 only for controlling the motors, and getting sensor data, we later offloaded a few logics to the ESP as well. The tasks that requires instant reaction - mainly the parking tasks are being handled mostly by the ESP32.
 - **Object Detection Issues:** From previous experience, we know that the detection of the towers can be very tricky sometimes. Because we found the objects given during the international round to be very dark for the camera to properly detect them, we spent a lot of time thinking about a possible solution for this. In the end, we decided to use a lower fov camera with a servo to directly look at a target object and detect its color. The [algorithm](#obstacle-round) for this is explained in details below.
 - **Gazebo Simulation:** Due to academic reasons, the main programmer of our team, Noor had to stay away from the team for a resedential semester. During that time, he did not have access to the physical robot, which made it very difficult for him to program the logics for the robot. So he set up a Gazebo simulation environment and perfected the robot's logics there. When he finally had access to the robot, he just implemented the code on the physical robot. ROS2 was very useful here as well. As Gazebo is compatible with ROS2, the same code used for the simulation could also be used for the robots as well.
+
+
+### Why ROS2
+ROS2 (Robot Operating System 2) is a flexible, open-source framework for writing robot software. It provides a collection of tools, libraries, and conventions that simplify the complex task of creating robust and scalable robotic systems. In ROS2, different programs simultaneously run as independent nodes that communicate via various middleware interfaces. Many off-the-shelf components also have dedicated ROS2 packages that makes it super simple and easy to use them with ROS2. ROS2 also comes with a number of debugging tools like rqt-graph, topic echo, rviz, etc. ROS2 also sends its messages over local network which makes it possible to debug a robot from a different device just by connecting them to the same network. Now, our robot mainly have three types of nodes running. One for serial communication with the ESP32, one for using camera for object detection, one for deciding how the robot should move, etc. To give an example, we separated the logics for regular control and parking control into two different nodes. Even tough they share information between each other, they can also work independently. So even if we make a few changes into one of them, the other one isn't affected by that. It also means we can only run the parking node and test the parking portion only without doing the whole run over and over again.
+
+As mentioned before, ROS uses a node based approach where multiple nodes each solves one specific task. But they also share information (i.e. Sensor data, Odom data, Specific commands, etc). These informations are calles messages, and they are shared through topics. multiple nodes can share informations on a topic and multiple nodes can subscribe to them as well. ROS2 provides a utility called `rqt_graph` which shows a graph of all the running nodes and the topics.
+
+<table>
+    <tr>
+        <td align="center">
+            <img src="../assets/rqt_openr.png" alt="RQT During Open Challenge">
+        </td>
+        <td align="center">
+            <img src="../assets/rqt_obstacle.png" alt="RQT During Obstacle Challenge">
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><sub>This is the state of ROS2 when open challenge is running</sub></td>
+        <td align="center"><sub>This is the state of ROS2 when obstacle challenge is running</sub></td>
+    </tr>
+</table>
 
 
 ### Odometry
@@ -210,3 +231,8 @@ Well, fish eye lenses introduce a lot of distortion. It can be fixed by calculat
 
 Also, as we are directly pointing the camera towards a tower, the chance to falsely detect, let's say, the parking walls as a red tower. Our robot doesn't even look at it! 🗿🗿
 
+Here, see it in action:
+
+<p align="center">
+  <a href="https://youtu.be/Rp4g42Nrq9Q"> <img src="../assets/obj_tracking.jpeg" width=400 /> </a>
+</p>
