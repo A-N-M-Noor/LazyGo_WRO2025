@@ -51,7 +51,6 @@ class Parking(Node):
     def parking_loop(self):
         while rclpy.ok():
             if(self.state == "toTurn"):
-                time.sleep(1.0)
                 l = self.get_dst(80)
                 r = self.get_dst(-80)
                 
@@ -107,37 +106,11 @@ class Parking(Node):
 
             elif(self.state == "RunEnd"):
                 if(self.park_dir == "R"):
-                    self.send_c(6)  # Park Right but Move first
+                    self.send_c(6)
                 else:
-                    self.send_c(8)  # Park Left but Move first
+                    self.send_c(8)
                 self.state = "ParkingInit"
             
-            # elif(self.state == "Oriented"):
-            #     f = self.get_dst(0)
-                
-            #     tomove = f - self.parking_offs
-
-            #     self.get_logger().info(f"Oriented: Dist: {f}, Moving {tomove:.2f} m")
-            #     self.cmd_pub.publish(String(data=f"MOVE:{tomove:.2f}"))
-            #     self.state = "Idle"
-            # elif(self.state == "ParkReady"):
-            #     if(self.park_dir == "R"):
-            #         self.send_c(8)
-            #     else:
-            #         self.send_c(9)
-            #     self.state = "Idle"
-            
-            # elif(self.state == "Inside"):
-            #     self.get_logger().info("Deciding exit direction")
-            #     l = self.get_dst(90)
-            #     r = self.get_dst(-90)
-
-            #     c_val = 11
-            #     if(r < l):
-            #         c_val = 10
-            #     self.send_c(c_val)
-            #     self.get_logger().info(f"Exiting parking to the {'right' if c_val == 10 else 'left'}")
-            #     self.state = "Idle"
             time.sleep(0.1)
     
     def set_state_table(self, obj):
