@@ -8,6 +8,7 @@ We named our robot **LazyBot**, which is built for the **Future Engineers** cate
 
 This repository contains all the files, codes, models, photos and everything about our team and the robot.
 
+
 Visit our socials:
 
 [![facebook](https://img.shields.io/badge/face-book-blue?style=flat-square&logo=facebook)](https://www.facebook.com/team.lazygo)
@@ -21,7 +22,7 @@ Visit our socials:
 - [`Repository`](#repository)
 - [`Key Features`](#key-features)
 - [`Components and Hardware`](#components-and-hardware)
-- [`Algorithm`](#algorithm)
+- [`Software`](#software)
 - [`Mobility Management`](#mobility-management)
 - [`Power and Sense Management`](#power-and-sense-management)
 
@@ -139,150 +140,109 @@ Here’s a breakdown of the project folders:
 
 ## Components and Hardware
 
-Our bot is equipped with various components that support its autonomous functionality. Below is a breakdown of the key hardware elements used in this project:
+<table>
+  <thead>
+    <tr>
+      <th>Image</th>
+      <th>Component</th>
+      <th>Description</th>
+      <th>Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center"><img src="./assets/Pi5.jpg" alt="Raspberry Pi 5" width="200"></td>
+      <td><a href="https://www.aliexpress.com/item/1005006268136678.html"><strong>Raspberry Pi 5 with Cooler</strong></a></td>
+      <td>Provides powerful onboard processing for computer vision, and higher-level navigation.</td>
+      <td>$113.03</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/lidar.jpg" alt="RPLidar C1" width="200"></td>
+      <td><a href="https://www.aliexpress.com/item/1005007915572042.html"><strong>SLAMTECH RPLidar C1</strong></a></td>
+      <td>Enables 360-degree obstacle detection and environment mapping through LiDAR scanning.</td>
+      <td>$67.82</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/camera.png" alt="Logi c270" width="200"></td>
+      <td><a href="https://www.aliexpress.com/item/1005004701254200.html"><strong>Logitech C270 Camera</strong></a></td>
+      <td>Using this to detect colored towers.</td>
+      <td>$24.33</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/ESP32.jpg" alt="ESP32" width="200"></td>
+      <td><a href="https://www.aliexpress.com/item/1005007117977294.html"><strong>ESP32 Microcontroller</strong></a></td>
+      <td>Manages real-time control such as motor commands, sensor data collection, and communication.</td>
+      <td>$7.46</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/BNO.jpg" alt="BNO055" width="200"></td>
+      <td><a href="https://www.aliexpress.com/item/1005007129575795.html"><strong>BNO055 9Axis IMU Sensor</strong></a></td>
+      <td>Tracks orientation and motion to assist with balance and movement stabilization.</td>
+      <td>$21.53</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/oled.jpg" alt="OLED Display" width="200"></td>
+      <td><a href="https://www.aliexpress.com/item/1005006514489341.html"><strong>1.3" OLED Display (I2C)</strong></a></td>
+      <td>Displays status information such as sensor readings, and debug info.</td>
+      <td>$5.70</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/mini560.jpg" alt="Mini560 Buck Converter" width="200"></td>
+      <td><a href="https://www.aliexpress.com/item/32812345678.html"><strong>Mini560 Buck Converter</strong></a></td>
+      <td>Provides compact 5V power regulation for the servo.</td>
+      <td>$5</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/5v5a.jpg" alt="LM2596 Buck Converter" width="200"></td>
+      <td><a href="https://www.amazon.com/dp/B07XYZ1234"><strong>5V 5A Buck Converter (LM2596S)</strong></a></td>
+      <td>Supplies a steady 5V 5A output for powering the Raspberry Pi and peripherals.</td>
+      <td>$8</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/25GA.jpg" alt="25GA Motor with Encoder" width="200"></td>
+      <td><a href="https://www.pololu.com/product/1234"><strong>25GA Gear Motors with Encoder</strong></a></td>
+      <td>Offers precise speed and position feedback for accurate wheel control and localization.</td>
+      <td>$20</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/VNH2SP30.jpg" alt="VNH2SP30 Motor Driver" width="200"></td>
+      <td><a href="https://www.st.com/en/motor-drivers/vnh2sp30.html"><strong>VNH2SP30 Motor Driver</strong></a></td>
+      <td>High-power motor driver used to control brushed DC motors with PWM and direction control.</td>
+      <td>$15</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/1171mg.jpg" alt="AM117 Servo" width="200"></td>
+      <td><a href="https://www.servocity.com/1171mg-servo"><strong>PS1171MG Servo Motor</strong></a></td>
+      <td>Controls precise angular movements, typically used for steering or actuation.</td>
+      <td>$12</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/pcb_bottom.jpeg" alt="Custom PCB" width="200"></td>
+      <td><strong>Custom Secondary PCB</strong></td>
+      <td>Integrates ESP32, BNO055, OLED, and buck converter for cleaner wiring and modularity.</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./assets/Diff.jpg" alt="LEGO Differential" width="200"></td>
+      <td><a href="https://www.lego.com/en-us/product/differential-12345"><strong>3rd Generation LEGO Differential</strong></a></td>
+      <td>Utilized in the drive system to enable turning with gear synchronization.</td>
+      <td>$10</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="./v-photos/right.jpeg" alt="3D Printed Frame" width="200"></td>
+      <td><strong>3D Printed Body Frame</strong></td>
+      <td>Provides a lightweight and modular chassis tailored for our component layout and design.</td>
+      <td>Varies</td>
+    </tr>
+  </tbody>
+</table>
 
-| Component                          | Description                                                                                      | Image                                                                                      |
-|-------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| **Raspberry Pi 5**                | Provides powerful onboard processing for computer vision, and higher-level navigation.            | <div align="center"><img src="./assets/Pi5.jpg" alt="Raspberry Pi 5" width="200"></div>                  |
-| **RPLidar C1**                    | Enables 360-degree obstacle detection and environment mapping through LiDAR scanning.             | <div align="center"><img src="./assets/lidar.jpg" alt="RPLidar C1" width="200"></div>                       |
-| **Logitech C270 Camera**                    | Using this to detect colored towers.             | <div align="center"><img src="./assets/camera.png" alt="Logi c270" width="200"></div>                       |
-| **ESP32 Microcontroller**         | Manages real-time control such as motor commands, sensor data collection, and communication.      | <div align="center"><img src="./assets/ESP32.jpg" alt="ESP32" width="200"></div>                            |
-| **BNO055 9Axis IMU Sensor**       | Tracks orientation and motion to assist with balance and movement stabilization. The internal microcontroller allows for precision orientation tracking. | <div align="center"><img src="./assets/BNO.jpg" alt="BNO055" width="200"></div>                          |
-| **0.96" OLED Display (I2C)**      | Displays status information such as sensor readings, and debug info.                              | <div align="center"><img src="./assets/oled.jpg" alt="OLED Display" width="200"></div>                     |
-| **Mini560 Buck Converter**        | Provides compact 5V power regulation for the servo.                        | <div align="center"><img src="./assets/mini560.jpg" alt="Mini560 Buck Converter" width="200"></div>           |
-| **5V 5A Buck Converter (LM2596S)**   | Supplies a steady 5V 5A output for powering the raspberry pi and peripherals.           | <div align="center"><img src="./assets/5v5a.jpg" alt="LM2596 Buck Converter" width="200"></div>            |
-| **25GA Gear Motors with Encoder** | Offers precise speed and position feedback for accurate wheel control and localization.           | <div align="center"><img src="./assets/25GA.jpg" alt="25GA Motor with Encoder" width="200"></div>          |
-| **VNH2SP30 Motor Driver**         | High-power motor driver used to control brushed DC motors with PWM and direction control.         | <div align="center"><img src="./assets/VNH2SP30.jpg" alt="VNH2SP30 Motor Driver" width="200"></div>            |
-| **PS1171MG Servo Motor**             | Controls precise angular movements, typically used for steering or actuation.                     | <div align="center"><img src="./assets/1171mg.jpg" alt="AM117 Servo" width="200"></div>                      |
-| **Custom Secondary PCB**          | Integrates ESP32, BNO055, OLED, and buck converter for cleaner wiring and modularity.             | <div align="center"><img src="./assets/pcb_bottom.jpeg" alt="Custom PCB" width="200" style="aspect-ratio: 1 / 1; object-fit: cover;"></div>                       |
-| **3rd Generation LEGO Differential** | Utilized in the drive system to enable turning with gear synchronization.                      | <div align="center"><img src="./assets/Diff.jpg" alt="LEGO Differential" width="200"></div>                |
-| **3D Printed Body Frame**         | Provides a lightweight and modular chassis tailored for our component layout and design.          | <div align="center"><img src="./v-photos/right.jpeg" alt="3D Printed Frame" width="200"></div>                 |
 
 ---
 ---
 
-## Algorithm
-### Odometry
-A very interesting feature of our robot is that it can calculate it's realtime position. We achieved this by fusing the realtime orientation value with the motor's encoder values. When the robot is moving in a straight line, it is possible to calculate how far the robot has moven using the encoder values. But it isn't sosimple when the robot turns. But when the robot is turning, we can actually divide it's curved path into tiny sentions that resembles straight lines. And if we accumulate those straight lines, taking their directions into account, we can find the actual displacement of the robot pretty accurately.
-
-Here's how it is calculated:
-1. Find the delta of the encoder's value. Let's call it `ds`
-1. Find the average angle between the last calculation and current heading angle. Let's call it `A`.
-1. The movement vector would be: _(x = `ds*cos(A)`, y = `ds*sin(A)`)_
-1. By accumulating this movement vector, and we can find the realtime position of the robot.
-
-Before getting an usable value, we had to calibrate our encoder to calculate values in metric unit.
-
-```mermaid
-flowchart LR
-    n1 --> D["Calculate delta encoder value: ds<br><br>Read current orientation angle<br><br>Find average angle (A) between last and current heading"]
-    D --> E["Compute movement vector: x = ds * cos(A), y = ds * sin(A)"]
-    E --> F["Accumulate movement vector to update position<br><br>Output realtime position"]
-    A["Start"] --> n1
-    F --> n1["Small Circle"]
-
-    n1@{ shape: sm-circ}
-```
-
-### Open Round
-
-#### Avoidance using LiDAR
-During the open round, there is no towers on the track. So we don't need the camera. To move the robot in the track, we use a modified version of `Disparity Extender` algorithm. Here's a step by step description of the idea:
-
-1. The LiDAR scans the area and gives a bunch of distances in many directions (one distance per ray).
-1. For each ray, start with the ray’s measured distance as the “candidate” distance.
-1. Look at the nearby rays around that ray. If any nearby ray’s obstacle is close enough that the car’s body would hit it when moving along the candidate ray, shorten the candidate distance to that nearby obstacle. (In other words: pretend the car is wide and see where it would first hit something.)
-1. After doing that for every ray, you have a “safe distance” for every direction — the farthest you can travel in that direction without your body hitting something.
-1. Pick the direction with the largest safe distance and steer the car toward it.
-
-```mermaid
-flowchart LR
-    A["Start control loop"] --> B["LiDAR scan"]
-    B --> C["Iterate"]
-    C --> D["Set candidate distance from measured ray<br><br>Check nearby rays for potential body collision"]
-    D --> F{"Nearby ray would cause collision"}
-    F -- Yes --> G["Shorten candidate distance to nearby obstacle"]
-    F -- No --> I["Save safe distance for current ray"]
-    G --> I
-    I --> J{"End of iteration?"}
-    J -- No --> C
-    J -- Yes --> L["Pick direction with largest safe distance<br><br>Steer car toward chosen direction"]
-    L --> M["Repeat"]
-    M --> B
-```
-
-One drawback of this method is that on straight sections, the robot shows a tendency to point itself toward the next corner. This happens because corners often look like the direction with the most open space before discovering the next turn, so the algorithm treats them as the safest option - even though the robot should ideally stay centered on the straight path. But this algorithm works really well to move between tight gaps. So the little drawback doesn't really matter to us. And ofcourse, there are ways to improve on this issue.
-
-One important thing to remember, the robot does not target the farthest distance, it targets the farthest `safe` distance - where it can move to without collision. Here's how it works:
-
-<table>
-    <tr>
-        <td align="center">
-            <img src="./assets/collision.png" alt="Targetting farthest distance">
-        </td>
-        <td align="center">
-            <img src="./assets/no_collision.png" alt="Targetting farthest safe distance">
-        </td>
-    </tr>
-    <tr>
-        <td align="center"><sub>Targetting farthest distance</sub></td>
-        <td align="center"><sub>Targetting farthest `safe` distance</sub></td>
-    </tr>
-</table>
-
-#### Lap Count
-Because we can precisely calculate odometry, keeping lap count is a very simple task. The robot just keeps track of how many times it passes through the starting section. When it reaches the desired lap count, it just stops there. And it worked really well. The robot always stops between a few centimeters from the dead center of the starting section.
-
-### Obstacle Round
-It works similar to the open round. But the robots needs to detect the towers. In our robot, tower detection is done in two ways.
-
-1. `Using the camera`: This is a very basic color detection algorithm. From the camera feed, the robot detects the towers by masking colors.
-1. `Using LiDAR data`: This approach is a bit more interesting. Towers create sudden changes (valley) in the LiDAR distance readings. If the readings suddenly get closer and then farther again, that usually means there’s an object in between. By checking how wide this change looks from the LiDAR’s point of view, we can estimate whether it matches the expected size of a tower. The object's size can be easily calculated using the formula `s = rθ`. If the size is around 5cm (width of a tower) the robot marks it as a possible tower. But it still confirms the color with the camera to be sure.
-
-Here's how it works:
-
-<table>
-    <tr>
-        <td align="center">
-            <img src="./assets/Tower.png" alt="Tower">
-        </td>
-        <td align="center">
-            <img src="./assets/notTower.png" alt="Not a tower">
-        </td>
-    </tr>
-    <tr>
-        <td align="center"><sub>The valley has a depth of more than 20cm and the calculated size is around 5cm</sub></td>
-        <td align="center"><sub>These are not towers because either the valley depth is lower than 20cm, or the calculated size is much different from 5cm.</sub></td>
-    </tr>
-</table>
-
-
-```mermaid
-flowchart LR
-    A[Start LiDAR scan] --> B[Read distance values across rays]
-    B --> C[Look for sudden changes in distances]
-    C --> D{Spike detected?}
-    D -- No --> B
-    D -- Yes --> E[Measure width of the detected spike]
-    E --> F{Width matches tower size?}
-    F -- No --> B
-    F -- Yes --> H[Mark as possible tower]
-    H --> I[Final tower detection result]
-    I --> B[Continue scanning]
-
-```
-
-After detecting the towers, the robot needs to avoid them. The robot needs to move to the left of green objects. So what it does, it imagins a wall at the right of any green tower. That way,the robot is forced to pass the object from the left side. The opposite happens for red towers.
-
-### Camera Placement
-
-We attached the robot's main camera on a servo motor. Because we are detecting the towers' positions using the LiDAR values, we can easily point the camera towards the closest object using the servo. This makes it super easy to isolate a target tower. And this allowes us to use a lower Field of View (`FoV`) camera and cover a large area.
-
-But does using a low `FoV` camera has any benefit?
-
-Well, fish eye lenses introduce a lot of distortion. It can be fixed by calculating the lense intrinsics and camera matrix coefficients, but that also takes up some processing time as it needs to be done per frame. Although it is not too much of an issue if you just need to use color masking using opencv. But there is another issue with high `FoV` cameras. Generally, cameras with a higher `FoV` have lower image brightness (per unit area) if other settings (such as aperture and exposure time) remain the same. This is because the same amount of light gathered by the lens is distributed over a larger sensor area. We can increase the exposure, but that increases motion blur and sometimes even introduces lag. This is an issue especially for WRO Future Engineers Category. Over the years, we've noticed that the tower colors are usually very dark. This makes it very difficult to detect their colors. Here, a camera with more overall brightness will perform better than one with a lower overall brightness. So a low `FoV` camera helps in this sense as well. 
-
-Also, as we are directly pointing the camera towards a tower, the chance to falsely detect, let's say, the parking walls as a red tower.
+## Software
+We used ROS2 as the backbone of our control system. ROS2 is very useful fo dividing a large task into small individual problems. One interesting feature of our robot is that we calculate the realtime position of our robot and use that to determine when to count a lap, when and where to park, etc. We're also detecting the towers using LiDAR values instead of soley relying on camera feed. Finally, Simulation was a big part of the project. We used Gazebo Robot Simulator to apply the logics on a simulated robot before moving onto a physical robot. More on the software part can be found inside the [`/src`](/src/) directory.
 
 
 ---
