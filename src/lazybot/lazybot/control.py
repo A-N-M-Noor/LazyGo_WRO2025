@@ -131,7 +131,7 @@ class ControlNode(Node):
                 self.get_logger().info("Reached the destination, stopping the robot.")
                 self.pubDrive(disable=True)
                 self.cmd_pub.publish(String(data="NormalizeIMU"))
-                time.sleep(1.0)
+                time.sleep(5.0)
                 self.cmd_pub.publish(String(data="RunEnd"))
                 return
         
