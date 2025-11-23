@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 // Pin map
-#define BUTTON_PIN 0
+#define BUTTON_PIN 5
 #define STATUS_LED 2
 #define BUZZER_PIN 16
 #define IR_EN 32
