@@ -12,11 +12,13 @@ from lazy_interface.msg import DetectionTowerInfo, DetectionTowerList
 import threading
 import lazybot.helper.util as util
 
+util.set_sim()
+
 class Detect(Node):
     def __init__(self):
         super().__init__('detect')
         self.compressed = True
-        
+
         qos_profile = QoSProfile(
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             history=QoSHistoryPolicy.KEEP_LAST,
@@ -49,7 +51,7 @@ class Detect(Node):
         self.fps_proc = 0.0
         
         self.objs = []
-        self.region = [160, 340]
+        self.region = [60, 440]
         self.closest = None
         
         self.received_objs = []

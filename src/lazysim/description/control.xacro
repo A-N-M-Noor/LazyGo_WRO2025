@@ -6,6 +6,11 @@
             <plugin>gazebo_ros2_control/GazeboSystem</plugin>
         </hardware>
 
+        <joint name="chassis_to_cam_servo">
+            <command_interface name="position" />
+            <state_interface name="position" />
+        </joint>
+
         <joint name="base_to_front_left_hinge">
             <command_interface name="position" />
             <state_interface name="position" />
@@ -41,6 +46,16 @@
             <state_interface name="position" />
         </joint>
     </ros2_control>
+
+    <transmission name="chassis_to_cam_servo_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="chassis_to_cam_servo_actuator">
+            <mechanicalReduction>1.0</mechanicalReduction>
+        </actuator>
+        <joint name="chassis_to_cam_servo">
+            <hardwareInterface>position</hardwareInterface>
+        </joint>
+    </transmission>
 
     <transmission name="front_left_steering_trans">
         <type>transmission_interface/SimpleTransmission</type>

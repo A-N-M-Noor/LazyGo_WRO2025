@@ -13,6 +13,7 @@ import lazybot.helper.util as util
 from lazybot.helper.camera_capture import Camera
 from lazybot.helper.collapsible import CollapsiblePane
 
+util.set_sim()
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -25,6 +26,7 @@ window.grid_columnconfigure(0, weight=1)
 
 
 CAMSRC = "/dev/v4l/by-id/usb-046d_081b_61C8A860-video-index0"
+# CAMSRC = 0
 RANGES = [[0,0,0],[179,255,255]]
 # RANGES = [[0,0,0],[255,255,255]]
 
@@ -218,25 +220,26 @@ class CameraNode(Node):
         super().__init__('color_calibration_node')
         self.declare_parameter('topic', '')
         self.topic = self.get_parameter('topic').get_parameter_value().string_value
-
         self.compressed = True
         
-        qos_profile = QoSProfile(
-            reliability=QoSReliabilityPolicy.BEST_EFFORT,
-            history=QoSHistoryPolicy.KEEP_LAST,
-            depth=3
-        )
         
-        self.create_subscription(
-            CompressedImage if self.compressed else Image,
-            'camera/image_raw'+ ("/compressed" if self.compressed else ""),
-            self.camera_callback,
-            qos_profile)
-        self.create_subscription(
-            Float32MultiArray,
-            'obj_data',
-            self.obj_callback,
-            10)
+        
+        if(self.topic != ''):
+            qos_profile = QoSProfile(
+                reliability=QoSReliabilityPolicy.BEST_EFFORT,
+                history=QoSHistoryPolicy.KEEP_LAST,
+                depth=3
+            )
+            self.create_subscription(
+                CompressedImage if self.compressed else Image,
+                'camera/image_raw'+ ("/compressed" if self.compressed else ""),
+                self.camera_callback,
+                qos_profile)
+            self.create_subscription(
+                Float32MultiArray,
+                'obj_data',
+                self.obj_callback,
+                10)
         
         # self.create_timer(1/60, self.show_view)        
         self.lastImgTime = None
@@ -351,19 +354,22 @@ class CameraNode(Node):
         msk1 = self.getInRange(ch1, H_min.get(), H_max.get())
         msk2 = self.getInRange(ch2, S_min.get(), S_max.get())
         msk3 = self.getInRange(ch3, V_min.get(), V_max.get())
-        
 
         # Create a blank canvas of the original size
         collage = np.zeros_like(_frm)
 
         # Place the small images in each quadrant
         collage[0:h//2, 0:w//2] = main
+
+        chn1 = cv2.merge([ch1, ch1, ch1])
+        chn2 = cv2.merge([ch2, ch2, ch2])
+        chn3 = cv2.merge([ch3, ch3, ch3])
         # Top-right: Channel 1 (e.g., Hue/L) as grayscale
-        collage[0:h//2, w//2:w] = cv2.bitwise_and(cv2.merge([msk1, msk1, msk1]), cv2.merge([msk1, msk1, msk1]), mask=msk1)
+        collage[0:h//2, w//2:w] = cv2.bitwise_and(chn1, chn1, mask=msk1)
         # Bottom-left: Channel 2 (e.g., Saturation/A) as grayscale
-        collage[h//2:h, 0:w//2] = cv2.bitwise_and(cv2.merge([ch2, ch2, ch2]), cv2.merge([ch2, ch2, ch2]), mask=msk2)
+        collage[h//2:h, 0:w//2] = cv2.bitwise_and(chn2, chn2, mask=msk2)
         # Bottom-right: Channel 3 (e.g., Value/B) as grayscale
-        collage[h//2:h, w//2:w] = cv2.bitwise_and(cv2.merge([ch3, ch3, ch3]), cv2.merge([ch3, ch3, ch3]), mask=msk3)
+        collage[h//2:h, w//2:w] = cv2.bitwise_and(chn3, chn3, mask=msk3)
 
         return collage
     

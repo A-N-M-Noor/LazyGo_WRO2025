@@ -1,11 +1,11 @@
-objects: false
+objects: true
 
 parking:
     enabled: false
     size: 0.3
     pos:
-        x: 0.35
-        y: -0.4
+        x: 0.0
+        y: 0.0
     angle: 0.0
 
 
@@ -17,27 +17,27 @@ start:
     angle: 0
 
 towers:
-    # -   color: "Green"
-    #     pos:
-    #         x: 0.5
-    #         y: -0.1
-    # -   color: "Red"
-    #     pos:
-    #         x: 1.1
-    #         y: 1.5
-    # -   color: "Green"
-    #     pos:
-    #         x: 0.5
-    #         y: 1.9
-    # -   color: "Green"
-    #     pos:
-    #         x: -0.5
-    #         y: 1.9
-    # -   color: "Red"
-    #     pos:
-    #         x: -1.1
-    #         y: 1.5
-    # -   color: "Green"
-    #     pos:
-    #         x: -0.9
-    #         y: 0.5
+    -   color: "Green"
+        pos:
+            x: 0.5
+            y: -0.1
+    -   color: "Red"
+        pos:
+            x: 1.1
+            y: 1.5
+    -   color: "Green"
+        pos:
+            x: 0.5
+            y: 1.9
+    -   color: "Green"
+        pos:
+            x: -0.5
+            y: 1.9
+    -   color: "Red"
+        pos:
+            x: -1.1
+            y: 1.5
+    -   color: "Green"
+        pos:
+            x: -0.9
+            y: 0.5

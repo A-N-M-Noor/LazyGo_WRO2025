@@ -40,7 +40,7 @@ class Detect(Node):
         self.fps_proc = 0.0
         
         self.objs = []
-        self.region = [160, 340]
+        self.region = [60, 440]
         self.closest = None
         
         self.received_objs = []

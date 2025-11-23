@@ -46,7 +46,8 @@ class LazyBridge(Node):
 
         self.create_subscription(Float32, '/throttle', self.throttle_callback, 1)
         self.create_subscription(Float32, '/steer', self.steer_callback, 1)
-
+        self.create_subscription(Int8, '/cam_servo', self.cam_callback, 1)
+        
         self.motor_pub = self.create_publisher(Float64MultiArray, '/velocity_controller/commands', 10)
         self.steer_pub= self.create_publisher(Float64MultiArray, '/position_controller/commands', 10)
 
@@ -64,12 +65,22 @@ class LazyBridge(Node):
 
         self.encoder = [0.0, 0.0]
         self.encoderPrev = self.encoder.copy()
+
+        self.axle = [0.0, 0.0, 0.0, 0.0]
+        self.ackmnn = [0.0, 0.0]
         
         self.pos = [0.0, 0.0]
+        self.cam_target_angle = 0.0
+        self.cam_current_angle = 0.0
         
         self.create_timer(0.05, self.odom)
+        self.create_timer(0.02, self.control_loop)
         
         self.get_logger().info("LazyBridge Node has been started.")
+
+    def cam_callback(self, msg: Int8):
+        self.cam_target_angle = radians(msg.data)
+        
 
     def throttle_callback(self, msg: Float32):
         self.throttle = msg.data
@@ -81,8 +92,8 @@ class LazyBridge(Node):
         str_ang = self.steer * self.max_steer
         
         if (abs(str_ang) < 0.17):
-            self.motor_pub.publish(Float64MultiArray(data=[whl_spd, whl_spd, whl_spd, whl_spd]))
-            self.steer_pub.publish(Float64MultiArray(data=[str_ang, str_ang]))
+            self.axle = [whl_spd, whl_spd, whl_spd, whl_spd]
+            self.ackmnn = [str_ang, str_ang]
             return
         
         ang = abs(str_ang)
@@ -109,9 +120,14 @@ class LazyBridge(Node):
         if str_ang < 0:
             strL, strR = -strR, -strL
             spdBL, spdBR = spdBR, spdBL
-
-        self.motor_pub.publish(Float64MultiArray(data=[spdBL, spdBR, spdFL, spdFR]))
-        self.steer_pub.publish(Float64MultiArray(data=[strL, strR]))
+        
+        self.ackmnn = [strL, strR]
+        self.axle = [spdBL, spdBR, spdFL, spdFR]
+        
+    def control_loop(self):
+        self.cam_current_angle = self.cam_current_angle + (self.cam_target_angle - self.cam_current_angle) * 0.1
+        self.motor_pub.publish(Float64MultiArray(data=self.axle))
+        self.steer_pub.publish(Float64MultiArray(data=self.ackmnn+[self.cam_current_angle])) 
 
     def state_callback(self, msg: JointState):
         pos = dict(zip(msg.name, msg.position))

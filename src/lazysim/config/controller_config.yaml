@@ -25,6 +25,7 @@ position_controller:
     joints:
       - base_to_front_left_hinge
       - base_to_front_right_hinge
+      - chassis_to_cam_servo
     interface_name: position
 
 joint_state_broadcaster:
@@ -36,3 +37,4 @@ joint_state_broadcaster:
       - front_right_hinge_to_wheel
       - base_to_back_left_wheel
       - base_to_back_right_wheel
+      - chassis_to_cam_servo

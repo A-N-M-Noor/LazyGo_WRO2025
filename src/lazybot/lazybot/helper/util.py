@@ -5,7 +5,9 @@ import ruamel.yaml
 
 directory = pathlib.Path("~/WRO_25_ws/src/lazybot/lazybot").expanduser()
 config_dir = directory / 'configure'
-color_calib_file = config_dir / 'color_data.yaml'
+color_calib_file_cam = config_dir / 'color_data.yaml'
+color_calib_file_sim = config_dir / 'color_data_sim.yaml'
+color_calib_file = color_calib_file_cam
 
 yaml = ruamel.yaml.YAML(pure=True)
 yaml.indent(mapping=4)
@@ -20,6 +22,12 @@ color_spaces = {
     "LUV": cv2.COLOR_BGR2Luv,
     "YCrCb": cv2.COLOR_BGR2YCrCb
 }
+
+def set_sim():
+    global color_calib_file
+    color_calib_file = color_calib_file_sim
+
+set_sim()
 
 def get_color_calib_file():
     with open(color_calib_file, 'r') as file:
@@ -71,7 +79,7 @@ def save_range_data(cSpace, color, rng, blr, mskBlr, gamma):
     color_calib_data['colors'][color]['max'] = rng[1]
     color_calib_data['main_blur'] = int(blr)
     color_calib_data['mask_blur'] = int(mskBlr)
-    color_calib_data['gamma'] = float(gamma)
+    color_calib_data['gamma'] = round(gamma, 2)
 
     save_color_calib(color_calib_data)
 

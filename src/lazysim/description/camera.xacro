@@ -1,10 +1,26 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
+    <joint name="chassis_to_cam_servo" type="revolute">
+        <parent link="chassis" />
+        <child link="cam_servo_link" />
+        <origin xyz="${camera_distance} 0 ${camera_height}" />
+        <axis xyz="0 0 1" />
+        <limit lower="${-pi/2}" upper="${pi/2}" effort="10" velocity="50" />
+    </joint>
+
+    <link name="cam_servo_link">
+        <inertial>
+            <mass value="${hinge_mass}" />
+            <inertia ixx="${hinge_mass*0.01}" iyy="${hinge_mass*0.01}" izz="${hinge_mass*0.01}"
+                ixy="0" ixz="0" iyz="0" />
+        </inertial>
+    </link>
+
     <joint name="camera_joint" type="fixed">
-        <parent link="chassis"/>
+        <parent link="cam_servo_link"/>
         <child link="camera_link"/>
-        <origin xyz="${camera_distance} 0 ${camera_height}" rpy="0 0 0"/>
+        <origin xyz="0 0 0" rpy="0 ${pi/24} 0"/>
     </joint>
 
     <link name="camera_link">
@@ -34,7 +50,7 @@
             <update_rate>60</update_rate>
             <camera>
                 <!-- <horizontal_fov>2.7925268</horizontal_fov> -->
-                <horizontal_fov>2.0944</horizontal_fov>
+                <horizontal_fov>${pi/3}</horizontal_fov>
                 <image>
                     <format>R8G8B8</format>
                     <width>640</width>
