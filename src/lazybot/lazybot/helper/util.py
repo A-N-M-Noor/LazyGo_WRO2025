@@ -27,7 +27,7 @@ def set_sim():
     global color_calib_file
     color_calib_file = color_calib_file_sim
 
-set_sim()
+# set_sim()
 
 def get_color_calib_file():
     with open(color_calib_file, 'r') as file:

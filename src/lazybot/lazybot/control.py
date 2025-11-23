@@ -185,9 +185,6 @@ class ControlNode(Node):
                 self.ranges[wi] = self.fix_missing(wi)
                 self.ints[wi] = 1.0
             
-            # self.endOffset[0] = self.ranges[wi] - 1.5
-            # self.endOffset[1] = self.ranges[wi] - 0.5
-            
             self.get_logger().info(f"Wall Distance: {self.ranges[wi]:.2f}, End Offset: {self.endOffset}")
             
             self.gotWallD = True
@@ -268,26 +265,6 @@ class ControlNode(Node):
         
         return False
 
-    # def prevent_full_turn(self, obj):
-    #     if(self.IS_OPEN):
-    #         return False
-    #     if(obj is None):
-    #         return False
-    #     ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
-    #     return degrees(obj['ang'] + ang)
-    
-    # def prevent_corner(self, obj):
-    #     if(self.IS_OPEN):
-    #         return False
-    #     rel_sec = self.sectionAngle - self.pos.z
-        
-    #     if(self.targetD < 1.2 and (obj is None or abs(obj['ang']) > radians(60))):
-            
-    #         if(rel_sec*self.dir > 0):
-    #             return self.dir*90.0
-        
-    #     return False
-    
     def isInCorner(self, bleeding = 0.0):
         for corner in self.cornerPOS:
             isIn = abs(self.pos.x - corner[0]) < 0.50 + bleeding and abs(self.pos.y - corner[1]) < 0.50 + bleeding
@@ -302,7 +279,6 @@ class ControlNode(Node):
     
     def getMaxDOBJ(self):
         _max = {"dst": 0, "ang": 0}
-        # _prev_max = _max.copy()
         
         chkRng = self.indRng(-self.lookRng, self.lookRng)
 
@@ -333,25 +309,12 @@ class ControlNode(Node):
             objectFound = self.detectContrast(i)
             
             if objectFound:
-                # if abs(_max["ang"]) > pi/3:
-                #     if self.prevent_full_turn(_max):
-                #         self.get_logger().info(f"Preventing full turn: {_max['ang']}")
-                #         _max = _prev_max.copy()
-
                 if remove == "Right":
                     _max = dt
                 if remove == "Left":
                     return _max["dst"], _max["ang"]
         return _max["dst"], _max["ang"]
-    
-    # def prevent_full_turn(self, target):
-    #     rel_sec = self.sectionAngle - self.pos.z
-    #     rel_target = target["ang"] - rel_sec
-        
-    #     if(self.dir == 1 and rel_target > pi/4 and target["dst"] > 0.8):
-    #         self.get_logger().info(f"\n>>> a{degrees(target['ang']):.2f}, rs{degrees(rel_sec):.2f}, rt{degrees(rel_target):.2f}, d{target['dst']:.2f}")
-    #         return True
-    
+
     def detectContrast(self, i):
         if(self.IS_OPEN):
             return False
@@ -463,7 +426,6 @@ class ControlNode(Node):
                     break
         if(found_obst):
             if(tAng*obsAng > 0):
-                # self.get_logger().info(f"Dangerous obstacle detected at {obsAng:.2f}°, adjusting target angle from {tAng:.2f}° to {tAng/3:.2f}°")
                 return tAng/3
         return tAng
 
