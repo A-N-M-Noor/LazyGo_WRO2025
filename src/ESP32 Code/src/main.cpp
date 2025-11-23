@@ -22,6 +22,7 @@ const float TPM = 1873.0;  // Ticks per meter for the wheel encoders, defined he
 
 Motors motors;
 int cam_current = CAM_SERVO_CENTER_US;
+bool cam_control = false;
 
 float spdMult = 0.75;
 int srlToSpd = 1000;
@@ -128,7 +129,12 @@ void srl() {
                 int ang = constrain(v - 50, CAM_SERVO_ANGLE_MIN, CAM_SERVO_ANGLE_MAX);
 
                 int t_us = map(ang, CAM_SERVO_ANGLE_MIN, CAM_SERVO_ANGLE_MAX, CAM_SERVO_MIN_US, CAM_SERVO_MAX_US);
-                motors.setCamServoUs(t_us);
+                if(cam_control){
+                    motors.setCamServoUs(t_us);
+                }
+                else{
+                    motors.setCamServoUs(CAM_SERVO_CENTER_US);
+                }
             }
 
             if(key == 31){
@@ -236,12 +242,13 @@ void setup() {
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
     }
     disableIR();
+    parkingSpeedHigh();
     while (digitalRead(BUTTON_PIN) == LOW) {
         //bnoCalc();
         vTaskDelay(50 / portTICK_PERIOD_MS);  // Yield to other tasks for 100 milliseconds
     }
     bnoCalcOffset(200);    // Adjust offset as soon as button is released
-    
+    cam_control = true;
     tone(BUZZER_PIN, BUZZ_HIGH, 500);
 
     // move_pos(1.0);
@@ -279,22 +286,16 @@ void setup() {
 }
 
 void paark(int dir){
-    // enableIR();
+    cam_control = false;
 
     motors.setServoUs(SERVO_CENTER_US);
     vTaskDelay(50 / portTICK_PERIOD_MS);
     move_pos(0.15, 0.0);
-    // turn_angle_opp(22.5*dir);
-    // turn_angle(45*dir);
-    // turn_angle_opp(67.5*dir);
-    // turn_angle(75*dir);
-    // turn_angle_opp(90*dir);
-    // turn_angle(90*dir);
 
-    turn_angle_opp(15*dir);
-    turn_angle(30*dir);
-    turn_angle_opp(45*dir);
-    turn_angle(60*dir);
+    turn_angle_opp(25*dir);
+    turn_angle(25*dir);
+    turn_angle_opp(50*dir);
+    turn_angle(65*dir);
     turn_angle_opp(75*dir);
     turn_angle(90*dir);
     turn_angle_opp(90*dir);
@@ -328,6 +329,7 @@ void loop() {
     if (command == "straight") {
         motors.setServoUs(SERVO_CENTER_US);
         move_pos(0.10);
+        parkingSpeedLow();
         turn_angle(0);
         setCommand("none","loop:straight");
         COMM_SER.println("Done");
@@ -342,6 +344,7 @@ void loop() {
         } else {
             turn_angle(-135);
         }
+        parkingSpeedLow();
         turn_angle(0);
         setCommand("none","loop:passTurn");
         COMM_SER.println("Done");
@@ -363,12 +366,9 @@ void loop() {
         turn_angle(45);
         motors.setServoUs(SERVO_CENTER_US);
         vTaskDelay(100 / portTICK_PERIOD_MS);
-        COMM_SER.println(">>Front-Right Dist: " + String(dstFR));
         float tomove = dstFR - moveSideDist;
-        COMM_SER.println(">>To Move: " + String(tomove));
         // if(tomove > 0){
             tomove = tomove * 1.4142;
-            COMM_SER.println(">>Adjusted To Move: " + String(tomove));
             tone(BUZZER_PIN, BUZZ_LOW, 200);
             move_pos(tomove/100);
             tone(BUZZER_PIN, BUZZ_HIGH, 200);
@@ -380,12 +380,9 @@ void loop() {
         turn_angle(-45);
         motors.setServoUs(SERVO_CENTER_US);
         vTaskDelay(100 / portTICK_PERIOD_MS);
-        COMM_SER.println(">>Front-Left Dist: " + String(dstFL));
         float tomove = dstFL - moveSideDist;
-        COMM_SER.println(">>To Move: " + String(tomove));
         // if(tomove > 0){
             tomove = tomove * 1.4142;
-            COMM_SER.println(">>Adjusted To Move: " + String(tomove));
             tone(BUZZER_PIN, BUZZ_LOW, 200);
             move_pos(tomove/100);
             tone(BUZZER_PIN, BUZZ_HIGH, 200);
@@ -399,13 +396,12 @@ void loop() {
         vTaskDelay(500 / portTICK_PERIOD_MS);
         motors.setServoUs(SERVO_CENTER_US);
 
-        COMM_SER.println(">>Front Dist: " + String(dstF));
+        parkingSpeedHigh();
         float toMove = dstF - parkFrontDist[park_is_back ? 1 : 0];
-        COMM_SER.println(">>To Move: " + String(toMove));
         move_pos(toMove/100, 0.0);
         vTaskDelay(500 / portTICK_PERIOD_MS);
 
-
+        parkingSpeedLow();
         toMove = dstF - parkFrontDist[park_is_back ? 1 : 0];
         move_pos(toMove/100, 0.0);
         vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -417,7 +413,7 @@ void loop() {
 
         turn_angle_opp(90);
         turn_angle_opp(90);
-        move_pos(-0.32, 90.0);
+        move_pos(-0.27, 90.0);
 
         vTaskDelay(100 / portTICK_PERIOD_MS);
         if(dstL > dstR){
@@ -452,7 +448,7 @@ void loop() {
 
         turn_angle_opp(-90);
         turn_angle_opp(-90);
-        move_pos(-0.32, -90.0);
+        move_pos(-0.27, -90.0);
 
         vTaskDelay(100 / portTICK_PERIOD_MS);
         if(dstL > dstR){
@@ -463,32 +459,6 @@ void loop() {
             setCommand("park_fin_L","loop:parkRight");
         }
     }
-    // if(command == "park_ready_1"){
-    //     turn_angle(0);
-    //     COMM_SER.println("Oriented");
-    //     setCommand("none","loop:park_ready_1");
-    // }
-    // if (command == "move_pos_dst"){
-    //     motors.setServoUs(SERVO_CENTER_US);
-    //     move_pos(tomove);
-    //     COMM_SER.println("ParkReady");
-    //     setCommand("none","loop:move_pos_dst");
-    // }
-    // if (command == "parkL") {
-    //     turn_div(1);
-    //     // head_into(90);
-    //     move_pos(-1.0);
-    //     bnoCalcOffset(500);
-    //     setCommand("none","loop:parkL");
-    //     COMM_SER.println("Inside");
-    // }
-    // if (command == "parkR") {
-    //     turn_div(-1);
-    //     move_pos(-1.0);
-    //     bnoCalcOffset(500);
-    //     setCommand("none","loop:parkR");
-    //     COMM_SER.println("Inside");
-    // }
 
     if(command == "park_fin_R"){
         bnoCalcOffset(500);

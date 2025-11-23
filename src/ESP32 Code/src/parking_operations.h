@@ -10,3 +10,6 @@ void move_pos(float distance);
 void move_pos(float distance, float target_heading);
 
 void head_into(float trg);
+
+void parkingSpeedHigh();
+void parkingSpeedLow();

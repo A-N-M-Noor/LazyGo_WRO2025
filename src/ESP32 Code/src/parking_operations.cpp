@@ -23,6 +23,14 @@ void setUseIR(bool stt){
     useIR = stt;
 }
 
+void parkingSpeedHigh(){
+    parking_speed = 220;
+}
+
+void parkingSpeedLow(){
+    parking_speed = 120;
+}
+
 bool IR_any(){
     if(!useIR){
         return false;
