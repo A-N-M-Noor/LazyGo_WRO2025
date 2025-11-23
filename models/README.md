@@ -1,6 +1,6 @@
 ## Robot Design Overview
 
-<img src="assets/robot.png" align="right" width="300" />
+<img src="../assets/robot.png" align="right" width="500" />
 
 Our robot was fully designed in **Onshape**, enabling seamless collaboration and easy duplication through a shared project link. The mechanical structure was developed with a core objective:
 
