@@ -142,22 +142,117 @@ Here’s a breakdown of the project folders:
 
 Our bot is equipped with various components that support its autonomous functionality. The table below summarizes each module with a concise role and assumed mounting approach (you can later refine any mounting notes):
 
-| Component | Role / Function | Mounting | Image |
-|-----------|-----------------|--------------------|-------|
-| **Raspberry Pi 5** | High‑level processing (ROS2, vision, LiDAR integration). 8GB RAM for parallel tasks. | 3D printed middle chassis plate + 4× M2.5 standoffs & screws on chassis top plate. | <div align="center"><img src="./assets/Pi5.jpg" width="160" alt="Raspberry Pi 5"></div> |
-| **RPLidar C1** | 360° environment scan for obstacle mapping & tower shape profiling. | Top cover LiDAR mount, 4× M2.5 screws. Resting on middle layer tray for support. | <div align="center"><img src="./assets/lidar.jpg" width="160" alt="RPLidar C1"></div> |
-| **Logitech C270 Camera** | Color tower detection (masking & confirmation). | Mounted on 3D printed pan servo mount with single screws for angle adjustment. | <div align="center"><img src="./assets/camera.png" width="160" alt="C270"></div> |
-| **ESP32 Microcontroller** | Real‑time motor, encoder, IMU, servo & OLED interface; low‑level comms. | Soldered to custom secondary PCB under top cover. | <div align="center"><img src="./assets/ESP32.jpg" width="160" alt="ESP32"></div> |
-| **BNO055 9‑Axis IMU** | Orientation & fused heading for odometry; low drift angle source. | Center (slightly left) of PCB for vibration isolation; header pins +  foam tape as spacer for mild vibration dampening. | <div align="center"><img src="./assets/BNO.jpg" width="160" alt="BNO055"></div> |
-| **1.3" OLED (I2C)** | Live status: sensor readouts, battery warnings, debug info. | Vertical raised header on PCB rear edge + friction with top cover. | <div align="center"><img src="./assets/oled.jpg" width="160" alt="OLED"></div> |
-| **5V 20A Buck Converter** | Primary regulated 5V rail for Pi (headroom for peaks). | Middle chassis plate with double sided tape. | <div align="center"><img src="./assets/5V20A.jpg" width="160" alt="5V 20A Buck"></div> |
-| **5V 5A Buck (SCT2650)** | Secondary regulated supply for noise generating components (Servo, peripherals). | Bottom of PCB (to save space). | <div align="center"><img src="./assets/5v5a.jpg" width="160" alt="5V 5A Buck"></div> |
-| **25GA Gear Motors + Encoder** | Drivetrain torque + linear displacement feedback for odometry. | Captured in printed motor housings; 2× M3 screws. | <div align="center"><img src="./assets/25GA.jpg" width="160" alt="25GA Motor"></div> |
-| **VNH2SP30 Motor Driver** | High‑current brushed DC control (PWM + direction + protection). | Screwed to the bottom of the second/middle layer. | <div align="center"><img src="./assets/VNH2SP30.jpg" width="160" alt="Motor Driver"></div> |
-| **PS1171MG Servo** | Steering actuation & camera pan positioning. | 3D printed steering bracket/3D printed LiDAR bracket with integrated servo hole. 2× self‑tapping screws each. | <div align="center"><img src="./assets/1171mg.jpg" width="160" alt="Servo"></div> |
-| **Custom Secondary PCB** | Integration hub: ESP32, IMU, OLED, some power distribution, headers and lots of capacitors. | Four M3 standoffs to chassis mid‑deck and top over. | <div align="center"><img src="./assets/pcb_top.jpeg" width="160" alt="Secondary PCB"></div> |
-| **LEGO Differential (Gen 3)** | Allows inner/outer wheel speed difference for smooth turning. | Seated in printed cradle; retained by axle bearings (friction). | <div align="center"><img src="./assets/Diff.jpg" width="160" alt="Differential"></div> |
-| **3D Printed Body Frame** | Structural chassis: mounting surfaces, protective shell. 3 Layer design. | Base structure (printed as modules with minimum support); screw or snap‑fit/friction. | <div align="center"><img src="./v-photos/right.jpeg" width="160" alt="Frame"></div> |
+<table>
+  <thead>
+    <tr>
+      <th>Image</th>
+      <th>Component</th>
+      <th>Price</th>
+      <th>Role / Function</th>
+      <th>Mounting</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><div align="center"><img src="./assets/Pi5.jpg" width="160" alt="Raspberry Pi 5"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005008153885728.html">Raspberry Pi 5</a></td>
+      <td>$100.00</td>
+      <td>High‑level processing (ROS2, vision, LiDAR integration). 8GB RAM for parallel tasks.</td>
+      <td>3D printed middle chassis plate + 4× M2.5 standoffs & screws on chassis top plate.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/lidar.jpg" width="160" alt="RPLidar C1"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005007915572042.html">RPLidar C1</a></td>
+      <td>$67.87</td>
+      <td>360° environment scan for obstacle mapping & tower shape profiling.</td>
+      <td>Top cover LiDAR mount, 4× M2.5 screws. Resting on middle layer tray for support.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/camera.png" width="160" alt="C270"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005005033359539.html">Logitech C270 Camera</a></td>
+      <td>$24.76</td>
+      <td>Color tower detection (masking & confirmation).</td>
+      <td>Mounted on 3D printed pan servo mount with single screws for angle adjustment.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/ESP32.jpg" width="160" alt="ESP32"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005006826620736.html">ESP32 Microcontroller</a></td>
+      <td>$7.38</td>
+      <td>Real‑time motor, encoder, IMU, servo & OLED interface; low‑level comms.</td>
+      <td>Soldered to custom secondary PCB under top cover.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/BNO.jpg" width="160" alt="BNO055"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005009534591471.html">BNO055 9‑Axis IMU</a></td>
+      <td>$22.28</td>
+      <td>Orientation & fused heading for odometry; low drift angle source.</td>
+      <td>Center (slightly left) of PCB for vibration isolation; header pins + foam tape as spacer for mild vibration dampening.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/oled.jpg" width="160" alt="OLED"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005008934254841.html">1.3" OLED (I2C)</a></td>
+      <td>$5.83</td>
+      <td>Live status: sensor readouts, battery warnings, debug info.</td>
+      <td>Vertical raised header on PCB rear edge + friction with top cover.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/5V20A.jpg" width="160" alt="5V 20A Buck"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005008785628197.html">5V 20A Buck Converter</a></td>
+      <td>$6.21</td>
+      <td>Primary regulated 5V rail for Pi (headroom for peaks).</td>
+      <td>Middle chassis plate with double sided tape.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/5v5a.jpg" width="160" alt="5V 5A Buck"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005008477697348.html">5V 5A Buck (SCT2650)</a></td>
+      <td>$3.99</td>
+      <td>Secondary regulated supply for noise generating components (Servo, peripherals).</td>
+      <td>Bottom of PCB (to save space).</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/25GA.jpg" width="160" alt="25GA Motor"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005008766288833.html">25GA Gear Motors + Encoder</a></td>
+      <td>$9.65</td>
+      <td>Drivetrain torque + linear displacement feedback for odometry.</td>
+      <td>Captured in printed motor housings; 2× M3 screws.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/VNH2SP30.jpg" width="160" alt="Motor Driver"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005006213746966.html">VNH2SP30 Motor Driver</a></td>
+      <td>$18</td>
+      <td>High‑current brushed DC control (PWM + direction + protection).</td>
+      <td>Screwed to the bottom of the second/middle layer.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/1171mg.jpg" width="160" alt="Servo"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005002533411942.html">PS1171MG Servo</a></td>
+      <td>$16.00</td>
+      <td>Steering actuation & camera pan positioning.</td>
+      <td>3D printed steering bracket/3D printed LiDAR bracket with integrated servo hole. 2× self‑tapping screws each.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/pcb_top.jpeg" width="160" alt="Secondary PCB"></div></td>
+      <td>Custom Secondary PCB</td>
+      <td>N/A</td>
+      <td>Integration hub: ESP32, IMU, OLED, some power distribution, headers and lots of capacitors.</td>
+      <td>Four M3 standoffs to chassis mid‑deck and top over.</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./assets/Diff.jpg" width="160" alt="Differential"></div></td>
+      <td><a href="https://www.aliexpress.com/item/1005007345491844.html">LEGO Differential (Gen 3)</a></td>
+      <td>$1.84</td>
+      <td>Allows inner/outer wheel speed difference for smooth turning.</td>
+      <td>Seated in printed cradle; retained by axle bearings (friction).</td>
+    </tr>
+    <tr>
+      <td><div align="center"><img src="./v-photos/right.jpeg" width="160" alt="Frame"></div></td>
+      <td>3D Printed Body Frame</td>
+      <td>Varies</td>
+      <td>Structural chassis: mounting surfaces, protective shell. 3 Layer design.</td>
+      <td>Base structure (printed as modules with minimum support); screw or snap‑fit/friction.</td>
+    </tr>
+  </tbody>
+</table>
 
 > More details on the Power and sensing components can be found below.
 ---
@@ -188,7 +283,7 @@ The LazyBot chassis was designed completely from scratch on OnShape 3D for onlin
    - The top cover also mounts the LiDAR and camera pan servo.
 
 #### **Step-by-step assembly:**
-Assembly of the robot is simple as it is built from the bottom up. The first layer can be assembled first with al the components it holds and the wheels installed. Adding the standoff to the bottom layer - we can continue to the second layer, which should be partly pre-asssembled with the motor driver at the bottom and the buck converter + Raspberry Pi 5 mounted at the top. At this point, partial wiring can be done between the first and second layer. Then, the PCB  is assenbled at the top with 30mm standoffs. Upon connecting all the cables to the PCBs using JST connectors, the top cover is mounted with preinstalled LiDAR. The camera pan servo should be pre-inserted into the top cover with its dedicated wire routing slow. Then, everything can be closed off with appropriate wiring through the wiring holes/slots. We recommend checking out our complete 3D model if you get stuck at any step:)
+Assembly of the robot is simple as it is built from the bottom up. The first layer can be assembled first with al the components it holds and the wheels installed. Adding the standoff to the bottom layer - we can continue to the second layer, which should be partly pre-asssembled with the motor driver at the bottom and the buck converter + Raspberry Pi 5 mounted at the top. At this point, partial wiring can be done between the first and second layer. Then, the PCB  is assenbled at the top with 30mm standoffs. Upon connecting all the cables to the PCBs using JST connectors, the top cover is mounted with preinstalled LiDAR. The camera pan servo should be pre-inserted into the top cover with its dedicated wire routing slow. Then, everything can be closed off with appropriate wiring through the wiring holes/slots. We recommend checking out our complete 3D model if you get stuck at any step:
 
 ### The 25GA370 Motor
 
