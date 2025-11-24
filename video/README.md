@@ -4,13 +4,13 @@ Performance videos of our robot during the Open Challange and the Obstacle Chall
 <table>
     <tr>
         <td align="center">
-            <a href="https://youtu.be/mmCBXnwzk5c">
-                <img src="../assets/open_performance.jpg" alt="Open Challenge Performance Video" width="375">
+            <a href="https://youtu.be/CT9NGIUzYoM">
+                <img src="../assets/open_performance.jpeg" alt="Open Challenge Performance Video" width="375">
             </a>
         </td>
         <td align="center">
-            <a href="https://youtu.be/ncdmDtmnTJw">
-                <img src="../assets/obstacle_performance.jpg" alt="Obstacle Challenge Performance Video" width="375">
+            <a href="https://youtu.be/3PXJUEEfc3k">
+                <img src="../assets/obstacle_performance.jpeg" alt="Obstacle Challenge Performance Video" width="375">
             </a>
         </td>
     </tr>
@@ -46,5 +46,28 @@ Initially we implemented all the logics on a simulated robot. Here are some scre
         <td align="center"><sub>Open round, without lap count</sub></td>
         <td align="center"><sub>Open round, with lap count</sub></td>
         <td align="center"><sub>Obstacle round</sub></td>
+    </tr>
+</table>
+
+
+# Additional Videos
+Here are a few videos demonstrating different aspects of our robot:
+
+<table>
+    <tr>
+        <td align="center">
+            <a href="https://youtu.be/CT9NGIUzYoM">
+                <img src="../assets/obj_tracking.jpeg" alt="Object Tracking using LiDAR" height="375">
+            </a>
+        </td>
+        <td align="center">
+            <a href="https://youtu.be/3PXJUEEfc3k">
+                <img src="../assets/Parking Algo/Step6.png" alt="Parking" height="375">
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td align="center"><sub>We're using LiDAR to detect the position of the objects, This video demonstrates that. Find more <a href="../src/README.md/#important-note-on-the-camera">here...</a></sub></td>
+        <td align="center"><sub>This video demonstrates our parking approach for the obstacle round. Learn more about this <a href="../src/README.md/#parking">here...</a></sub></td>
     </tr>
 </table>
