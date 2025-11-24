@@ -158,7 +158,7 @@ Our bot is equipped with various components that support its autonomous function
       <td><a href="https://www.aliexpress.com/item/1005008153885728.html">Raspberry Pi 5</a></td>
       <td>$100.00</td>
       <td>High‑level processing (ROS2, vision, LiDAR integration). 8GB RAM for parallel tasks.</td>
-      <td>3D printed middle chassis plate + 4× M2.5 standoffs & screws on chassis top plate.</td>
+      <td>3D printed middle chassis plate + 4× M2.5 standoffs & screws.</td>
     </tr>
     <tr>
       <td><div align="center"><img src="./assets/lidar.jpg" width="160" alt="RPLidar C1"></div></td>
