@@ -32,7 +32,7 @@ src
 
 This time, software-wise, we focused on a few specific aspects of the robot. Even though each member worked in different areas, we all had some goals in mind. For the software part, we wanted to make sure of the following things:
 - **Reliability:** The robot should be very reliable. It cannot behave randomly at different times. Even if the robot doesn't work the issues should be reproducible. Hence, we decided to use ROS2 because it enabled us to test individual parts of the robot and merge them into a robust piece of software. More on this [later...](#why-ros2)
-- **Accurate Range Sensor:** The distance calculations must be accurate and reliable in order for the software to meet our requirements. We need something more reliable than ultrasonic distance sensors. Therefore, we decided upon using a LiDAR. We chose RPLidar C1 because, well, it was the cheapest option! But considering the price, it performs really well. The output point cloud is very clean and noise-free. The only issue is that the scan rate is only 10Hz. But overall we believe it was a good decision. ROS2 was useful here as well as RPLidar has an existing ROS Package to use their LiDARs.
+- **Accurate Range Sensor:** The distance calculations must be accurate and reliable in order for the software to meet our requirements. We need something more reliable than ultrasonic distance sensors. Therefore, we decided upon using a LiDAR. We chose RPLidar C1 because, well, it was the cheapest option! But considering the price, it performs really well. The output point cloud is very clean and noise-free. The only issue is that the scan rate is only 10Hz. But overall we believe it was a good decision. ROS2 was useful here as well as RPLidar has an existing ROS Package to use their LiDARs. So maybe a LiDAR with a higher scan rate would be better if it gives a similar quality output.
 - **Odometry:** We wanted to have accurate odometry calculation for the robot's movement. This was done using a fusion of IMU sensor values and motor encoder values. The detailed [algorithm](#odometry) is explained below.
 - **ESP32 as a 2nd Brain:** We cannot directly control the actuators from the Raspberry Pi. A regular microcontroller gives far more control over its GPIO pins than a Pi does. Currently, we are extensively using the ESP32 microcontroller's FreeRTOS feature to manage different tasks like keeping serial communication, reading sensor data, showing debug info on an OLED display, etc. Even though we initially wanted to use an ESP32 only for controlling the motors and getting sensor data, we later offloaded a few logic elements to the ESP as well. The tasks that require instant reaction - mainly the parking tasks - are handled mostly by the ESP32.
 - **Object Detection Issues:** From previous experience, we know that detection of the towers can sometimes be very tricky. Because we found the objects given during the international round to be very dark for the camera to properly detect them, we spent a lot of time thinking about a possible solution for this. In the end, we decided to use a lower FOV camera with a servo to directly look at a target object and detect its color. The [algorithm](#obstacle-round) for this is explained in detail below.
@@ -81,6 +81,9 @@ Here are a few examples:
 | **Move Dist** | 7 | 150 | -1m to 1m $\to$ 50 to 250 |
 
 This ensures that the ESP32 receives clean, error-free commands at a reasonable frequency.
+
+#### Possible Improvement
+As of now, only one byte is allocated for the value itself. This might not be enough on some occasions. For example, when we tried to send distance values from the LiDAR to the ESP32, we had to cap the distance value at 200cm, and lose sub-cm precision as well. Somehow allocating two or four bytes for the values should be a big improvement for this. Also, there are dedicated communication protocols which could have been used... For example, recently we explored MAVLink protocol. This is a really robust communication system used by high-end flight controllers like Pixhawk. But we didn't have enough time to implement it on our robot. Although it would have been an overkill for our robot anyways!
 
 ### Odometry
 A really interesting feature of our robot is that it can calculate its realtime position. We achieved this by fusing the realtime orientation value with the motor's encoder values. When the robot is moving in a straight line, it is possible to calculate how far the robot has moved using the encoder values. But it is not so simple when the robot turns while moving. So when the robot is turning, we can actually divide its curved path into tiny sections that resembles straight lines. Then accumulating those straight lines and taking their directions into account, we can find the actual cartesian displacement of the robot with reliable precision.
@@ -193,6 +196,10 @@ flowchart LR
 ```
 
 After detecting the towers, the robot needs to avoid them. The robot needs to move to the left of green objects. So what it does, it imagines a wall at the right of any green tower. That way, the robot is forced to pass the object from the left side. The opposite happens for red towers.
+
+
+#### Possible Improvement
+Currently, the main bottleneck of the robot is the LiDAR. Because it only has a scan rate of 10Hz, speeding up the robot can cause it to miss a lot of data. As the robot's position/odometry can be calculated pretty accurately, and we can also determine the objects' positions accurately as well, it is possible to cache the detected objects in the first lap. Then those cached object positions can be used to safely bump up the robot's speed byt updating those positions based on the robot's odometry. Because the odometry can be updated pretty fast, this can be a good method to speed up the robot.
 
 
 #### Parking
