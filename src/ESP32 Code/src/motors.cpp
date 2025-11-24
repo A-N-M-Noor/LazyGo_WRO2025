@@ -210,8 +210,8 @@ void Motors::setCamServoUs(uint32_t pulse_width_us) {
 void Motors::setMotorSpeed(float speed_mms) {
     if(speed_mms < target_speed_mms - 150 && hardbreak_en){
         control_enabled(false);
-        run(-255);
-        delay(50);
+        run(-80);
+        delay(15);
         run(0);
         control_enabled(true);
     }

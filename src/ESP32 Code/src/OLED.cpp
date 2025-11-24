@@ -111,11 +111,6 @@ void displayTask(void* pvParameters) {
                 u8g2.drawStr(128 - warnWidth, 60, warn);
             }
 
-            char irBuf[20];
-            snprintf(irBuf, sizeof(irBuf), "IR3: %d IR4: %d", int(IR_VAL_3), int(IR_VAL_4));
-            int irWidth = u8g2.getStrWidth(irBuf);
-            u8g2.drawStr((128 - irWidth) / 2, 50, irBuf);
-
             u8g2.sendBuffer();
             lastDisplayUpdate = currentTime;
         }
