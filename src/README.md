@@ -32,11 +32,11 @@ src
 
 This time, software wise, we focused on a few specific aspects of the robot. Even though each member worked in different areas, we all had some goals in mind. For the software part, we wanted to make sure of the following things:
 - **Reliability:** The robot should be very reliable. It cannot behave randomly on different times. Even if the robot doesn't work the issues should be reproducable. Hence, we decided to use ROS2 because it enabled us to test individual parts of the robot and merge them into a robust piece of software. More on this [later...](#why-ros2)
-- **Accurate Range Sensor:** The distance calculations must be accurate and reliable in order for the softwer to meet our requirements. We need something more reliable that ultrasonic distance sensors. Therefore, we decided upon using a LiDAR. We choose RPLiDAR C1 because, well, it was the cheapest option! But considering the price, it performs really well. The output point cloude is very clean and noise free. Only issue is that the scan rate is only 10Hz. But overall we believe it was a good decision. ROS2 was useful here as well as RPLiDAR has a existing ROS Package to use their LiDARs.
+- **Accurate Range Sensor:** The distance calculations must be accurate and reliable in order for the software to meet our requirements. We need something more reliable that ultrasonic distance sensors. Therefore, we decided upon using a LiDAR. We chose RPLiDAR C1 because, well, it was the cheapest option! But considering the price, it performs really well. The output point cloud is very clean and noise free. Only issue is that the scan rate is only 10Hz. But overall we believe it was a good decision. ROS2 was useful here as well as RPLiDAR has a existing ROS Package to use their LiDARs.
 - **Odometry:** We wanted to have accurate odometry calculation for the robot's movement. This was done using a fusion of IMU sensor values and motor encoder values. The detailed [algorithm](#odometry) is explained below.
 - **ESP32 as a 2nd Brain (Backbone!):** We cannot directly control the actuators from the Raspberry Pi. A regular microcontroller gives far more control over its GPIO pins than a Pi does. Currently, we are extensively using the ESP32 microcontroller's FreeRTOS feature to manage different tasks like keeping serial communication, reading sensor data, showing debug info on an OLED display, etc. Even though we initially wanted to use an ESP32 only for controlling the motors and getting sensor data, we later offloaded a few logic elements to the ESP as well. The tasks that require instant reaction—mainly the parking tasks—are handled mostly by the ESP32.
 - **Object Detection Issues:** From previous experience, we know that detection of the towers can be very tricky sometimes. Because we found the objects given during the international round to be very dark for the camera to properly detect them, we spent a lot of time thinking about a possible solution for this. In the end, we decided to use a lower FOV camera with a servo to directly look at a target object and detect its color. The [algorithm](#obstacle-round) for this is explained in detail below.
-- **Gazebo Simulation:** Due to academic reasons, the main programmer of our team, Noor, had to stay away from the team for a residential semester. During that time, he did not have access to the physical robot, which made it very difficult for him to program the logic for the robot. So he set up a Gazebo simulation environment and perfected the robot's logic there. When he finally had access to the robot, he implemented the code on the physical robot. ROS2 was very useful here as well. As Gazebo is compatible with ROS2, the same code used for the simulation could also be used for the robot as well.
+- **Gazebo Simulation:** Due to academic reasons, the main programmer of our team, Noor, had to stay away from the team for a residential semester. During that time, he did not have access to the physical robot, which made it very difficult for him to program the logic for the robot. So he set up a Gazebo simulation environment and perfected the robot's logic there. When he finally had access to the robot, he implemented the code on the physical robot. ROS2 was very useful here as well. As Gazebo is compatible with ROS2, the same code used for the simulation could also be used for the robot as well. More on that [later...](#gazebo-simulation-and-its-role-in-our-development-workflow)
 
 
 ### Why ROS2
@@ -63,7 +63,7 @@ As mentioned before, ROS uses a node-based approach where multiple nodes each so
 
 
 ### Odometry
-A really interesting feature of our robot is that it can calculate it's realtime position. We achieved this by fusing the realtime orientation value with the motor's encoder values. When the robot is moving in a straight line, it is possible to calculate how far the robot has moven using the encoder values. But it is not so simple when the robot turns while moving. So when the robot is turning, we can actually divide it's curved path into tiny sentions that resembles a straight lines. Then accumulating those straight lines and taking their directions into account, we can find the actual cartesian displacement of the robot with reliable precision.
+A really interesting feature of our robot is that it can calculate its realtime position. We achieved this by fusing the realtime orientation value with the motor's encoder values. When the robot is moving in a straight line, it is possible to calculate how far the robot has moved using the encoder values. But it is not so simple when the robot turns while moving. So when the robot is turning, we can actually divide its curved path into tiny sections that resembles a straight lines. Then accumulating those straight lines and taking their directions into account, we can find the actual cartesian displacement of the robot with reliable precision.
 
 Here's how it is calculated:
 1. Find the delta of the encoder's value. Let's call it `ds`
@@ -245,3 +245,88 @@ Here, see it in action (click for YouTube Video):
 <p align="center">
   <a href="https://youtu.be/Rp4g42Nrq9Q"> <img src="../assets/obj_tracking.jpeg" width=400 /> </a>
 </p>
+
+
+---
+  
+  
+## Gazebo Simulation and Its Role in Our Development Workflow
+
+A significant part of our development process relied on simulation in Gazebo, which allowed us to design, test, and refine our robot’s behavior long before the physical robot was ready. Since mechanical fabrication and electronics assembly take substantial time, we built a fully functional simulated robot in parallel to ensure continuous progress on the software side.
+
+### Why We Used Gazebo
+
+Gazebo offers a high-accuracy 3D physics engine, sensor simulations, and world-building tools, making it ideal for robotics development. For a competition like WRO Future Engineers, where autonomous navigation is heavily dependent on sensor reliability and precise motion control, simulation provides several advantages:
+
+**1. Simulated Track**  
+We recreated a close approximation of the WRO track inside Gazebo.  
+This included:
+
+   - Track geometry
+   - Obstacles
+   - Surface color textures
+   - Close approximation of our robot's mobility system (Turning radius, speed)
+
+This allowed us to test navigation algorithms in the same conditions the real robot would face during the event.
+
+**2. Early Development Without Hardware**  
+While the mechanical and electronics teams were designing and building the physical robot, the software team was able to:
+   - Develop the control system
+   - Tune parameters
+   - Implement the object detection workflow
+   - Test odometry and localization
+   - Experiment with obstacle avoidance strategies
+
+This parallel workflow significantly reduced development bottlenecks.
+
+
+
+**3. Sensor Simulations (LiDAR, IMU, Camera)**  
+Gazebo provides realistic sensor plugins that behave similarly to the real hardware:
+   - LiDAR: We used Gazebo’s GPU LiDAR plugin to simulate point clouds, allowing us to test our object detection pipeline (shape matching + camera pointing).
+   - Camera: We validated our camera servo tracking logic by replaying LiDAR-detected angles in simulation.
+   - IMU + Wheel Encoders: These helped us implement and refine our odometry algorithm before deploying it on the physical robot.
+
+This ensured that once the real sensors were installed, our software already had a stable foundation.
+
+**4. Safety and Rapid Iteration**  
+Certain tests—such as high-speed turns, collision detection, or repeated obstacle challenges—carry risk of damaging hardware.  
+Using simulation, we were able to:
+   - Try aggressive parameters safely
+   - Run tests repeatedly
+   - Introduce random noise to simulate real-world uncertainty
+   - Debug without risking mechanical damage
+
+**5. Faster Algorithm Development**  
+Simulation enabled:
+   - Recording bag files for analysis
+   - Visualizing all sensor data in RViz
+   - Running thousands of test cycles without hardware fatigue
+  
+This drastically accelerated the tuning process for:
+   - Object detection with LiDAR
+   - Disparity-based depth estimation
+   - Lap counting logic
+   - Obstacle challenge navigation
+
+
+### Open-Source Simulation Files
+To support future WRO teams and contribute to the robotics community, we have made our entire simulation setup fully open source.  
+Anyone reading this documentation can:
+
+- Clone our repository
+- Launch the Gazebo world
+- Load our robot model
+- Run all nodes exactly as we did
+
+Modify or extend our system freely. All simulation-related files, including:
+
+- The URDF/Xacro robot model
+- Gazebo plugin configurations
+- World files
+- Launch files
+- Navigation scripts
+
+…are available in this repository. You can find detailed instructions on how to setup and use Gazebo with ROS2 [here](../instructions/README.md).
+
+We encourage other teams to use this simulation as a reference or starting point. The goal of WRO Future Engineers is to promote learning and share knowledge openly, and we are proud to contribute back to the community.
