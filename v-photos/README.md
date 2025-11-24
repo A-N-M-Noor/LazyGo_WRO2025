@@ -4,7 +4,7 @@ Our robot, from every directions - no secrets! ^-^
 
 | Front                               | Back                            |
 | ----------------------------------- | ------------------------------- |
-| <img alt="front" width="700px" src="./front.jpeg" /> | <img alt="back" width="700px" src="./back.jpg" /> |
+| <img alt="front" width="700px" src="./front.jpeg" /> | <img alt="back" width="700px" src="./back.jpeg" /> |
 
 | Top                                 | Bottom                          |
 | ----------------------------------- | ------------------------------- |

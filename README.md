@@ -150,11 +150,11 @@ Our bot is equipped with various components that support its autonomous function
 | **BNO055 9‑Axis IMU** | Orientation & fused heading for odometry; low drift angle source. | Center (slightly left) of PCB for vibration isolation; header pins +  foam tape as spacer for mild vibration dampening. | <div align="center"><img src="./assets/BNO.jpg" width="160" alt="BNO055"></div> |
 | **1.3" OLED (I2C)** | Live status: sensor readouts, battery warnings, debug info. | Vertical raised header on PCB rear edge + friction with top cover. | <div align="center"><img src="./assets/oled.jpg" width="160" alt="OLED"></div> |
 | **5V 20A Buck Converter** | Primary regulated 5V rail for Pi (headroom for peaks). | Middle chassis plate with double sided tape. | <div align="center"><img src="./assets/5V20A.jpg" width="160" alt="5V 20A Buck"></div> |
-| **5V 5A Buck (SCT2650)** | Secondary regulated supply for noise generating components (Servo, peripherals). | Bottom of PCB (to save space). | <div align="center"><img src="./assets/5V5A.jpg" width="160" alt="5V 5A Buck"></div> |
+| **5V 5A Buck (SCT2650)** | Secondary regulated supply for noise generating components (Servo, peripherals). | Bottom of PCB (to save space). | <div align="center"><img src="./assets/5v5a.jpg" width="160" alt="5V 5A Buck"></div> |
 | **25GA Gear Motors + Encoder** | Drivetrain torque + linear displacement feedback for odometry. | Captured in printed motor housings; 2× M3 screws. | <div align="center"><img src="./assets/25GA.jpg" width="160" alt="25GA Motor"></div> |
 | **VNH2SP30 Motor Driver** | High‑current brushed DC control (PWM + direction + protection). | Screwed to the bottom of the second/middle layer. | <div align="center"><img src="./assets/VNH2SP30.jpg" width="160" alt="Motor Driver"></div> |
 | **PS1171MG Servo** | Steering actuation & camera pan positioning. | 3D printed steering bracket/3D printed LiDAR bracket with integrated servo hole. 2× self‑tapping screws each. | <div align="center"><img src="./assets/1171mg.jpg" width="160" alt="Servo"></div> |
-| **Custom Secondary PCB** | Integration hub: ESP32, IMU, OLED, some power distribution, headers and lots of capacitors. | Four M3 standoffs to chassis mid‑deck and top over. | <div align="center"><img src="./assets/pcb_bottom.jpeg" width="160" alt="Secondary PCB"></div> |
+| **Custom Secondary PCB** | Integration hub: ESP32, IMU, OLED, some power distribution, headers and lots of capacitors. | Four M3 standoffs to chassis mid‑deck and top over. | <div align="center"><img src="./assets/pcb_top.jpeg" width="160" alt="Secondary PCB"></div> |
 | **LEGO Differential (Gen 3)** | Allows inner/outer wheel speed difference for smooth turning. | Seated in printed cradle; retained by axle bearings (friction). | <div align="center"><img src="./assets/Diff.jpg" width="160" alt="Differential"></div> |
 | **3D Printed Body Frame** | Structural chassis: mounting surfaces, protective shell. 3 Layer design. | Base structure (printed as modules with minimum support); screw or snap‑fit/friction. | <div align="center"><img src="./v-photos/right.jpeg" width="160" alt="Frame"></div> |
 
@@ -163,7 +163,7 @@ Our bot is equipped with various components that support its autonomous function
 
 ## Algorithm and Software
 ROS2 underpins our control system, letting us split functionality into modular nodes. Real‑time odometry (encoder + IMU) drives lap counting and parking logic. Tower detection combines LiDAR shape cues with camera color checks. Gazebo simulation allowed rapid iteration before deploying to hardware.
-> **More details on software is in the [`/src`](/src/) directory.**
+> [**More details on software is in the `/src` directory.**](/src/)
 
 
 
