@@ -292,7 +292,7 @@ DC motors provide the best balance between performance, complexity and budget fo
 The motor provides sufficient torque at slow speeds with decent maximum speeds. The encoder, with its roughly 1870 ticks per meter precision, does a great job at measuring robot precision at millimeter level accuracy.
 
 ### Servo Selection:
-Since we are using two servos in our system, we decided to use the same servo for both mechanism to allow for less individual part count. The PS-1171mg was an excellent choice, available in the Bangladeshi local market. Its metal gears give us peace of mind, and 0.17s/deg movement speed was adequate for our robot.
+Since we are using two servos in our system, we decided to use the same servo for both mechanism to allow for less individual part count. The PS-1171mg was an excellent choice, available in the Bangladeshi local market. Its metal gears give us peace of mind, and 0.13sec/60° movement speed was adequate for our robot.
 
 ### Differential Drive System
 
