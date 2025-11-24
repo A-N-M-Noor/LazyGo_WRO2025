@@ -7,3 +7,4 @@ build/
 install/
 log/
 .DS_Store
+test.md
