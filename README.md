@@ -140,7 +140,7 @@ Here’s a breakdown of the project folders:
 
 ## Components and Hardware
 
-Our bot is equipped with various components that support its autonomous functionality. The table below summarizes each module with a concise role and assumed mounting approach (you can later refine any mounting notes):
+Our bot is equipped with various components that support its autonomous functionality. The table below summarizes each module with a concise role and mounting approach:
 
 <table>
   <thead>
@@ -287,7 +287,7 @@ Assembly of the robot is simple as it is built from the bottom up. The first lay
 
 ### The 25GA370 Motor
 
-We initially wanted to use a 20GA motor for the best balance between torque, speed, and size from our experience. However, after our first 20GA sized motor from China refused to stop working, we had to resort to the more commonly and locally available 25GA motor. 
+DC motors provide the best balance between performance, complexity and budget for the main drive train. So we initially wanted to use a 20GA motor for its torque, speed, and size being just right from our experience. However, after our first 20GA sized motor from China refused to stop working, we had to resort to the more commonly and locally available 25GA motor. 
 
 The motor provides sufficient torque at slow speeds with decent maximum speeds. The encoder, with its roughly 1870 ticks per meter precision, does a great job at measuring robot precision at millimeter level accuracy.
 
