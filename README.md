@@ -283,7 +283,7 @@ The LazyBot chassis was designed completely from scratch on OnShape 3D for onlin
    - The top cover also mounts the LiDAR and camera pan servo.
 
 #### **Step-by-step assembly:**
-Assembly of the robot is simple as it is built from the bottom up. The first layer can be assembled first with all the components it holds and the wheels installed. Adding the standoff to the bottom layer - we can continue to the second layer, which should be partly pre-assembled with the motor driver at the bottom and the buck converter + Raspberry Pi 5 mounted at the top. At this point, partial wiring can be done between the first and second layer. Then, the PCB is assembled at the top with 30mm standoffs. Upon connecting all the cables to the PCBs using JST connectors, the top cover is mounted with preinstalled LiDAR. The camera pan servo should be pre-inserted into the top cover with its dedicated wire routing slot. Then, everything can be closed off with appropriate wiring through the wiring holes/slots. We recommend checking out our complete 3D model if you get stuck at any step:
+Assembly of the robot is simple as it is built from the bottom up. The first layer can be assembled first with all the components it holds and the wheels installed. Adding the standoff to the bottom layer - we can continue to the second layer, which should be partly pre-assembled with the motor driver at the bottom and the buck converter + Raspberry Pi 5 mounted at the top. At this point, partial wiring can be done between the first and second layer. Then, the PCB is assembled at the top with 30mm standoffs. Upon connecting all the cables to the PCBs using JST connectors, the top cover is mounted with preinstalled LiDAR. The camera pan servo should be pre-inserted into the top cover with its dedicated wire routing slot. Then, everything can be closed off with appropriate wiring through the wiring holes/slots. We recommend checking out our complete 3D model if you get stuck at any step.
 
 ### The 25GA370 Motor
 
@@ -322,7 +322,7 @@ Our robot utilizes a **3rd generation LEGO differential gearbox**. Differential 
 <div align="center">
   <img src="./assets/differential.jpeg" alt="Differential Drive Setup" style="border-radius: 20px" width="300"/>
   <br>
-  A 25GA Motor was being used when we took this picture.
+  A 20GA Motor was being used when we took this picture.
 </div>
 </td>
 </tr>
