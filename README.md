@@ -357,7 +357,7 @@ The PCB is designed to use locally available components, with a lot of board cle
 
 | **Top View of the PCB**                 | **Bottom View of the PCB**             |
 |-------------------------------------|-------------------------------------|
-| <img src="./assets/pcb_top.jpeg" width="800"/> | <img src="./assets/pcb_bottom.jpeg" width="800"/> |
+| <img src="./assets/pcb_top.jpeg" width="800"/> | <img src="./assets/pcb_bottom.png" width="800"/> |
 
 
 
