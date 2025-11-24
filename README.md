@@ -1,7 +1,7 @@
 <div align="center">
   <img alt="image" src="./assets/banner.png" />
 </div>
-  <strong>Team LazyGo</strong> is a robotics team from <strong>Bangladesh</strong>. Originally formed in 2022, LazyGo won <strong>3rd palce</strong> at the Future Engineers category of the World Robot Olympiad International Round. Now the team returns again with three experienced international participants.
+  <strong>Team LazyGo</strong> is a robotics team from <strong>Bangladesh</strong>. Originally formed in 2022, LazyGo won <strong>3rd place</strong> at the Future Engineers category of the World Robot Olympiad International Round. Now the team returns again with three experienced international participants.
 <br><br>
 
 We named our robot **LazyBot**, which is built for the **Future Engineers** category in the **World Robot Olympiad 2025**. This year, we are trying to bring some interesting changes from the typical way a robot is built for this category. Definitely check out [Odometry Calculation](#odometry), [Disparity Extender Algorithm](#avoidance-using-lidar), and [LiDAR Based Tower Detection](#obstacle-round) algorithms.
@@ -129,10 +129,10 @@ Here’s a breakdown of the project folders:
 ## Key Features
 
 - **`Hybrid LEGO & 3D Printed Design`**: Using LEGO parts proved to be very helpful based on the previous experience of our members. That, along with 3D printed parts made it possible to harness LEGO's precision and the flexibility of 3D printing.
-- **`Advanced Sensor Suite`**: LazyBot is equipped with a LiDAR (to perfectly sense the sorroundings), encoder motor (to precisely calculate the position), IMU (to calculate realtime orientation).
+- **`Advanced Sensor Suite`**: LazyBot is equipped with a LiDAR (to perfectly sense the surroundings), encoder motor (to precisely calculate the position), IMU (to calculate realtime orientation).
 - **`Use of Robot Operating System`**: We used ROS2 to control the robot. We took this decision because Robot Operating System allows to make a project very modular and provide a lot of useful tools for simulation and visualization.
-- **`Real-Time Odometry Calculation`**: This is one of the major feature of pur robot. Using the onboard IMU sensor and the value from the motor's encoder, the robot calculates the exact realtime position of the robot.
-- **`Efficient Debugging`**: We've added an OLED display to the MCU of the robot which helps to debug the issues on the MCU side. And ROS2 provides with a lot of debugging tools that helps us debug any issues hapening on the Pi side.
+- **`Real-Time Odometry Calculation`**: This is one of the major feature of our robot. Using the onboard IMU sensor and the value from the motor's encoder, the robot calculates the exact realtime position of the robot.
+- **`Efficient Debugging`**: We've added an OLED display to the MCU of the robot which helps to debug the issues on the MCU side. And ROS2 provides with a lot of debugging tools that helps us debug any issues happening on the Pi side.
 
 ---
 ---
@@ -283,11 +283,11 @@ The LazyBot chassis was designed completely from scratch on OnShape 3D for onlin
    - The top cover also mounts the LiDAR and camera pan servo.
 
 #### **Step-by-step assembly:**
-Assembly of the robot is simple as it is built from the bottom up. The first layer can be assembled first with al the components it holds and the wheels installed. Adding the standoff to the bottom layer - we can continue to the second layer, which should be partly pre-asssembled with the motor driver at the bottom and the buck converter + Raspberry Pi 5 mounted at the top. At this point, partial wiring can be done between the first and second layer. Then, the PCB  is assenbled at the top with 30mm standoffs. Upon connecting all the cables to the PCBs using JST connectors, the top cover is mounted with preinstalled LiDAR. The camera pan servo should be pre-inserted into the top cover with its dedicated wire routing slow. Then, everything can be closed off with appropriate wiring through the wiring holes/slots. We recommend checking out our complete 3D model if you get stuck at any step:
+Assembly of the robot is simple as it is built from the bottom up. The first layer can be assembled first with all the components it holds and the wheels installed. Adding the standoff to the bottom layer - we can continue to the second layer, which should be partly pre-assembled with the motor driver at the bottom and the buck converter + Raspberry Pi 5 mounted at the top. At this point, partial wiring can be done between the first and second layer. Then, the PCB is assembled at the top with 30mm standoffs. Upon connecting all the cables to the PCBs using JST connectors, the top cover is mounted with preinstalled LiDAR. The camera pan servo should be pre-inserted into the top cover with its dedicated wire routing slot. Then, everything can be closed off with appropriate wiring through the wiring holes/slots. We recommend checking out our complete 3D model if you get stuck at any step:
 
 ### The 25GA370 Motor
 
-We initially wanted to use a 20GA motor for the best balance between torque, speed, and size from our experience. However, after our first 20GA sized motor from China refused to stop working, we had to resort to the more commonly and locally available 25GA motor. 
+We initially wanted to use a 20GA motor for the best balance between torque, speed, and size from our experience. However, after our first 20GA sized motor from China refused to work, we had to resort to the more commonly and locally available 25GA motor. 
 
 The motor provides sufficient torque at slow speeds with decent maximum speeds. The encoder, with it's roughly 1870 ticks per meter precision, does a great job at measuring robot precision at millimeter level accuracy.
 
@@ -303,7 +303,7 @@ Our robot utilizes a **3rd generation LEGO differential gearbox**. Differential 
 <td width="50%">
 
 #### How It Works:
-- The motor is connected to the differential gearset using.a matching 20 teeth 3D printed gear. The gear system transfers torque from the motor to the gearbox with a **1:1.2** ratio.
+- The motor is connected to the differential gearset using a matching 20 teeth 3D printed gear. The gear system transfers torque from the motor to the gearbox with a **1:1.2** ratio.
 - The differential automatically compensates for wheel speed differences when turning.
 - Encoder readings stay accurate as it records roughly the average speed of the two wheels.
 
@@ -335,7 +335,7 @@ Our robot utilizes a **3rd generation LEGO differential gearbox**. Differential 
 The robot features a **3D printed Ackermann steering system** controlled by a **servo motor**. This configuration allows the front wheels to turn at appropriate angles during a corner, minimizing tire slippage and improving steering accuracy.
 
 ##### Advantages:
-1. **Sharper turns**: While not imporant in such small scale, the mechanical efficiency that comes with the Ackermann design allows sharper turns.
+1. **Sharper turns**: While not important in such small scale, the mechanical efficiency that comes with the Ackermann design allows sharper turns.
 2. **Customizable Design**: 3D printed components allowed fine-tuning and easy iteration.
 3. **Precise Control**: Servo-driven mechanism ensures consistent and accurate angle adjustments.
 4. **Adjustable links**: We used off-the-shelf RC car links to 
@@ -362,7 +362,7 @@ Below is the complete schematic of the PCB. External to the PCB, we have the 5V 
   <img src="./assets/main_schematic.jpg"  alt="Main Schematic of the PCB" width="80%" style="max-width: 400px; border-radius: 20px">
 </div>
 
-> Add a photo of the PCB wirig
+> Add a photo of the PCB wiring
 
 ### Here is a detailed explanation of the power and sense components:
 
@@ -393,7 +393,7 @@ Below is the complete schematic of the PCB. External to the PCB, we have the 5V 
 - **Benefits and reason to choose**:
   - The SCT2650 is a near-identical copy of the Texas Instruments TPS54560 chip, efficient design.
   - Chosen for it's excellent noise free design with multiple capacitors in series, and high current schottkey diode.
-  - There is no overrcurrent protection false-triggering when the servos draw sudden in-rush current. This is an issue we had befoer with the Mini 560 Buck converter.
+  - There is no overcurrent protection false-triggering when the servos draw sudden in-rush current. This is an issue we had before with the Mini 560 Buck converter.
 
 ---
 
@@ -442,10 +442,10 @@ flowchart TD
 Since SMD PCB manufacturing is not available to public in Bangladesh, and services like JLCPCB are extremely expensive due to unfair customs taxes, we had to design our own through hole PCB and manufacture it right at home.
 
 The PCB is designed to use locally available components, with a lot of board clearance to allow us to etch the PCB using ferric chloride. The process included:
-1. Printing a mirrrored black and white version of the copper traces on a glossy paper.
+1. Printing a mirrored black and white version of the copper traces on a glossy paper.
 2. Transferring the ink onto the PCB using an iron on the PCB with the glossy paper sandwiched in between.
 3. Fixing minor transfer errors with a permanent black marker.
-4. Etching the PCB in a ferric chloride solutions for a fixed amount of time (gained through experience).
+4. Etching the PCB in a ferric chloride solution for a fixed amount of time (gained through experience).
 5. Cleaning up the board with isopropyl alcohol and mildly sanding the copper to clear oxidization.
 6. Applying a thin layer of resin to coat the copper traces.
 
