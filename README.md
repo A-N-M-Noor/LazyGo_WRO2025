@@ -140,7 +140,7 @@ Here’s a breakdown of the project folders:
 
 ## Components and Hardware
 
-Our bot is equipped with various components that support its autonomous functionality. The table below summarizes each module with a concise role and assumed mounting approach (you can later refine any mounting notes):
+Our bot is equipped with various components that support its autonomous functionality. The table below summarizes each module with a concise role and mounting approach:
 
 <table>
   <thead>
@@ -158,7 +158,7 @@ Our bot is equipped with various components that support its autonomous function
       <td><a href="https://www.aliexpress.com/item/1005008153885728.html">Raspberry Pi 5</a></td>
       <td>$100.00</td>
       <td>High‑level processing (ROS2, vision, LiDAR integration). 8GB RAM for parallel tasks.</td>
-      <td>3D printed middle chassis plate + 4× M2.5 standoffs & screws on chassis top plate.</td>
+      <td>3D printed middle chassis plate + 4× M2.5 standoffs & screws.</td>
     </tr>
     <tr>
       <td><div align="center"><img src="./assets/lidar.jpg" width="160" alt="RPLidar C1"></div></td>
@@ -287,12 +287,12 @@ Assembly of the robot is simple as it is built from the bottom up. The first lay
 
 ### The 25GA370 Motor
 
-We initially wanted to use a 20GA motor for the best balance between torque, speed, and size from our experience. However, after our first 20GA sized motor from China refused to stop working, we had to resort to the more commonly and locally available 25GA motor. 
+DC motors provide the best balance between performance, complexity and budget for the main drive train. So we initially wanted to use a 20GA motor for its torque, speed, and size being just right from our experience. However, after our first 20GA sized motor from China refused to stop working, we had to resort to the more commonly and locally available 25GA motor. 
 
 The motor provides sufficient torque at slow speeds with decent maximum speeds. The encoder, with its roughly 1870 ticks per meter precision, does a great job at measuring robot precision at millimeter level accuracy.
 
 ### Servo Selection:
-Since we are using two servos in our system, we decided to use the same servo for both mechanism to allow for less individual part count. The PS-1171mg was an excellent choice, available in the Bangladeshi local market. Its metal gears give us peace of mind, and 0.17s/deg movement speed was adequate for our robot.
+Since we are using two servos in our system, we decided to use the same servo for both mechanism to allow for less individual part count. The PS-1171mg was an excellent choice, available in the Bangladeshi local market. Its metal gears give us peace of mind, and 0.13sec/60° movement speed was adequate for our robot.
 
 ### Differential Drive System
 
