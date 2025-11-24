@@ -3,61 +3,86 @@ from threading import Thread
 import subprocess
 
 class Camera:
-    def __init__(self, src, width:int=640, height:int=480):
+    """
+    Threaded Camera Capture Class.
+    
+    Why Threading?
+    OpenCV's `cap.read()` is a blocking operation. If run in the main loop, 
+    it limits the processing FPS to the camera's hardware FPS. 
+    By running capture in a separate thread, the main loop can process the 
+    latest available frame as fast as possible without waiting for the hardware.
+    """
+    def __init__(self, src: int | str, width:int=640, height:int=480):
         self.width = width
         self.height = height
         
+        # Initialize VideoCapture
+        # 'src' can be an integer (index) or a path string (e.g., /dev/video0)
         self.cap=cv2.VideoCapture(src)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         
+        # Read one frame to ensure connection is established
         self.cap.read()
         
+        # Wait for camera to warm up before applying settings
         time.sleep(0.2)
-        self.set_camera_controls(device = src, exposure=180, gain=120, wb_temp=4500, saturation=50)
+        
+        # Apply manual exposure/gain settings using v4l2-ctl
+        # This is crucial for computer vision to prevent auto-exposure flickering
+        self.set_camera_controls(device = src, exposure=180, gain=120, wb_temp=4500, saturation=None)
         
         self.frame = None
-        
         self.running = False
 
-    def set_camera_controls(self, device="/dev/video2", exposure=166, gain=123, wb_temp=4000, saturation=32):
+    def set_camera_controls(self, device="/dev/video2", exposure=None, gain=None, wb_temp=None, saturation=None):
         """
-        Lock exposure and white balance on Logitech C270.
+        Configures camera hardware settings using the Linux `v4l2-ctl` utility.
+        
+        Target Hardware: Logitech C270 (or similar UVC cameras).
+        Goal: Lock exposure and white balance to ensure consistent color detection
+              regardless of ambient lighting changes.
         """
         print(f"Setting exposure to {exposure}")
         
-        commands = [
-            ["--set-ctrl=auto_exposure=1"],                     # 1 = manual mode (set first)
-            ["--set-ctrl=exposure_dynamic_framerate=0"],        # disable dynamic framerate
-            [f"--set-ctrl=exposure_time_absolute={exposure}"],  # exposure value (set after manual mode)
-            [f"--set-ctrl=gain={gain}"],                             # Lock gain to prevent auto-adjustment
-            # [f"--set-ctrl=saturation={saturation}"],            # set saturation
-            ["--set-ctrl=white_balance_automatic=0"],           # disable auto WB
-            [f"--set-ctrl=white_balance_temperature={wb_temp}"] # set WB manually
-        ]
+        # Sequence of commands to disable auto-features and set manual values
+        commands = []
+        if exposure is not None: 
+            commands.append(["--set-ctrl=auto_exposure=1"])                         # 1 = Manual Mode (Must be set first)
+            commands.append(["--set-ctrl=exposure_dynamic_framerate=0"])            # Disable dynamic framerate (prevents motion blur)
+            commands.append([f"--set-ctrl=exposure_time_absolute={exposure}"])      # Set absolute exposure time
+        if gain is not None:
+            commands.append([f"--set-ctrl=gain={gain}"])                            # Lock gain to reduce noise
+        if saturation is not None:
+            commands.append([f"--set-ctrl=saturation={saturation}"])                # Set saturation (Optional)
+        if wb_temp is not None:
+            commands.append(["--set-ctrl=white_balance_automatic=0"])               # Disable Auto White Balance
+            commands.append([f"--set-ctrl=white_balance_temperature={wb_temp}"])    # Set fixed Color Temperature
+        
 
         for ctrl in commands:
             try:
+                # Execute shell command
                 result = subprocess.run(
-                    ["v4l2-ctl", "-d", device] + ctrl,
+                    ["v4l2-ctl", "-d", str(device)] + ctrl,
                     check=True,
                     capture_output=True,
                     text=True
                 )
-                print(f"✅ {' '.join(ctrl)}")
+                print(f"{' '.join(ctrl)}")
                 if result.stdout.strip():
                     print(result.stdout.strip())
                 if result.stderr.strip():
-                    print(f"⚠️ {result.stderr.strip()}")
-                time.sleep(0.1)
+                    print(f"[!] {result.stderr.strip()}")
+                time.sleep(0.1) # Small delay to allow hardware to register command
             except subprocess.CalledProcessError as e:
-                print(f"❌ Failed: {e.stderr.strip() if e.stderr else e}")
+                print(f"[X] Failed: {e.stderr.strip() if e.stderr else e}")
 
-        # Wait and verify the settings stuck
+        # Verify settings were applied
         time.sleep(0.5)
         try:
             result = subprocess.run(
-                ["v4l2-ctl", "-d", device, "--get-ctrl=auto_exposure,exposure_time_absolute,gain"],
+                ["v4l2-ctl", "-d", str(device), "--get-ctrl=auto_exposure,exposure_time_absolute,gain"],
                 capture_output=True,
                 text=True
             )
@@ -65,28 +90,42 @@ class Camera:
         except Exception as e:
             print(f"❌ Verification failed: {e}")
 
-        print("✅ C270 camera controls applied!")
+        print("✅ Camera controls applied!")
         
     
     def start(self):
+        """Starts the background capture thread."""
         if(not self.running):
             print("Starting Camera Capture")
             self.running = True
             self.thread=Thread(target=self.update,args=())
-            self.thread.daemon=True
+            self.thread.daemon=True # Daemon threads exit when the main program exits
             self.thread.start()
         
     def stop(self):
+        """Stops the background thread and releases the camera resource."""
         if(self.running):
             self.cap.release()
             self.running = False
             print("Stopping Camera Capture")
     
     def update(self):
+        """
+        Background Loop:
+        Continuously reads frames from the buffer.
+        This keeps the buffer empty so `self.frame` is always the newest reality.
+        """
         while self.running:
             _,self.frame = self.cap.read()
             
     def getFrame(self, blr:int = 0, rotate_180:bool = False):
+        """
+        Returns the latest available frame with optional preprocessing.
+        
+        Args:
+            blr (int): Kernel size for Gaussian Blur (must be odd).
+            rotate_180 (bool): Flips the image if camera is mounted upside down.
+        """
         if(not self.running or self.frame is None):
             return None
             
@@ -96,14 +135,16 @@ class Camera:
         if rotate_180:
             _frm = cv2.rotate(_frm, cv2.ROTATE_180)
         
+        # Apply Gaussian Blur if requested
         blr = int(blr)            
         if(blr > 0):
             if(blr%2 == 0):
-                blr = blr+1
+                blr = blr+1 # Kernel size must be odd
             _frm = cv2.GaussianBlur(_frm, (blr,blr), cv2.BORDER_DEFAULT)
             
         return _frm
 
+# Simple test script to verify camera functionality
 if(__name__ == "__main__"):
     cam = Camera(0)
     cam.start()

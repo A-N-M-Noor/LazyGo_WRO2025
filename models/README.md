@@ -1,5 +1,6 @@
 ## Robot Design Overview
  <img src="../assets/robot.png" align="right" width="450" />
+ 
 Our robot was fully designed in **Onshape**, enabling seamless collaboration and easy duplication through a shared project link. The mechanical structure was developed with a core objective:
 
 > **Achieve an extremely tight turning radius while maintaining excellent balance and traction.**

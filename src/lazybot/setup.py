@@ -30,8 +30,6 @@ setup(
             'detect = lazybot.detection:main',
             'detect_cam = lazybot.detection_cam:main',
             'serial = lazybot.ser:main',
-            # 'avoid = lazybot.avoid:main',
-            'camera_node = lazybot.camera:main',
             'color_calibration_node = lazybot.color_calibration:main',
             'debug = lazybot.debug:main',
         ],

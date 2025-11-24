@@ -34,7 +34,7 @@ This time, software wise, we focused on a few specific aspects of the robot. Eve
 - **Reliability:** The robot should be very reliable. It cannot behave randomly on different times. Even if the robot doesn't work the issues should be reproducable. Hence, we decided to use ROS2 because it enabled us to test individual parts of the robot and merge them into a robust piece of software. More on this [later...](#why-ros2)
 - **Accurate Range Sensor:** The distance calculations must be accurate and reliable in order for the software to meet our requirements. We need something more reliable that ultrasonic distance sensors. Therefore, we decided upon using a LiDAR. We chose RPLiDAR C1 because, well, it was the cheapest option! But considering the price, it performs really well. The output point cloud is very clean and noise free. Only issue is that the scan rate is only 10Hz. But overall we believe it was a good decision. ROS2 was useful here as well as RPLiDAR has a existing ROS Package to use their LiDARs.
 - **Odometry:** We wanted to have accurate odometry calculation for the robot's movement. This was done using a fusion of IMU sensor values and motor encoder values. The detailed [algorithm](#odometry) is explained below.
-- **ESP32 as a 2nd Brain (Backbone!):** We cannot directly control the actuators from the Raspberry Pi. A regular microcontroller gives far more control over its GPIO pins than a Pi does. Currently, we are extensively using the ESP32 microcontroller's FreeRTOS feature to manage different tasks like keeping serial communication, reading sensor data, showing debug info on an OLED display, etc. Even though we initially wanted to use an ESP32 only for controlling the motors and getting sensor data, we later offloaded a few logic elements to the ESP as well. The tasks that require instant reaction—mainly the parking tasks—are handled mostly by the ESP32.
+- **ESP32 as a 2nd Brain (Backbone!):** We cannot directly control the actuators from the Raspberry Pi. A regular microcontroller gives far more control over its GPIO pins than a Pi does. Currently, we are extensively using the ESP32 microcontroller's FreeRTOS feature to manage different tasks like keeping serial communication, reading sensor data, showing debug info on an OLED display, etc. Even though we initially wanted to use an ESP32 only for controlling the motors and getting sensor data, we later offloaded a few logic elements to the ESP as well. The tasks that require instant reaction - mainly the parking tasks - are handled mostly by the ESP32.
 - **Object Detection Issues:** From previous experience, we know that detection of the towers can be very tricky sometimes. Because we found the objects given during the international round to be very dark for the camera to properly detect them, we spent a lot of time thinking about a possible solution for this. In the end, we decided to use a lower FOV camera with a servo to directly look at a target object and detect its color. The [algorithm](#obstacle-round) for this is explained in detail below.
 - **Gazebo Simulation:** Due to academic reasons, the main programmer of our team, Noor, had to stay away from the team for a residential semester. During that time, he did not have access to the physical robot, which made it very difficult for him to program the logic for the robot. So he set up a Gazebo simulation environment and perfected the robot's logic there. When he finally had access to the robot, he implemented the code on the physical robot. ROS2 was very useful here as well. As Gazebo is compatible with ROS2, the same code used for the simulation could also be used for the robot as well. More on that [later...](#gazebo-simulation-and-its-role-in-our-development-workflow)
 
@@ -61,6 +61,26 @@ As mentioned before, ROS uses a node-based approach where multiple nodes each so
     </tr>
 </table>
 
+
+### Serial Communication
+We are typically used to sending `String` values from a computer to MCU and parse those strings to get the numerical values on the ESP side. Although, parsing a number from a string value is not a big deal for a computer, or even for a Raspberry Pi, this is often unreliable and inefficient for an MCU because string parsing is a slow process and the data might get corrupt pretty easily due to parsing errors. 
+
+So, we decided to use a **Hybrid Protocol**:
+1. **ESP32 $\to$ Pi (RX):** Uses **Strings**. The ESP32 sends data like `[x,y,theta]` or status messages like `Start`, `Done`. Since the Pi has plenty of processing power, it can easily parse these strings. This also makes debugging easier as we can simply read the serial monitor to see what the ESP is saying.
+2. **Pi $\to$ ESP32 (TX):** Uses **Raw Bytes**. To make the ESP32's job as easy as possible, the Pi sends commands as a sequence of 2 bytes: `[Key, Value]`. This requires zero string parsing on the ESP32 side—it just reads the bytes and executes the corresponding `case` in a switch statement.
+
+#### Byte Protocol Encoding
+Since we can only send integers between 0-255 in a single byte, we use a mapping system to send floating point values using bytes. 0 to 49 sets a key, and a byte of 50 to 250 means the value of that key. When ESP receives a byte between 0 to 49, it saves that key and wait for the value to arrive.
+
+Here are a few examples:  
+| Command | Key | Offset | Range |
+| :--- | :--- | :--- | :--- |
+| **Throttle** | 15 | 150 | -1.0 to 1.0 $\to$ 50 to 250 |
+| **Steering** | 16 | 150 | -1.0 to 1.0 $\to$ 50 to 250 |
+| **Camera Servo** | 17 | 140 | -90° to 90° $\to$ 140 to 230 |
+| **Move Dist** | 7 | 150 | -1m to 1m $\to$ 50 to 250 |
+
+This ensures that the ESP32 receives clean, error-free commands at a reasonable frequency.
 
 ### Odometry
 A really interesting feature of our robot is that it can calculate its realtime position. We achieved this by fusing the realtime orientation value with the motor's encoder values. When the robot is moving in a straight line, it is possible to calculate how far the robot has moved using the encoder values. But it is not so simple when the robot turns while moving. So when the robot is turning, we can actually divide its curved path into tiny sections that resembles a straight lines. Then accumulating those straight lines and taking their directions into account, we can find the actual cartesian displacement of the robot with reliable precision.
@@ -92,7 +112,7 @@ During the open round, there are no towers on the track. So we don't need the ca
 1. The LiDAR scans the area and gives a bunch of distances in many directions (one distance per ray).
 1. For each ray, start with the ray’s measured distance as the “candidate” distance.
 1. Look at the nearby rays around that ray. If any nearby ray’s obstacle is close enough that the car’s body would hit it when moving along the candidate ray, shorten the candidate distance to that nearby obstacle. (In other words: pretend the car is wide and see where it would first hit something.)
-1. After doing that for every ray, you have a “safe distance” for every direction — the farthest you can travel in that direction without your body hitting something.
+1. After doing that for every ray, you have a “safe distance” for every direction  -  the farthest you can travel in that direction without your body hitting something.
 1. Pick the direction with the largest safe distance and steer the car toward it.
 
 ```mermaid
@@ -111,7 +131,7 @@ flowchart LR
     M --> B
 ```
 
-One drawback of this method is that on straight sections, the robot shows a tendency to point itself toward the next corner. This happens because corners often look like the direction with the most open space before discovering the next turn, so the algorithm treats them as the safest option—even though the robot should ideally stay centered on the straight path. But this algorithm works really well to move between tight gaps. So the little drawback doesn't really matter to us. And of course, there are ways to improve on this issue.
+One drawback of this method is that on straight sections, the robot shows a tendency to point itself toward the next corner. This happens because corners often look like the direction with the most open space before discovering the next turn, so the algorithm treats them as the safest option - even though the robot should ideally stay centered on the straight path. But this algorithm works really well to move between tight gaps. So the little drawback doesn't really matter to us. And of course, there are ways to improve on this issue.
 
 One important thing to remember, the robot does not target the farthest distance, it targets the farthest `safe` distance - where it can move to without collision. Here's how it works:
 
@@ -177,7 +197,7 @@ After detecting the towers, the robot needs to avoid them. The robot needs to mo
 
 #### Parking
 We thought parking would be very difficult, but it was pretty simple. Moving out of the parking spot was straightforward. Although we had to choose the path based on the color of the first object, it was fairly simple.
-However, moving into the parking spot after the run ends—and being parallel on top of that—was no simple matter. But we already had odometry data, motor encoder data and IMU orientation data. All we had to do was first align the robot in a specific arrangement with the parking spot and run a predetermined movement sequence. And that's all it took to complete the parking.
+However, moving into the parking spot after the run ends - and being parallel on top of that - was no simple matter. But we already had odometry data, motor encoder data and IMU orientation data. All we had to do was first align the robot in a specific arrangement with the parking spot and run a predetermined movement sequence. And that's all it took to complete the parking.
 
 Here's how it works:
 <table>
@@ -290,7 +310,7 @@ Gazebo provides realistic sensor plugins that behave similarly to the real hardw
 This ensured that once the real sensors were installed, our software already had a stable foundation.
 
 **4. Safety and Rapid Iteration**  
-Certain tests—such as high-speed turns, collision detection, or repeated obstacle challenges—carry risk of damaging hardware.  
+Certain tests - such as high-speed turns, collision detection, or repeated obstacle challenges - carry risk of damaging hardware.  
 Using simulation, we were able to:
    - Try aggressive parameters safely
    - Run tests repeatedly

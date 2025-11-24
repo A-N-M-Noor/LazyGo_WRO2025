@@ -18,9 +18,6 @@ extern float IR_VAL_3;
 extern float IR_VAL_4;
 
 // Declare global distance sensor variables defined elsewhere
-// extern int distLeft;
-// extern int distRight;
-// extern int distFront;
 extern int turnCount;
 extern bool stop_bot;
 extern bool running;
@@ -91,11 +88,6 @@ void displayTask(void* pvParameters) {
                 int posWidth = u8g2.getStrWidth(posBuf);
                 u8g2.drawStr((128 - posWidth) / 2, 40, posBuf);
             }
-
-            // char distBuf[15];
-            // snprintf(distBuf, sizeof(distBuf), "%d|%d|%d", distLeft, distFront, distRight);
-            // int distWidth = u8g2.getStrWidth(distBuf);
-            // u8g2.drawStr((128 - distWidth) / 2, 60, distBuf);
 
             // Battery voltage (bottom-left), small font, two decimals
             u8g2.setFont(u8g2_font_4x6_tf);
