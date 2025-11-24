@@ -415,20 +415,11 @@ Below is the complete schematic of the PCB. External to the PCB, we have the 5V 
 
 > ***The 5V 20A buck converter module has a 2.8V-5.6V adjustable potentiometer, which allows us to conveniently set the voltage to 5.1V. This helps avoid throttling on the pi caused by voltage drop on the wire and PCB.**
 #### Flowchart for ease of understanding:
-```mermaid
----
-config:
-  theme: redux
----
-flowchart TD
-    n1["3s LiPo Battery"] --> n3["5V 5A Buck<br>Converter"] & n4["Mini 360 Buck<br>Converter"] & n5["VNH2SP30<br>Motor Driver"]
-    n3 --> n6["Raspberry Pi 5"]
-    n6 --> n7["RP Lidar C1"] & n8["USB Camera"] & n9["Main PCB"]
-    n9 --> n10["ESP32<br>IMU<br>IR Sensors<br>Encoder"]
-    n4 --> n11["Servo<br>OLED<br>Buzzer"]
-    n5 --> n12["Motor"]
-    n1@{ shape: rounded}
-```
+<div align="center">
+  <img alt="image" src="./assets/power_systems.png" />
+</div>
+
+
 ---
 ---
 
