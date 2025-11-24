@@ -1,3 +1,13 @@
+# Robot Explanation
+You can watch this following video to know a little bit about our team and robot. It also contains a, assembly video at the end, so don't miss it!
+
+<div align="center">
+  <a href = "https://youtu.be/fMbA4KP2Wvw"><img alt="image" src="../assets/bot_review_thumb.jpg" width = 500 /> </a>
+</div>
+
+---
+---
+
 # Performance Videos
 Performance videos of our robot during the Open Challenge and the Obstacle Challenge:
 

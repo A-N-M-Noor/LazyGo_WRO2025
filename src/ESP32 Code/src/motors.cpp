@@ -264,5 +264,3 @@ void Motors::hardBreak() {
 long Motors::getEncoderCount() {
     return encoderCount;
 }
-
-// getCurrentPosition removed with position control
