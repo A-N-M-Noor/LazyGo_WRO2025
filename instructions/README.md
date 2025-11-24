@@ -17,12 +17,12 @@ As we are using ROS2 for our robot, we installed Ubuntu on our Pi. Now, it is co
 #### Which version?
 You can either use ROS2 Humble with Ubuntu 22.04, or you can use ROS2 Jazzy with Ubuntu 24.04.
 
-There is no direct download link for Ubuntu 22.04 for ARM architecture (Please let us know if you find any). And you can't install Ubuntu 22.04 from Pi Imager for a Pi 5. Therefore, we are using ROS2 Jazzy with Ubuntu 24.04. But this version of Ubuntu comes with a few problems. For example,you'll face a lot of issues installing a working VNC here. But thankfully ROS2 comes with a lot of remote debugging tools. And you can even code inside VSCode with its remote SSH feature. So you probably won't even need any VNC.
+There is no direct download link for Ubuntu 22.04 for ARM architecture (Please let us know if you find any). And you can't install Ubuntu 22.04 from Pi Imager for a Pi 5. Therefore, we are using ROS2 Jazzy with Ubuntu 24.04. But this version of Ubuntu comes with a few problems. For example, you'll face a lot of issues installing a working VNC here. But thankfully ROS2 comes with a lot of remote debugging tools. And you can even code inside VSCode with its remote SSH feature. So you probably won't even need any VNC.
 
 #### Installation
 Download the Official Ubuntu Image for ARM from [here](https://cdimage.ubuntu.com/daily-live/20240421/). Download the `64-bit ARM (ARMv8/AArch64) desktop image` iso file.
 
-Install Raspberry Pi Imager from [here](https://www.raspberrypi.com/software/). Use the imager to burn the image file to an SD card. Or you can use any othe image writing software of your choice.
+Install Raspberry Pi Imager from [here](https://www.raspberrypi.com/software/). Use the imager to burn the image file to an SD card. Or you can use any other image writing software of your choice.
 
 Insert the SD card into the Pi, and turn it on. The first time you'll need to use a monitor.
 

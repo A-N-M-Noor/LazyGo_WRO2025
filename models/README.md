@@ -1,17 +1,17 @@
 ## Robot Design Overview
  <img src="../assets/robot.png" align="right" width="450" />
  
-Our robot was fully designed in **Onshape**, enabling seamless collaboration and easy duplication through a shared project link. The mechanical structure was developed with a core objective:
+Our robot was fully designed in **Onshape**, enabling seamless collaboration and easy replication through a shared project link. The mechanical structure was developed with a core objective:
 
 > **Achieve an extremely tight turning radius while maintaining excellent balance and traction.**
 
 To reach this goal, we combined a **differential drive system** with **Ackermann steering**, allowing sharp, controlled turns **without wheel slip**—significantly improving odometry accuracy.
 
-The robot fits within a **20 cm × 10 cm footprint** with a **wheelbase of 11.5 cm**, and through geometric steering-angle calculations, we successfully achieved a **turning radius below 15 cm**.
+The robot fits within a **20 cm × 10 cm footprint** with a **wheelbase of 11.5 cm**, and through geometric steering angle calculations, we successfully achieved a **turning radius below 15 cm**.
 
 ---
 <p align="center"><img src="../assets/ackerman.png" height="400"  /><img src="../assets/44.png" height="400" /> <p/>
-The Ackermann geometry was designed by projecting steering-axis and wheel-intersection lines and shaping the linkage based on the resulting steering angles.
+The Ackermann geometry was designed by projecting steering axis and wheel intersection lines and shaping the linkage based on the resulting steering angles.
 
 Here is our Onshape project link:  [Onshape CAD Project](https://cad.onshape.com/documents/0ec023d9700593bfeebabdea/w/02e5710fbedd7baee1480c4a/e/63f1a3919addf09c73a6e4d6?renderMode=0&uiState=692353830b89481e7565ca33)
 
@@ -38,7 +38,7 @@ To maximize maintainability and simplify repairs, the robot is constructed in **
 #### Stage 2 – Control Platform 
 - Raspberry Pi main computing unit  
 - 5V 5A buck converter  
-- Reserved front clearance for LiDAR
+- Reserved front clearance for the LiDAR
 - Motor driver mounted beneath the plate
 
 
@@ -48,7 +48,7 @@ To maximize maintainability and simplify repairs, the robot is constructed in **
 - Custom PCB with secondary microcontroller  <img src="../assets/STAGE 3.png" align="right" width="300" /> 
 - IMU and onboard OLED display  
 - 3D-printed protective shell that:
-  - holds the LiDAR upside-down at **5 cm height** for accurate wall and obstacle sensing  
+  - holds the LiDAR upside down at **5 cm height** for accurate wall and obstacle sensing  
   - protects the electronics  
   - enhances the robot’s appearance  
 
@@ -68,7 +68,7 @@ For a tactile interaction point, we incorporated a **mechanical switch** as the 
 
 ### Design Philosophy
 
-While our primary objective is **mission-reliable performance**, we also believe that:
+While our primary objective is **reliable mission performance**, we also believe that:
 
 > **If the robot can look awesome while working flawlessly — why not embrace both?**
 ---
@@ -116,7 +116,7 @@ If you are using the same printer and want to skip slicing setup, you can downlo
 - **Dry your filament**—better tolerances and cleaner overhangs  
 - **PLA+ or PETG** recommended for durability  
 - **Slow down first-layer speed** for better bed adhesion  
-- **Test-fit before full assembly** to avoid overtight tolerances  
+- **Test-fit before full assembly** to avoid overly tight tolerances  
 - **Label parts during printing** to simplify sorting  
 
 These guidelines ensure strong, dimensionally accurate parts that assemble smoothly with the mechanical system.

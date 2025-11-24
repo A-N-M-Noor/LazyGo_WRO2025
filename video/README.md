@@ -1,5 +1,5 @@
 # Performance Videos
-Performance videos of our robot during the Open Challange and the Obstacle Challange:
+Performance videos of our robot during the Open Challenge and the Obstacle Challenge:
 
 <table>
     <tr>
@@ -22,7 +22,7 @@ Performance videos of our robot during the Open Challange and the Obstacle Chall
 
 
 # Simulation Videos
-Initially we implemented all the logics on a simulated robot. Here are some screen recordings of those simulations:
+Initially, we implemented all the logic on a simulated robot. Here are some screen recordings of those simulations:
 
 <table>
     <tr>
@@ -67,7 +67,7 @@ Here are a few videos demonstrating different aspects of our robot:
         </td>
     </tr>
     <tr>
-        <td align="center"><sub>We're using LiDAR to detect the position of the objects, This video demonstrates that. Find more <a href="../src/README.md/#important-note-on-the-camera">here...</a></sub></td>
+        <td align="center"><sub>We're using LiDAR to detect the position of the objects. This video demonstrates that. Find more <a href="../src/README.md/#important-note-on-the-camera">here...</a></sub></td>
         <td align="center"><sub>This video demonstrates our parking approach for the obstacle round. Learn more about this <a href="../src/README.md/#parking">here...</a></sub></td>
     </tr>
 </table>
