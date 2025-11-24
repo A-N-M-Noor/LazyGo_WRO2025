@@ -22,7 +22,7 @@ There is no direct download link for Ubuntu 22.04 for ARM architecture (Please l
 #### Installation
 Download the Official Ubuntu Image for ARM from [here](https://cdimage.ubuntu.com/daily-live/20240421/). Download the `64-bit ARM (ARMv8/AArch64) desktop image` iso file.
 
-Install Raspberry Pi Imager from [here](https://www.raspberrypi.com/software/). Use the imager to burn the image file to an SD card. Or you can use any othe image writing software of your choice.
+Install Raspberry Pi Imager from [here](https://www.raspberrypi.com/software/). Use the imager to burn the image file to an SD card. Or you can use any other image writing software of your choice.
 
 Insert the SD card into the Pi, and turn it on. The first time you'll need to use a monitor.
 
@@ -109,7 +109,7 @@ rosdep update
 ```
 
 #### Source some files
-Add ROS2 and colcon to the ~/.bashrc file, so that theyare sourced on every terminal. Adding colcon will enable autocomplete of commands.
+Add ROS2 and colcon to the ~/.bashrc file, so that they are sourced on every terminal. Adding colcon will enable autocomplete of commands.
 
 First, open the .bashrc file
 ```
