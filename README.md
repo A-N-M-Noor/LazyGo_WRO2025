@@ -11,7 +11,8 @@ This repository contains all the files, codes, models, photos and everything abo
 Visit our team socials:
 
 [![facebook](https://img.shields.io/badge/face-book-blue?style=flat-square&logo=facebook)](https://www.facebook.com/team.lazygo)
-[![linkedin](https://img.shields.io/badge/linked-in-blue?style=flat-square)](https://www.linkedin.com/company/lazygo)
+[![linkedin](https://img.shields.io/badge/Linked-In-blue?style=flat-square)](https://www.linkedin.com/company/lazygo)
+[![youtube](https://img.shields.io/badge/You-Tube-red?style=flat-square)](https://youtube.com/@TeamLazyGo)
 
 
 ## Table of Contents
@@ -228,7 +229,7 @@ Our robot utilizes a **3rd generation LEGO differential gearbox**. Differential 
 <div align="center">
   <img src="./assets/differential.jpeg" alt="Differential Drive Setup" style="border-radius: 20px" width="300"/>
   <br>
-  A 16GA Motor was being used when we took this picture.
+  A 25GA Motor was being used when we took this picture.
 </div>
 </td>
 </tr>
@@ -321,7 +322,7 @@ Below is the complete schematic of the PCB. External to the PCB, we have the 5V 
 | **RPLidar C1**                | 5.1V*              | Unknown chip 5A Buck             |
 | **ESP32 + Sensors**    | 5.1V*               | Unknown chip 5A Buck             |
 | **Servo Motor + OLED**               | 5V               | SCT2650 5A Buck                  |
-| **Motors (20GA with encoder)**| Battery Voltage  | VNH2SP30 Motor Driver (built-in) |
+| **Motors (25GA with encoder)**| Battery Voltage  | VNH2SP30 Motor Driver (built-in) |
 
 > ***The 5V 20A buck converter module has a 2.8V-5.6V adjustable potentiometer, which allows us to conveniently set the voltage to 5.1V. This helps avoid throttling on the pi caused by voltage drop on the wire and PCB.**
 #### Flowchart for ease of understanding:
@@ -361,3 +362,10 @@ The PCB is designed to use locally available components, with a lot of board cle
 
 
 
+---
+---
+
+Thank you for going through our documentation! If you want to learn more, please reach out to us through our socials media accounts:
+
+- [facebook](https://www.facebook.com/team.lazygo)
+- [linkedin](https://www.linkedin.com/company/lazygo)
