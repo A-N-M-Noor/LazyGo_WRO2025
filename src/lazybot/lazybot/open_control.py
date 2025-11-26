@@ -54,11 +54,15 @@ class OpenNode(Node):
 
         # Navigation Params
         self.maxSpeed : float = 0.8
+        self.speed_init : float = 0.25
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0 # Max steering value
         
-        self.front_dist_thresh = 0.8 # Distance to wall to trigger a turn
+        self.front_dist_thresh_init = 0.6
+        self.front_dist_thresh_final = 0.8
+        self.front_dist_thresh = self.front_dist_thresh_init
+        
 
         self.new_lidar_val = False
 
@@ -126,11 +130,9 @@ class OpenNode(Node):
 
         if(self.dir == 0):
             if(leftDist > 1.1 and leftDist > rightDist):
-                self.get_logger().info("Setting direction to CCW.")
-                self.dir = 1
+                self.setDir(1)
             elif(rightDist > 1.1 and rightDist > leftDist):
-                self.get_logger().info("Setting direction to CW.")
-                self.dir = -1
+                self.setDir(-1)
 
         # 3. Corner Logic
         # If wall is close in front AND we haven't just turned
@@ -140,11 +142,9 @@ class OpenNode(Node):
             # Determine direction on first turn (Auto-detect CW vs CCW)
             if(self.dir == 0):                
                 if(leftDist > rightDist):
-                    self.dir = 1 # More space on left -> CCW
-                    self.get_logger().info("Setting direction to CCW.")
+                    self.setDir(1) # More space on left -> CCW
                 else:
-                    self.dir = -1 # More space on right -> CW
-                    self.get_logger().info("Setting direction to CW.")
+                    self.setDir(-1) # More space on right -> CW
                 
             # Update target heading for the next section
             if(self.dir == 1):
@@ -173,16 +173,31 @@ class OpenNode(Node):
         
         # 5. Speed Control
         # Slow down when steering angle is high (cornering)
-        self.speed = self.remap(
-            old_val = abs(self.strAngle), 
-            old_min = 0, 
-            old_max = self.strRange,
-            new_min = self.maxSpeed,
-            new_max = self.maxSpeed * 0.5
-        )
+        if self.dir == 0:
+            self.speed = self.speed_init
+            self.get_logger().info("Direction unknown, setting speed to initial value.")
+            self.get_logger().info(f"Speeding: {self.speed:.2f}")
+        else:
+            self.get_logger().info(f"Dir: {self.dir}")
+            self.speed = self.remap(
+                old_val = abs(self.strAngle), 
+                old_min = 0, 
+                old_max = self.strRange,
+                new_min = self.maxSpeed,
+                new_max = self.maxSpeed * 0.5
+            )
         
         self.pubDrive()
-        
+    
+    def setDir(self, direction: int):
+        """Sets turning direction: 1 for CCW, -1 for CW."""
+        self.dir = direction
+        self.front_dist_thresh = self.front_dist_thresh_final
+        if direction == 1:
+            self.get_logger().info("Setting direction to CCW.")
+        else:
+            self.get_logger().info("Setting direction to CW.")
+
     def odom_loop(self):
         """
         Lap Counting Logic.
@@ -231,6 +246,9 @@ class OpenNode(Node):
             self.reached = True
             self.running = True
             self.gotWallD = False
+            self.lastTurnSpot = Vector3(x=100.0, y=100.0, z=0.0)
+            self.front_dist_thresh = self.front_dist_thresh_init
+
             self.get_logger().info("Starting the robot.")
             self.cmd_pub.publish(String(data="start_open"))
         elif command == "stop":
