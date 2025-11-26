@@ -58,7 +58,7 @@ class OpenNode(Node):
         self.strAngle : float = 0.0
         self.strRange = 1.0 # Max steering value
         
-        self.front_dist_thresh = 0.7 # Distance to wall to trigger a turn
+        self.front_dist_thresh = 0.8 # Distance to wall to trigger a turn
 
         self.new_lidar_val = False
 
@@ -97,7 +97,7 @@ class OpenNode(Node):
             self.turning = False
         
 
-        turningKP = 1.0
+        turningKP = 0.75
         # Calculate base steering to align with target heading
         sA = self.remap(err, -radians(90), radians(90), -self.strRange/turningKP, self.strRange/turningKP)
         
@@ -110,6 +110,11 @@ class OpenNode(Node):
         frontDist = self.get_dst(0, 1.0)
         leftDist = self.get_dst(90, 5.0)
         rightDist = self.get_dst(-90, 5.0)
+
+        if(leftDist == inf):
+            leftDist = 10
+        if(rightDist == inf):
+            rightDist = 10
 
         if(leftDist == inf):
             leftDist = 10
@@ -159,7 +164,7 @@ class OpenNode(Node):
         elif(leftDist + rightDist < 1.1):            
             pos = leftDist - rightDist
             # Add small steering adjustment to stay in middle
-            kP2 = 15
+            kP2 = 10
             self.strAngle = self.clamp(
                 val = self.remap(pos, -0.5, 0.5, -self.strRange/kP2, self.strRange/kP2), 
                 mini = -self.strRange/2,

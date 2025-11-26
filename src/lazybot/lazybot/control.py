@@ -18,6 +18,7 @@ class ControlNode(Node):
     obstacle avoidance, and motor control.
     """
     def __init__(self):
+    
         super().__init__('control')
 
         # --- Parameters ---
@@ -174,7 +175,7 @@ class ControlNode(Node):
                 self.get_logger().info("Reached the destination, stopping the robot.")
                 self.pubDrive(disable=True)
                 self.cmd_pub.publish(String(data="NormalizeIMU"))
-                time.sleep(5.0)
+                # time.sleep(5.0)
                 self.cmd_pub.publish(String(data="RunEnd"))
                 return
         
