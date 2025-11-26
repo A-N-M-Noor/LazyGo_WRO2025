@@ -14,7 +14,7 @@ from lazybot.helper.camera_capture import Camera
 from lazybot.helper.collapsible import CollapsiblePane
 
 # Initialize simulation settings (likely loads default params)
-util.set_sim()
+# util.set_sim()
 
 # =================================================================================
 # GUI SETUP (CustomTkinter)
