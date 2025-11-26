@@ -4,7 +4,7 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Vector3
 
 from std_msgs.msg import Float32, String
-from math import pi, radians, degrees, sqrt
+from math import pi, radians, degrees, sqrt, inf
 import time
 
 class OpenNode(Node):
@@ -96,8 +96,10 @@ class OpenNode(Node):
         if(abs(err) < radians(20)):
             self.turning = False
         
+
+        turningKP = 1.0
         # Calculate base steering to align with target heading
-        sA = self.remap(err, -radians(90), radians(90), -self.strRange, self.strRange)
+        sA = self.remap(err, -radians(90), radians(90), -self.strRange/turningKP, self.strRange/turningKP)
         
         # Aggressive steering multiplier during turns
         if(self.turning):
@@ -108,6 +110,11 @@ class OpenNode(Node):
         frontDist = self.get_dst(0)
         leftDist = self.get_dst(90)
         rightDist = self.get_dst(-90)
+
+        if(leftDist == inf):
+            leftDist = 10
+        if(rightDist == inf):
+            rightDist = 10
 
         # Distance from last turn to prevent immediate re-triggering
         checkPointDist =  sqrt((self.pos.x - self.lastTurnSpot.x)**2 + (self.pos.y - self.lastTurnSpot.y)**2)
@@ -144,8 +151,9 @@ class OpenNode(Node):
         elif(leftDist + rightDist < 1.1):            
             pos = leftDist - rightDist
             # Add small steering adjustment to stay in middle
+            kP2 = 15
             self.strAngle = self.clamp(
-                val = self.remap(pos, -0.5, 0.5, -self.strRange/20, self.strRange/20), 
+                val = self.remap(pos, -0.5, 0.5, -self.strRange/kP2, self.strRange/kP2), 
                 mini = -self.strRange/2,
                 maxi = self.strRange/2
             )
