@@ -53,7 +53,7 @@ class OpenNode(Node):
         self.ints = []
 
         # Navigation Params
-        self.maxSpeed : float = 0.8
+        self.maxSpeed : float = 0.65
         self.speed_init : float = 0.25
         self.speed : float = 0.0
         self.strAngle : float = 0.0
@@ -338,21 +338,29 @@ class OpenNode(Node):
         steer_msg.data = self.strAngle
         self.steer_pub.publish(steer_msg)
         
-    def get_dst(self, ang, window = 10):
-        """Gets distance at specific angle (degrees)."""
-        I1 = self.a2i(radians(ang-window))
-        I2 = self.a2i(radians(ang+window))
-        count = 0
-        sum = 0
+    # def get_dst(self, ang, window = 10):
+    #     """Gets distance at specific angle (degrees)."""
+    #     I1 = self.a2i(radians(ang-window))
+    #     I2 = self.a2i(radians(ang+window))
+    #     count = 0
+    #     sum = 0
 
-        for i in range(I1, I2):
-            if(self.ranges[i] != inf):
-                sum += self.ranges[i]
-                count += 1
-        if(count > 0):
-            avg = sum / count
-            return avg
-        return 0.0
+    #     for i in range(I1, I2):
+    #         if(self.ranges[i] != inf):
+    #             sum += self.ranges[i]
+    #             count += 1
+    #     if(count > 0):
+    #         avg = sum / count
+    #         return avg
+    #     return 0.0
+
+    def get_dst(self, ang, window = 1.0):
+        """Gets distance at specific angle (degrees)."""
+        i = self.a2i(radians(ang))
+        if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
+            self.ranges[i] = self.fix_missing(i)
+            self.ints[i] = 1.0
+        return self.ranges[i]
     
     def i2a(self, i, deg = False):
         """Index to Angle."""
