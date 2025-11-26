@@ -1,4 +1,4 @@
-objects: true
+objects: false
 
 parking:
     enabled: false
