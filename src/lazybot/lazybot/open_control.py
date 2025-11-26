@@ -53,16 +53,14 @@ class OpenNode(Node):
         self.ints = []
 
         # Navigation Params
-        self.maxSpeed : float = 0.65
-        self.speed_init : float = 0.25
+        self.maxSpeed : float = 0.8
         self.speed : float = 0.0
         self.strAngle : float = 0.0
         self.strRange = 1.0 # Max steering value
         
-        self.front_dist_thresh_init = 0.6
-        self.front_dist_thresh_final = 0.8
-        self.front_dist_thresh = self.front_dist_thresh_init
-        
+        self.front_dist_thresh_init = 0.5
+        self.front_dist_thresh_final = 0.7
+        self.front_dist_thresh = self.front_dist_thresh_init # Distance to wall to trigger a turn
 
         self.new_lidar_val = False
 
@@ -101,24 +99,19 @@ class OpenNode(Node):
             self.turning = False
         
 
-        turningKP = 0.75
+        turning_ang = 45
         # Calculate base steering to align with target heading
-        sA = self.remap(err, -radians(90), radians(90), -self.strRange/turningKP, self.strRange/turningKP)
-        
+        sA = self.remap(err, -radians(turning_ang), radians(turning_ang), -self.strRange, self.strRange)
         # Aggressive steering multiplier during turns
         if(self.turning):
-            sA *= 20
+            sA *= 10
         self.strAngle = self.clamp(sA, -self.strRange, self.strRange)
+        self.get_logger().info(f"Heading Error: {degrees(err):.2f} deg, Steering Angle: {self.strAngle:.2f}")
         
         # 2. Wall Detection
-        frontDist = self.get_dst(0, 1.0)
-        leftDist = self.get_dst(90, 5.0)
-        rightDist = self.get_dst(-90, 5.0)
-
-        if(leftDist == inf):
-            leftDist = 10
-        if(rightDist == inf):
-            rightDist = 10
+        frontDist = self.get_dst(0)
+        leftDist = self.get_dst(90)
+        rightDist = self.get_dst(-90)
 
         if(leftDist == inf):
             leftDist = 10
@@ -129,10 +122,9 @@ class OpenNode(Node):
         checkPointDist =  sqrt((self.pos.x - self.lastTurnSpot.x)**2 + (self.pos.y - self.lastTurnSpot.y)**2)
 
         if(self.dir == 0):
-            if(leftDist > 1.1 and leftDist > rightDist):
-                self.setDir(1)
-            elif(rightDist > 1.1 and rightDist > leftDist):
-                self.setDir(-1)
+            self.front_dist_thresh = self.front_dist_thresh_init
+        else:
+            self.front_dist_thresh = self.front_dist_thresh_final
 
         # 3. Corner Logic
         # If wall is close in front AND we haven't just turned
@@ -142,9 +134,11 @@ class OpenNode(Node):
             # Determine direction on first turn (Auto-detect CW vs CCW)
             if(self.dir == 0):                
                 if(leftDist > rightDist):
-                    self.setDir(1) # More space on left -> CCW
+                    self.dir = 1 # More space on left -> CCW
+                    self.get_logger().info("Setting direction to CCW.")
                 else:
-                    self.setDir(-1) # More space on right -> CW
+                    self.dir = -1 # More space on right -> CW
+                    self.get_logger().info("Setting direction to CW.")
                 
             # Update target heading for the next section
             if(self.dir == 1):
@@ -165,20 +159,20 @@ class OpenNode(Node):
             pos = leftDist - rightDist
             # Add small steering adjustment to stay in middle
             kP2 = 10
-            self.strAngle = self.clamp(
+            newStr = self.clamp(
                 val = self.remap(pos, -0.5, 0.5, -self.strRange/kP2, self.strRange/kP2), 
                 mini = -self.strRange/2,
                 maxi = self.strRange/2
             )
+            if(abs(newStr) > abs(self.strAngle)):
+                self.strAngle = newStr
+                
         
         # 5. Speed Control
         # Slow down when steering angle is high (cornering)
-        if self.dir == 0:
-            self.speed = self.speed_init
-            self.get_logger().info("Direction unknown, setting speed to initial value.")
-            self.get_logger().info(f"Speeding: {self.speed:.2f}")
+        if(self.dir == 0):
+            self.speed = self.maxSpeed * 0.4
         else:
-            self.get_logger().info(f"Dir: {self.dir}")
             self.speed = self.remap(
                 old_val = abs(self.strAngle), 
                 old_min = 0, 
@@ -188,16 +182,7 @@ class OpenNode(Node):
             )
         
         self.pubDrive()
-    
-    def setDir(self, direction: int):
-        """Sets turning direction: 1 for CCW, -1 for CW."""
-        self.dir = direction
-        self.front_dist_thresh = self.front_dist_thresh_final
-        if direction == 1:
-            self.get_logger().info("Setting direction to CCW.")
-        else:
-            self.get_logger().info("Setting direction to CW.")
-
+        
     def odom_loop(self):
         """
         Lap Counting Logic.
@@ -246,9 +231,6 @@ class OpenNode(Node):
             self.reached = True
             self.running = True
             self.gotWallD = False
-            self.lastTurnSpot = Vector3(x=100.0, y=100.0, z=0.0)
-            self.front_dist_thresh = self.front_dist_thresh_init
-
             self.get_logger().info("Starting the robot.")
             self.cmd_pub.publish(String(data="start_open"))
         elif command == "stop":
@@ -338,23 +320,7 @@ class OpenNode(Node):
         steer_msg.data = self.strAngle
         self.steer_pub.publish(steer_msg)
         
-    # def get_dst(self, ang, window = 10):
-    #     """Gets distance at specific angle (degrees)."""
-    #     I1 = self.a2i(radians(ang-window))
-    #     I2 = self.a2i(radians(ang+window))
-    #     count = 0
-    #     sum = 0
-
-    #     for i in range(I1, I2):
-    #         if(self.ranges[i] != inf):
-    #             sum += self.ranges[i]
-    #             count += 1
-    #     if(count > 0):
-    #         avg = sum / count
-    #         return avg
-    #     return 0.0
-
-    def get_dst(self, ang, window = 1.0):
+    def get_dst(self, ang):
         """Gets distance at specific angle (degrees)."""
         i = self.a2i(radians(ang))
         if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
