@@ -107,9 +107,9 @@ class OpenNode(Node):
         self.strAngle = self.clamp(sA, -self.strRange, self.strRange)
         
         # 2. Wall Detection
-        frontDist = self.get_dst(0)
-        leftDist = self.get_dst(90)
-        rightDist = self.get_dst(-90)
+        frontDist = self.get_dst(0, 1.0)
+        leftDist = self.get_dst(90, 5.0)
+        rightDist = self.get_dst(-90, 5.0)
 
         if(leftDist == inf):
             leftDist = 10
@@ -118,6 +118,14 @@ class OpenNode(Node):
 
         # Distance from last turn to prevent immediate re-triggering
         checkPointDist =  sqrt((self.pos.x - self.lastTurnSpot.x)**2 + (self.pos.y - self.lastTurnSpot.y)**2)
+
+        if(self.dir == 0):
+            if(leftDist > 1.1 and leftDist > rightDist):
+                self.get_logger().info("Setting direction to CCW.")
+                self.dir = 1
+            elif(rightDist > 1.1 and rightDist > leftDist):
+                self.get_logger().info("Setting direction to CW.")
+                self.dir = -1
 
         # 3. Corner Logic
         # If wall is close in front AND we haven't just turned
@@ -307,13 +315,21 @@ class OpenNode(Node):
         steer_msg.data = self.strAngle
         self.steer_pub.publish(steer_msg)
         
-    def get_dst(self, ang):
+    def get_dst(self, ang, window = 10):
         """Gets distance at specific angle (degrees)."""
-        i = self.a2i(radians(ang))
-        if(self.ints[i] <= 0.05 or self.ranges[i] > 3.0):
-            self.ranges[i] = self.fix_missing(i)
-            self.ints[i] = 1.0
-        return self.ranges[i]
+        I1 = self.a2i(radians(ang-window))
+        I2 = self.a2i(radians(ang+window))
+        count = 0
+        sum = 0
+
+        for i in range(I1, I2):
+            if(self.ranges[i] != inf):
+                sum += self.ranges[i]
+                count += 1
+        if(count > 0):
+            avg = sum / count
+            return avg
+        return 0.0
     
     def i2a(self, i, deg = False):
         """Index to Angle."""
