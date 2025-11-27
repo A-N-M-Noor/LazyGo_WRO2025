@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import PointCloud, ChannelFloat32
+from std_msgs.msg import Int8
 from geometry_msgs.msg import Point32, Vector3, TransformStamped, Quaternion, Vector3
 from tf2_ros import TransformBroadcaster
 from nav_msgs.msg import Odometry
@@ -36,6 +37,9 @@ class DebugNode(Node):
         self.pubDebug = self.create_publisher(PointCloud, '/target_point', 10)
         # Visualizes cached/global objects (optional)
         self.pubCache = self.create_publisher(PointCloud, '/cached_object', 10)
+
+        self.cam_sub = self.create_subscription(Int8, '/cam_servo', self.cam_servo_callback, 1)
+
         # Standard Odometry for RVIZ
         self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
         
@@ -56,6 +60,8 @@ class DebugNode(Node):
         self.castR = 0.25
         self.targetAng = 0.0
         self.targetD = 0.0
+
+        self.camAngle = 0
         
         self.datass = []
         self.objs = []      # Currently detected towers
@@ -63,6 +69,10 @@ class DebugNode(Node):
         
         # Publish initial odom to establish TF tree immediately
         self.pubOdom()
+
+    def cam_servo_callback(self, msg: Int8):
+        """Receives camera servo angle updates."""
+        self.camAngle = radians(msg.data)
     
     def debug_callback(self, msg: BotDebugInfo):
         """
@@ -176,6 +186,14 @@ class DebugNode(Node):
             y = (i*0.1)*sin(ang) + offY
             targetPnts.points.append(Point32(x=x, y=y, z=0.0))
             targetPnts.channels[0].values.append(0.2)
+        
+        #Cam target line
+        cam_ang = self.camAngle
+        for i in range(0, int(self.targetD/0.05)):
+            x = (i*0.05)*cos(cam_ang)
+            y = (i*0.05)*sin(cam_ang)
+            targetPnts.points.append(Point32(x=x, y=y, z=0.0))
+            targetPnts.channels[0].values.append(0.8) # Different color code
 
         # --- 2. Visualize Danger Zone ---
         # Draws a circle around the robot indicating the emergency stop radius

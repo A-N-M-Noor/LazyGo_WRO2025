@@ -256,6 +256,20 @@ class ControlNode(Node):
 
             # Dynamic Cast Radius: Robot "width" increases with speed
             self.castR = remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
+            
+
+            self.objs = []
+            self.cont_stack = []
+            self.findOBJs()
+
+            # Sort detected objects by distance
+            self.objs.sort(key=lambda x: x["dst"], reverse=False)
+
+            indx = 0
+            for obj in self.objs:
+                indx += 1
+                self.get_logger().info(f"""
+{indx} - {obj['dst']} - {self.closest}""")
 
             self.pubObjData()
 
@@ -263,12 +277,10 @@ class ControlNode(Node):
             # Find the direction with the maximum distance (deepest gap)
             maxD, tA = self.getMaxDOBJ()
             
-            # Sort detected objects by distance
-            self.objs.sort(key=lambda x: x["dst"], reverse=False)
 
-            # Point Camera Servo at the nearest object within 60 degrees
+            # Point Camera Servo at the nearest object within 70 degrees
             for obj in self.objs:
-                if(abs(obj['ang']) < radians(60)):
+                if(abs(obj['ang']) < radians(70)):
                     msg = Int8()
                     msg.data = int(degrees(obj['ang']))
                     self.cam_pub.publish(msg)
@@ -366,17 +378,27 @@ class ControlNode(Node):
         """
         _max = {"dst": 0, "ang": 0}
         
+        # chkRng = self.lidar.indRng(-self.lookRng, self.lookRng)
+
+        # self.objs = []
+        # self.cont_stack = []
+
+        # # Determine which side to ignore based on detected color
+        # remove = "None" 
+        # if self.closest == "G":
+        #     remove = "Right" # Ignore Right if Green (Pass Left)
+        # elif self.closest == "R":
+        #     remove = "Left"  # Ignore Left if Red (Pass Right)
+
         chkRng = self.lidar.indRng(-self.lookRng, self.lookRng)
 
-        self.objs = []
-        self.cont_stack = []
-
-        # Determine which side to ignore based on detected color
         remove = "None" 
         if self.closest == "G":
-            remove = "Right" # Ignore Right if Green (Pass Left)
+            remove = "Right"
+            chkRng[0] = self.objs[0]["index"] if len(self.objs) > 0 else chkRng[0]
         elif self.closest == "R":
-            remove = "Left"  # Ignore Left if Red (Pass Right)
+            remove = "Left"
+            chkRng[1] = self.objs[0]["index"] if len(self.objs) > 0 else chkRng[1]
         
         for i in range(chkRng[0], chkRng[1], self.skip1):
             # Simulation hack: force intensity high
@@ -397,15 +419,21 @@ class ControlNode(Node):
                 _max = dt
                 
             # Detect towers/obstacles
-            objectFound = self.detectContrast(i)
+            # objectFound = self.detectContrast(i)
             
-            # Logic to ignore the "best path" if it leads to a forbidden side of a tower
-            if objectFound:
-                if remove == "Right":
-                    _max = dt # Force path to current (likely left)
-                if remove == "Left":
-                    return _max["dst"], _max["ang"] # Return immediately (likely right)
+            # # Logic to ignore the "best path" if it leads to a forbidden side of a tower
+            # if objectFound:
+            #     if remove == "Right":
+            #         _max = dt # Force path to current (likely left)
+            #     if remove == "Left":
+            #         return _max["dst"], _max["ang"] # Return immediately (likely right)
         return _max["dst"], _max["ang"]
+
+    def findOBJs(self):
+        chkRng = self.lidar.indRng(-self.lookRng, self.lookRng)
+        for i in range(chkRng[0], chkRng[1]):
+            self.detectContrast(i)
+
 
     def detectContrast(self, i):
         """
@@ -414,6 +442,10 @@ class ControlNode(Node):
         """
         if(self.IS_OPEN):
             return False
+        
+        self.lidar.fix_missing(i)
+        self.lidar.fix_missing(i - self.skip1)
+        
         slope = (self.lidar.ranges[i] - self.lidar.ranges[i-self.skip1])
         
         # Falling edge (Object starts)
