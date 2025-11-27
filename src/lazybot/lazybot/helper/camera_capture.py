@@ -30,7 +30,7 @@ class Camera:
         
         # Apply manual exposure/gain settings using v4l2-ctl
         # This is crucial for computer vision to prevent auto-exposure flickering
-        self.set_camera_controls(device = src, exposure=180, gain=120, wb_temp=4500, saturation=None)
+        self.set_camera_controls(device = src, exposure=185, gain=120, wb_temp=4500, saturation=None)
         
         self.frame = None
         self.running = False
@@ -117,6 +117,13 @@ class Camera:
         """
         while self.running:
             _,self.frame = self.cap.read()
+            # Print the exposure value from the camera
+            exposure = self.cap.get(cv2.CAP_PROP_EXPOSURE)
+            gain = self.cap.get(cv2.CAP_PROP_GAIN)
+            white_balance = self.cap.get(cv2.CAP_PROP_TEMPERATURE)
+            saturation = self.cap.get(cv2.CAP_PROP_SATURATION)
+            # print(f"Current Exposure: {exposure}, Gain: {gain}, White Balance: {white_balance}, Saturation: {saturation}")
+            # print(f"Current Exposure: {exposure}")
             
     def getFrame(self, blr:int = 0, rotate_180:bool = False):
         """
