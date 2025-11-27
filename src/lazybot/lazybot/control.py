@@ -357,8 +357,13 @@ class ControlNode(Node):
                 return self.dir*90.0
         else:
             # Orbit logic: Calculate tangent angle to the tower
-            ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
-            return degrees(obj['ang'] + ang)
+            # ang = self.castR/obj['dst'] * (1.0 if(self.closest == "G") else -1.0)
+            ang = self.castR/obj['dst']
+            if(self.closest == "G"):
+                return degrees(obj['ang'] + ang)
+            elif(self.closest == "R"):
+                return degrees(obj['ang'] - ang)
+            # return degrees(obj['ang'] + ang)
         
         return False
 
@@ -451,10 +456,10 @@ class ControlNode(Node):
         slope = (self.lidar.ranges[i] - self.lidar.ranges[i-self.skip1])
         
         # Falling edge (Object starts)
-        if(slope < -0.15):
+        if(slope < -0.25):          # it was -0.15
             self.cont_stack.append(i)
         # Rising edge (Object ends)
-        elif(slope > 0.15):
+        elif(slope > 0.25):         # it was 0.15
             if(len(self.cont_stack) > 0):
                 pop = self.cont_stack.pop()
                 mid = (i + pop) // 2
