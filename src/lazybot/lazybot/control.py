@@ -257,7 +257,7 @@ class ControlNode(Node):
             # Dynamic Cast Radius: Robot "width" increases with speed
             self.castR = remap(self.speed/self.maxSpeed, 0.45, 1, self.castRange[0], self.castRange[1])
             
-
+            self.fix_all_missing()
             self.objs = []
             self.cont_stack = []
             self.findOBJs()
@@ -340,6 +340,11 @@ class ControlNode(Node):
             self.pubDebugPoint()
             self.new_lidar_val = False
 
+    def fix_all_missing(self):
+        chkRng = self.lidar.indRng(-self.lookRng, self.lookRng)
+        for i in range(chkRng[0]-50, chkRng[1]+50):
+            self.lidar.ranges[i] = self.lidar.fix_missing(i)
+    
     def corner_handling(self, obj):
         """
         Special logic for corners.
@@ -442,9 +447,6 @@ class ControlNode(Node):
         """
         if(self.IS_OPEN):
             return False
-        
-        self.lidar.fix_missing(i)
-        self.lidar.fix_missing(i - self.skip1)
         
         slope = (self.lidar.ranges[i] - self.lidar.ranges[i-self.skip1])
         

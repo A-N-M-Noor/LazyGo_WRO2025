@@ -274,18 +274,19 @@ class LidarHandler:
         if(i < 0 or i >= len(self.ints)):
             return 0
         # If valid, return as is
-        if(self.ints[i] > 0.05 and self.ranges[i] <= 3.0):
+        if(self.ints[i] > 0.05 and self.ranges[i] <= 4.0 and self.ranges[i] != float('inf')):
             return self.ranges[i]
         
         # Search for nearest valid neighbors
         first = i
         last = i
-        while(first > 0 and (self.ints[first] == 0.0 or self.ranges[first] > 3.0)):
+        
+        while(first > 0 and (self.ints[first] == 0.0 or self.ranges[first] > 4.0) or self.ranges[first] == float('inf')):
             first -= 1
             if(first < 0):
                 first = 0
                 break
-        while(last < len(self.ints) and (self.ints[last] == 0.0 or self.ranges[last] > 3.0)):
+        while(last < len(self.ints) and (self.ints[last] == 0.0 or self.ranges[last] > 4.0) or self.ranges[last] == float('inf')):
             last += 1
             if(last >= len(self.ints)):
                 last = len(self.ints) - 1
@@ -296,6 +297,9 @@ class LidarHandler:
             return 0
         if(first == last):
             return self.ranges[first]
+        
+        if abs(self.ranges[first] - self.ranges[last]) > 0.1:
+            return self.ranges[first] 
         
         # Linear interpolation
         return lerp(self.ranges[first], self.ranges[last], (i-first)/(last-first))
