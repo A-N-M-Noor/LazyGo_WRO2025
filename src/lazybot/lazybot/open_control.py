@@ -95,16 +95,16 @@ class OpenNode(Node):
         err = self.sectionAngle - self.pos.z
         
         # If error is small, we are done turning
-        if(abs(err) < radians(20)):
+        if(abs(err) < radians(45)):
             self.turning = False
         
 
-        turning_ang = 45
+        turning_ang = 120
         # Calculate base steering to align with target heading
         sA = self.remap(err, -radians(turning_ang), radians(turning_ang), -self.strRange, self.strRange)
         # Aggressive steering multiplier during turns
         if(self.turning):
-            sA *= 10
+            sA *= 5
         self.strAngle = self.clamp(sA, -self.strRange, self.strRange)
         self.get_logger().info(f"Heading Error: {degrees(err):.2f} deg, Steering Angle: {self.strAngle:.2f}")
         
@@ -155,10 +155,11 @@ class OpenNode(Node):
             
         # 4. Wall Centering (when driving straight)
         # If in a corridor (walls on both sides), center the robot
-        elif(leftDist + rightDist < 1.1):            
+        elif(leftDist + rightDist < 1.1 and checkPointDist > 0.4 and not self.turning):
+        # elif(leftDist + rightDist < 1.1):            
             pos = leftDist - rightDist
             # Add small steering adjustment to stay in middle
-            kP2 = 10
+            kP2 = 2.0
             newStr = self.clamp(
                 val = self.remap(pos, -0.5, 0.5, -self.strRange/kP2, self.strRange/kP2), 
                 mini = -self.strRange/2,
