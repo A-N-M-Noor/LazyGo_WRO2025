@@ -175,10 +175,7 @@ class OpenNode(Node):
         # Slow down when steering angle is high (cornering)
         if self.dir == 0:
             self.speed = self.speed_init
-            self.get_logger().info("Direction unknown, setting speed to initial value.")
-            self.get_logger().info(f"Speeding: {self.speed:.2f}")
         else:
-            self.get_logger().info(f"Dir: {self.dir}")
             self.speed = self.remap(
                 old_val = abs(self.strAngle), 
                 old_min = 0, 

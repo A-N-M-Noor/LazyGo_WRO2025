@@ -109,7 +109,7 @@ class ControlNode(Node):
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
-        self.targetLap = 3
+        self.targetLap = 1
         self.running = False
         self.endOffset = [-0.5, 1.5] # Y-coordinates for Start/Finish area
         # Coordinates of track corners for special handling
