@@ -62,7 +62,7 @@ class ControlNode(Node):
         
         # Speed Boosting (Go fast on straights)
         self.speedBoost = 1.0
-        self.boostMax = 1.05 #1.25
+        self.boostMax = 1.35 #1.25
         self.boostAngleThresh = 7.5 # Only boost if steering angle is within +/- 7.5 deg
         self.boostDistThresh = 1.10 # Only boost if clear path > 1.1m
 
