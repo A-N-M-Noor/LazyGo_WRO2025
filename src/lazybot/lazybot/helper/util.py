@@ -298,11 +298,17 @@ class LidarHandler:
         if(first == last):
             return self.ranges[first]
         
+        lerpFactor = (i-first)/(last-first)
+        
         if abs(self.ranges[first] - self.ranges[last]) > 0.1:
-            return self.ranges[first] 
+            if lerpFactor < 0.5:
+                return self.ranges[first] 
+            else:
+                return self.ranges[last]
+            # return self.ranges[first]
         
         # Linear interpolation
-        return lerp(self.ranges[first], self.ranges[last], (i-first)/(last-first))
+        return lerp(self.ranges[first], self.ranges[last], lerpFactor)
     
     def get_dst(self, ang):
         """Returns distance at a specific angle (in degrees)."""

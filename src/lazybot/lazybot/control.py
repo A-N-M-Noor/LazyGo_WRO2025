@@ -62,7 +62,7 @@ class ControlNode(Node):
         
         # Speed Boosting (Go fast on straights)
         self.speedBoost = 1.0
-        self.boostMax = 1.25
+        self.boostMax = 1.05 #1.25
         self.boostAngleThresh = 7.5 # Only boost if steering angle is within +/- 7.5 deg
         self.boostDistThresh = 1.10 # Only boost if clear path > 1.1m
 
@@ -109,7 +109,7 @@ class ControlNode(Node):
         self.gotWallD = False
         self.reached = True
         self.lapCount = 0
-        self.targetLap = 1
+        self.targetLap = 3
         self.running = False
         self.endOffset = [-0.5, 1.5] # Y-coordinates for Start/Finish area
         # Coordinates of track corners for special handling
@@ -265,11 +265,11 @@ class ControlNode(Node):
             # Sort detected objects by distance
             self.objs.sort(key=lambda x: x["dst"], reverse=False)
 
-            indx = 0
-            for obj in self.objs:
-                indx += 1
-                self.get_logger().info(f"""
-{indx} - {obj['dst']} - {self.closest}""")
+#             indx = 0
+#             for obj in self.objs:
+#                 indx += 1
+#                 self.get_logger().info(f"""
+# {indx} - {obj['dst']} - {self.closest}""")
 
             self.pubObjData()
 
@@ -327,7 +327,7 @@ class ControlNode(Node):
             # If steering is straight and path is long, enable boost
             if(abs(self.targetAng)  < self.boostAngleThresh and hitD > self.boostDistThresh):
                 self.speedBoost = self.boostMax
-                self.get_logger().info("Boosting!")
+                # self.get_logger().info("Boosting!")
             
             # Map target angle to steering servo range (-1 to 1)
             sAng = remap(self.targetAng, -self.str_ang_thresh, self.str_ang_thresh, -self.strRange, self.strRange)
